@@ -1,3 +1,5 @@
+import { prisma } from '../../lib/prisma.js';
+
 class AuthRepository {
   async login() {
     //여기서는 순수하게 Prisma, DB 관련된 코드만 들어가주세요
