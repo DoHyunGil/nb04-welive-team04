@@ -13,3 +13,144 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id         Int        @id @default(autoincrement())
+  username   String
+  email      String
+  contact    String
+  name       String
+  role       Role
+  avatar     String
+  joinStatus joinStatus
+  isActive   Boolean
+  //역할 불명 친구들
+  //adminOf
+  //resident
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now()) @updatedAt
+  Resident   Resident[]
+  Complain   Complain[]
+  Poll       Poll[]
+  Comment    Comment[]
+}
+
+model Apartment {
+  id           Int        @id @default(autoincrement())
+  name         String
+  address      String
+  description  String
+  officeNumber Int
+  buildings    Int[]
+  units        Int[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
+  Complain     Complain[]
+  Poll         Poll[]
+  Notice       Notice[]
+  Event        Event[]
+}
+
+model Resident {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  isHouseholder Boolean
+  building      Int
+  unit          Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+}
+
+model Complain {
+  id            Int            @id @default(autoincrement())
+  title         String
+  content       String
+  isPublic      Boolean
+  viewCount     Int
+  status        complainStatus
+  comments      Comment[]
+  apartmentId   Int
+  apartment     Apartment      @relation(fields: [apartmentId], references: [id])
+  complainantId Int
+  complainant   User           @relation(fields: [complainantId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+}
+
+model Poll {
+  id          Int        @id @default(autoincrement())
+  title       String
+  content     String
+  status      PollStatus
+  apartmentId Int
+  apartment   Apartment  @relation(fields: [apartmentId], references: [id])
+  authorId    Int
+  author      User       @relation(fields: [authorId], references: [id])
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now()) @updatedAt
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  content    String
+  authorId   Int
+  author     User     @relation(fields: [authorId], references: [id])
+  complainId Int
+  complain   Complain @relation(fields: [complainId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+}
+
+model Notice {
+  id          Int            @id @default(autoincrement())
+  title       String
+  content     String
+  category    NoticeCategory
+  isPinned    Boolean
+  apartmentId Int
+  apartment   Apartment      @relation(fields: [apartmentId], references: [id])
+  event       Event          @relation(fields: [eventId], references: [id])
+  eventId     Int
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @default(now()) @updatedAt
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  category    String
+  title       String
+  apartmentId Int
+  apartment   Apartment @relation(fields: [apartmentId], references: [id])
+  //resourceId
+  //ResourceType
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now()) @updatedAt
+  Notice      Notice[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  RESIDENT
+}
+
+enum joinStatus {
+  PENDING
+}
+
+enum complainStatus {
+  PENDING
+}
+
+enum PollStatus {
+  PENDING
+}
+
+enum NoticeCategory {
+  MAINTENANCE
+}
