@@ -15,6 +15,7 @@ datasource db {
 
 model User {
   id         Int        @id @default(autoincrement())
+  password   String
   username   String
   email      String
   contact    String
@@ -23,15 +24,35 @@ model User {
   avatar     String
   joinStatus joinStatus
   isActive   Boolean
-  //역할 불명 친구들
-  //adminOf
-  //resident
+  adminOf    adminOf?
+  resident   Resident?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
-  Resident   Resident[]
   Complain   Complain[]
   Poll       Poll[]
   Comment    Comment[]
+}
+
+model adminOf {
+  id              Int         @id @default(autoincrement())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now()) @updatedAt
+  userId          Int         @unique
+  user            User        @relation(fields: [userId], references: [id])
+  ownedApartments Apartment[]
+}
+
+model Resident {
+  id            Int       @id @default(autoincrement())
+  userId        Int       @unique
+  user          User      @relation(fields: [userId], references: [id])
+  isHouseholder Boolean
+  building      Int
+  unit          Int
+  apartmentId   Int
+  apartment     Apartment @relation(fields: [apartmentId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
 }
 
 model Apartment {
@@ -44,21 +65,13 @@ model Apartment {
   units        Int[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @default(now()) @updatedAt
+  adminOf      adminOf    @relation(fields: [adminOfId], references: [id])
+  adminOfId    Int
+  resident     Resident[]
   Complain     Complain[]
   Poll         Poll[]
   Notice       Notice[]
   Event        Event[]
-}
-
-model Resident {
-  id            Int      @id @default(autoincrement())
-  userId        Int
-  user          User     @relation(fields: [userId], references: [id])
-  isHouseholder Boolean
-  building      Int
-  unit          Int
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
 }
 
 model Complain {
