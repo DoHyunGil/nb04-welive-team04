@@ -65,9 +65,9 @@ model Complain {
   id            Int            @id @default(autoincrement())
   title         String
   content       String
-  isPublic      Boolean
-  viewCount     Int
-  status        complainStatus
+  isPublic      Boolean        @default(true)
+  viewCount     Int            @default(0)
+  status        complainStatus @default(PENDING)
   comments      Comment[]
   apartmentId   Int
   apartment     Apartment      @relation(fields: [apartmentId], references: [id])
@@ -144,6 +144,9 @@ enum joinStatus {
 
 enum complainStatus {
   PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
 }
 
 enum PollStatus {

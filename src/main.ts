@@ -20,6 +20,7 @@ app.use(
 );
 
 app.use('/auth', routers.authRouter);
+app.use('/complaints', routers.complaintRouter);
 
 app.use(errorHandler);
 
