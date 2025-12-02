@@ -22,3 +22,7 @@ app.use(
 app.use('/auth', routers.authRouter);
 
 app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log('server running');
+});
