@@ -16,6 +16,7 @@ CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE');
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
+    "password" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "contact" TEXT NOT NULL,
@@ -31,6 +32,30 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "adminOf" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" INTEGER NOT NULL,
+
+    CONSTRAINT "adminOf_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Resident" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "isHouseholder" BOOLEAN NOT NULL,
+    "building" INTEGER NOT NULL,
+    "unit" INTEGER NOT NULL,
+    "apartmentId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Resident_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Apartment" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
@@ -41,21 +66,9 @@ CREATE TABLE "Apartment" (
     "units" INTEGER[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "adminOfId" INTEGER NOT NULL,
 
     CONSTRAINT "Apartment_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Resident" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "isHouseholder" BOOLEAN NOT NULL,
-    "building" INTEGER NOT NULL,
-    "unit" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Resident_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -131,8 +144,23 @@ CREATE TABLE "Event" (
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateIndex
+CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Resident_userId_key" ON "Resident"("userId");
+
+-- AddForeignKey
+ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
 -- AddForeignKey
 ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Resident" ADD CONSTRAINT "Resident_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Apartment" ADD CONSTRAINT "Apartment_adminOfId_fkey" FOREIGN KEY ("adminOfId") REFERENCES "adminOf"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Complain" ADD CONSTRAINT "Complain_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
