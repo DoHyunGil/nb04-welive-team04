@@ -1,22 +1,16 @@
 import { prisma } from '../../lib/prisma.js';
-import { complainStatus } from '../../../generated/prisma/client.js';
+import { complainStatus, Prisma } from '../../../generated/prisma/client.js';
 import type { UpdateData } from '../types/complaint.js';
 
 class complaintRepository {
   // 민원 등록
-  async createComplaint({
-    title,
-    content,
-    isPublic,
-    apartmentId,
-    userId,
-  }: {
-    title: string;
-    content: string;
-    isPublic: boolean;
-    apartmentId: number;
-    userId: number;
-  }) {
+  async createComplaint(
+    title: string,
+    content: string,
+    isPublic: boolean,
+    apartmentId: number,
+    userId: number,
+  ) {
     return await prisma.complain.create({
       data: {
         title,
@@ -36,22 +30,35 @@ class complaintRepository {
   async getComplaints(
     page: number,
     limit: number,
-    status: complainStatus,
-    isPublic: boolean,
-    building: number,
-    unit: number,
+    status?: string,
+    isPublic?: string,
+    building?: number,
+    unit?: number,
     searchKeyword?: string,
   ) {
     const offset = (page - 1) * limit;
 
+    const statusFilter = status ? { status: status as complainStatus } : {};
+    const isPublicFilter = isPublic ? { isPublic: isPublic === 'true' } : {};
     return await prisma.complain.findMany({
       where: {
         OR: [
           { title: { contains: searchKeyword } },
           { content: { contains: searchKeyword } },
+          {
+            complainant: {
+              name: { contains: searchKeyword },
+            },
+          },
         ],
-        status: status,
-        isPublic: isPublic,
+        ...statusFilter,
+        ...isPublicFilter,
+        complainant: {
+          resident: {
+            building,
+            unit,
+          },
+        },
       },
       skip: offset,
       take: limit,
@@ -76,17 +83,19 @@ class complaintRepository {
   // 민원 개수 조회
   async getComplaintCount(
     searchKeyword?: string,
-    status?: complainStatus,
-    isPublic?: boolean,
+    status?: string,
+    isPublic?: string,
   ) {
+    const statusFilter = status ? { status: status as complainStatus } : {};
+    const isPublicFilter = isPublic ? { isPublic: isPublic === 'true' } : {};
     return await prisma.complain.count({
       where: {
         OR: [
           { title: { contains: searchKeyword } },
           { content: { contains: searchKeyword } },
         ],
-        status: status,
-        isPublic: isPublic,
+        ...statusFilter,
+        ...isPublicFilter,
       },
     });
   }
@@ -140,6 +149,17 @@ class complaintRepository {
     return await prisma.complain.update({
       where: { id: complaintId },
       data: { status },
+    });
+  }
+  // 유저 Role(슈퍼어드민, 관리자, 입주민) 확인
+  async checkUserRole(userId: number) {
+    return await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        role: true,
+      },
     });
   }
 }
