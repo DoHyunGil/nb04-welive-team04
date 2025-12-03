@@ -74,6 +74,7 @@ class ComplaintService {
       throw createHttpError(403, '권한이 없습니다.');
     }
     const { _count, ...rest } = complaint;
+    await complaintRepository.incrementViewCount(complaintId);
     return {
       ...rest,
       commentCount: _count.comments,
@@ -99,7 +100,6 @@ class ComplaintService {
       complaintId,
       updateData,
     );
-    await complaintRepository.incrementViewCount(complaintId);
     return updatedComplaint;
   }
   // 민원 삭제
