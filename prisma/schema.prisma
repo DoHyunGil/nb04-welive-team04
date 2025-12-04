@@ -78,7 +78,7 @@ model Complain {
   id            Int            @id @default(autoincrement())
   title         String
   content       String
-  isPublic      Boolean        @default(true)
+  isPublic      Boolean        @default(false)
   viewCount     Int            @default(0)
   status        complainStatus @default(PENDING)
   comments      Comment[]

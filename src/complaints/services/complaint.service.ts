@@ -29,19 +29,19 @@ class ComplaintService {
     page: number,
     limit: number,
     searchKeyword?: string,
-    status?: string,
-    isPublic?: string,
+    status?: complainStatus,
+    isPublic?: boolean,
     building?: number,
     unit?: number,
   ) {
     const complaints = await complaintRepository.getComplaints(
       page,
       limit,
+      searchKeyword,
       status,
       isPublic,
       building,
       unit,
-      searchKeyword,
     );
     const data = complaints.map(({ _count, ...rest }) => ({
       ...rest,
@@ -129,6 +129,10 @@ class ComplaintService {
     }
     if (user.role !== 'ADMIN') {
       throw createHttpError(403, '관리자 계정이 아닙니다.');
+    }
+    const complaint = await complaintRepository.getComplaintById(complaintId);
+    if (!complaint) {
+      throw createHttpError(404, '해당 민원이 존재하지 않습니다.');
     }
 
     const updatedComplaint = await complaintRepository.updateComplaintStatus(

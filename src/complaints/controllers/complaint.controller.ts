@@ -3,6 +3,9 @@ import complaintService from '../services/complaint.service.js';
 import { complainStatus } from '../../../generated/prisma/client.js';
 import type { UpdateData } from '../types/complaint.js';
 import createHttpError from 'http-errors';
+import { ComplainQuerySchema } from '../schemas/complainQuerySchema.js';
+import type { ComplainQueryType } from '../schemas/complainQuerySchema.js';
+import { ZodError } from 'zod';
 
 class ComplaintController {
   // 민원 등록
@@ -31,16 +34,11 @@ class ComplaintController {
   // 민원 목록 조회
   async getComplaints(req: Request, res: Response, next: NextFunction) {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const searchKeyword = req.query.searchKeyword?.toString();
-      const status = req.query.status as string;
-      const isPublic = req.query.isPublic as string;
-      const parsedBuilding = parseInt(req.query.building as string);
-      const building = isNaN(parsedBuilding) ? undefined : parsedBuilding;
-      const parsedUnit = parseInt(req.query.unit as string);
-      const unit = isNaN(parsedUnit) ? undefined : parsedUnit;
-
+      const validatedQuery = ComplainQuerySchema.parse(
+        req.query,
+      ) as ComplainQueryType;
+      const { page, limit, searchKeyword, status, isPublic, building, unit } =
+        validatedQuery;
       const complaints = await complaintService.getComplaints(
         page,
         limit,
@@ -52,6 +50,9 @@ class ComplaintController {
       );
       res.status(200).json(complaints);
     } catch (error) {
+      if (error instanceof ZodError) {
+        throw createHttpError(400, '요청 파라미터가 유효하지 않습니다.');
+      }
       next(error);
     }
   }
@@ -94,7 +95,7 @@ class ComplaintController {
         complaintId,
         updateData,
       );
-      res.status(200).json(updatedComplaint);
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
@@ -108,7 +109,7 @@ class ComplaintController {
       }
       const complaintId = parseInt(req.params.id!);
       await complaintService.deleteComplaint(userId, complaintId);
-      res.status(200).json({ message: '민원이 삭제되었습니다.' });
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
@@ -124,7 +125,7 @@ class ComplaintController {
         complaintId,
         status,
       );
-      res.status(200).json(updatedComplaint);
+      res.status(204).send();
     } catch (error) {
       next(error);
     }

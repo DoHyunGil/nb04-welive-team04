@@ -30,27 +30,32 @@ class complaintRepository {
   async getComplaints(
     page: number,
     limit: number,
-    status?: string,
-    isPublic?: string,
+    searchKeyword?: string,
+    status?: complainStatus,
+    isPublic?: boolean,
     building?: number,
     unit?: number,
-    searchKeyword?: string,
   ) {
     const offset = (page - 1) * limit;
 
+    const searchFilter = searchKeyword
+      ? {
+          OR: [
+            { title: { contains: searchKeyword } },
+            { content: { contains: searchKeyword } },
+            {
+              complainant: {
+                name: { contains: searchKeyword },
+              },
+            },
+          ],
+        }
+      : {};
     const statusFilter = status ? { status: status as complainStatus } : {};
-    const isPublicFilter = isPublic ? { isPublic: isPublic === 'true' } : {};
+    const isPublicFilter = isPublic ? { isPublic: isPublic === true } : {};
     return await prisma.complain.findMany({
       where: {
-        OR: [
-          { title: { contains: searchKeyword } },
-          { content: { contains: searchKeyword } },
-          {
-            complainant: {
-              name: { contains: searchKeyword },
-            },
-          },
-        ],
+        ...searchFilter,
         ...statusFilter,
         ...isPublicFilter,
         complainant: {
@@ -84,16 +89,26 @@ class complaintRepository {
   async getComplaintCount(
     searchKeyword?: string,
     status?: string,
-    isPublic?: string,
+    isPublic?: boolean,
   ) {
+    const searchFilter = searchKeyword
+      ? {
+          OR: [
+            { title: { contains: searchKeyword } },
+            { content: { contains: searchKeyword } },
+            {
+              complainant: {
+                name: { contains: searchKeyword },
+              },
+            },
+          ],
+        }
+      : {};
     const statusFilter = status ? { status: status as complainStatus } : {};
-    const isPublicFilter = isPublic ? { isPublic: isPublic === 'true' } : {};
+    const isPublicFilter = isPublic ? { isPublic: isPublic === true } : {};
     return await prisma.complain.count({
       where: {
-        OR: [
-          { title: { contains: searchKeyword } },
-          { content: { contains: searchKeyword } },
-        ],
+        ...searchFilter,
         ...statusFilter,
         ...isPublicFilter,
       },
