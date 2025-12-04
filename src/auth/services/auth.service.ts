@@ -6,7 +6,7 @@ class AuthService {
 
     //DB에 필요한 매개변수를 보내고, 여기서 반환해오면 됩니다.
     const data = authRepository.login();
-    
+
     //그리고 여기서 프론트엔드가 원하는 양식대로 API 문서 참고하셔서 가공해주시고,
     //컨트롤러로 반환해주세요
     // return reuslt;

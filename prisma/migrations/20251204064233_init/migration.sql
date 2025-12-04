@@ -44,8 +44,11 @@ CREATE TABLE "adminOf" (
 -- CreateTable
 CREATE TABLE "Resident" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "userId" INTEGER,
+    "email" TEXT NOT NULL,
     "isHouseholder" BOOLEAN NOT NULL,
+    "contact" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "building" INTEGER NOT NULL,
     "unit" INTEGER NOT NULL,
     "apartmentId" INTEGER NOT NULL,
@@ -147,14 +150,11 @@ CREATE TABLE "Event" (
 -- CreateIndex
 CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "Resident_userId_key" ON "Resident"("userId");
-
 -- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Resident" ADD CONSTRAINT "Resident_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
