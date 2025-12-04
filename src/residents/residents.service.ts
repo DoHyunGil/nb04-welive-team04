@@ -1,5 +1,6 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import residentsRepository from '../residents/residents.repository.js';
+import { AppError } from './residents.schema.js';
 // import { CustomError } from '../middlewares/errorClass.js';
 
 class ResidentsService {
@@ -46,7 +47,7 @@ class ResidentsService {
   }
   async getResidentsById(userId: number, residentId: number) {
     if (!residentId) {
-      throw new Error('입주민 정보가 없습니다.');
+      throw new AppError('입주민 정보가 없습니다.', 400);
     }
     const residents = await residentsRepository.getResidentsById(
       userId,
@@ -69,14 +70,14 @@ class ResidentsService {
     const admin = await residentsRepository.findById(userId);
     const apartmentId = admin?.adminOf?.Apartment[0]?.id;
     if (!admin || !admin.adminOf) {
-      throw new Error('관리자 권한이 없습니다.');
+      throw new AppError('관리자 권한이 없습니다.', 403);
     }
     if (!apartmentId) {
-      throw new Error('아파트 정보가 없습니다.');
+      throw new AppError('아파트 정보가 없습니다.', 400);
     }
     const userEmail = await residentsRepository.findByEmail(residentData.email);
     if (userEmail) {
-      throw new Error('이미 존재하는 사용자입니다.');
+      throw new AppError('이미 존재하는 사용자입니다.', 400);
     }
     const residents = await residentsRepository.createResidents(
       residentData,
@@ -102,7 +103,7 @@ class ResidentsService {
   ) {
     const admin = await residentsRepository.findById(userId);
     if (!admin || !admin.adminOf) {
-      throw new Error('관리자 권한이 없습니다.');
+      throw new AppError('관리자 권한이 없습니다.', 403);
     }
     const residents = await residentsRepository.updateResidents(
       residentId,
@@ -110,7 +111,6 @@ class ResidentsService {
     );
     const data = {
       id: residents.id,
-      email: residents.email,
       contact: residents.contact,
       name: residents.name,
       building: residents.building,
@@ -122,7 +122,7 @@ class ResidentsService {
   }
   async deleteResidentById(userId: number, residentId: number) {
     if (!residentId) {
-      throw new Error('입주민 정보가 없습니다.');
+      throw new AppError('입주민 정보가 없습니다.', 400);
     }
     return await residentsRepository.deleteResidentById(userId, residentId);
   }
