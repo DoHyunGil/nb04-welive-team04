@@ -15,7 +15,7 @@ function parseJoinStatus(joinStatusString: string): joinStatus {
   // APPROVED이면 APPROVED enum 반환
   if (joinStatusString === 'APPROVED') return joinStatus.APPROVED;
   // REJECTED이면 REJECTED enum 반환
-  if (joinStatusString === 'REJECTED') return 'REJECTED' as joinStatus;
+  if (joinStatusString === 'REJECTED') return joinStatus.REJECTED;
   // 위의 값이 아니면 에러 발생
   throw createError(400, '잘못된 joinStatus 값입니다.');
 }
@@ -24,13 +24,19 @@ class AdminService {
   // 슈퍼 관리자 회원가입
   async superAdminRegister(data: SuperAdminsInput) {
     // 1. username으로 기존 관리자가 있는지 확인
-    const existingAdmin = await adminRepository.findAdminByUsername(
+    const existingAdminByUsername = await adminRepository.findAdminByUsername(
       data.username,
     );
+    if (existingAdminByUsername) {
+      throw createError(409, '이미 존재하는 아이디입니다.');
+    }
 
-    // 2. 이미 존재하면 에러
-    if (existingAdmin) {
-      throw createError(400, '이미 존재하는 아이디입니다.');
+    // 2. email로 기존 관리자가 있는지 확인
+    const existingAdminByEmail = await adminRepository.findAdminByEmail(
+      data.email,
+    );
+    if (existingAdminByEmail) {
+      throw createError(409, '이미 존재하는 이메일입니다.');
     }
 
     // 3. 비밀번호를 해시로 암호화
@@ -46,26 +52,40 @@ class AdminService {
   // 일반 관리자 회원가입
   async adminRegister(data: AdminInput) {
     // 1. username으로 기존 관리자가 있는지 확인
-    const existingAdmin = await adminRepository.findAdminByUsername(
+    const existingAdminByUsername = await adminRepository.findAdminByUsername(
       data.username,
     );
-
-    // 2. 이미 존재하면 에러
-    if (existingAdmin) {
+    if (existingAdminByUsername) {
       throw createError(409, '이미 존재하는 아이디입니다.');
     }
 
-    // 3. 비밀번호를 해시로 암호화
+    // 2. email로 기존 관리자가 있는지 확인
+    const existingAdminByEmail = await adminRepository.findAdminByEmail(
+      data.email,
+    );
+    if (existingAdminByEmail) {
+      throw createError(409, '이미 존재하는 이메일입니다.');
+    }
+
+    // 3. 아파트 이름 중복 확인
+    const existingApartment = await adminRepository.findApartmentByName(
+      data.adminOf.name,
+    );
+    if (existingApartment) {
+      throw createError(409, '이미 등록된 아파트입니다.');
+    }
+
+    // 4. 비밀번호를 해시로 암호화
     const hashedPassword = await authMiddleware.hashPassword(data.password);
     data.password = hashedPassword;
 
-    // 4. 관리자 계정 생성
+    // 5. 관리자 계정 생성
     const newUser = await adminRepository.createAccount(data);
 
-    // 5. 관리자의 아파트 정보 생성
+    // 6. 관리자의 아파트 정보 생성
     await adminRepository.createAdminOf(newUser.id, data.adminOf);
 
-    // 6. 생성된 사용자 정보 반환
+    // 7. 생성된 사용자 정보 반환
     return newUser;
   }
 
@@ -160,7 +180,16 @@ class AdminService {
 
   // 관리자 삭제
   async deleteAdmin(id: number) {
-    // adminRepository의 deleteAdmin 함수 호출
+    // 1. 해당 관리자에게 연결된 입주민이 있는지 확인
+    const residentCount = await adminRepository.countResidentsByAdminId(id);
+    if (residentCount > 0) {
+      throw createError(
+        400,
+        '입주민이 등록된 관리자는 삭제할 수 없습니다. 먼저 입주민을 삭제해주세요.',
+      );
+    }
+
+    // 2. adminRepository의 deleteAdmin 함수 호출
     const deletedAdmin = await adminRepository.deleteAdmin(id);
 
     return deletedAdmin;

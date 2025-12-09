@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'RESIDENT');
 
 -- CreateEnum
-CREATE TYPE "joinStatus" AS ENUM ('PENDING');
+CREATE TYPE "joinStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
 CREATE TYPE "complainStatus" AS ENUM ('PENDING');
@@ -17,6 +17,7 @@ CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE');
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "contact" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -28,6 +29,24 @@ CREATE TABLE "User" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AdminOf" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "officeNumber" TEXT NOT NULL,
+    "buildingNumberFrom" INTEGER NOT NULL,
+    "buildingNumberTo" INTEGER NOT NULL,
+    "floorCountPerBuilding" INTEGER NOT NULL,
+    "unitCountPerFloor" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AdminOf_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -130,6 +149,12 @@ CREATE TABLE "Event" (
 
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AdminOf_userId_key" ON "AdminOf"("userId");
+
+-- AddForeignKey
+ALTER TABLE "AdminOf" ADD CONSTRAINT "AdminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

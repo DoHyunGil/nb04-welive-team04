@@ -15,7 +15,7 @@ datasource db {
 
 model User {
   id         Int        @id @default(autoincrement())
-  username   String     
+  username   String
   password   String
   email      String
   contact    String
@@ -24,15 +24,29 @@ model User {
   avatar     String
   joinStatus joinStatus
   isActive   Boolean
-  //역할 불명 친구들
-  //adminOf
-  //resident
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
   Resident   Resident[]
   Complain   Complain[]
   Poll       Poll[]
   Comment    Comment[]
+  adminOf    AdminOf?
+}
+
+model AdminOf {
+  id                   Int      @id @default(autoincrement())
+  name                 String
+  address              String
+  description          String
+  officeNumber         String
+  buildingNumberFrom   Int
+  buildingNumberTo     Int
+  floorCountPerBuilding Int
+  unitCountPerFloor    Int
+  userId               Int      @unique
+  user                 User     @relation(fields: [userId], references: [id])
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @default(now()) @updatedAt
 }
 
 model Apartment {
@@ -141,6 +155,8 @@ enum Role {
 
 enum joinStatus {
   PENDING
+  APPROVED
+  REJECTED
 }
 
 enum complainStatus {

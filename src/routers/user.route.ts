@@ -4,7 +4,6 @@ import authMiddleware from '../middlewares/auth.middleware.js';
 
 const router = express.Router();
 
-router.post('/super-admins', adminController.superAdminsRegister);
 router.post('/', adminController.adminsRegister);
 
 router.get(

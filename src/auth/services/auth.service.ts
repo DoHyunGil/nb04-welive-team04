@@ -1,12 +1,12 @@
 import authRepository from '../repositories/auth.repository.js';
-import authMiddleware from 'src/middlewares/auth.middleware.js';
+import authMiddleware from '../../middlewares/auth.middleware.js';
 import type { Response } from 'express';
 import Jwt from '../utils/jwt.js';
 import createError from 'http-errors';
 
 class AuthService {
   async login(username: string, password: string) {
-    const user = await authRepository.findByUserName(username, password);
+    const user = await authRepository.findByUserName(username);
     if (!user) {
       throw createError(404, '사용자를 찾을 수 없습니다.');
     }

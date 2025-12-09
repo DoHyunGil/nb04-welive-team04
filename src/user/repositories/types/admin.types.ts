@@ -11,8 +11,8 @@ export interface SuperAdminsInput {
 export interface AdminOfInput {
   name: string;
   address: string;
-  description?: string;
-  officeNumber?: string;
+  description: string;
+  officeNumber: string;
   buildingNumberFrom: number;
   buildingNumberTo: number;
   floorCountPerBuilding: number;

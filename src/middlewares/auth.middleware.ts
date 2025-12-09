@@ -1,5 +1,12 @@
 import * as createHttpError from 'http-errors';
 import bcrypt from 'bcrypt';
+import passport from 'passport';
+import type { Request, Response, NextFunction } from 'express';
+
+interface AuthenticatedUser {
+  id: string;
+  role?: string;
+}
 
 class AuthMiddleware {
   async hashPassword(password: string): Promise<string> {
@@ -36,6 +43,27 @@ class AuthMiddleware {
         '비밀번호 검증 중 오류가 발생했습니다.',
       );
     }
+  }
+
+  authenticate(req: Request, res: Response, next: NextFunction) {
+    passport.authenticate('jwt', { session: false }, (err: Error | null, user: AuthenticatedUser | false) => {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return next(new createHttpError.Unauthorized('인증이 필요합니다.'));
+      }
+      req.user = user;
+      next();
+    })(req, res, next);
+  }
+
+  requireSuperAdmin(req: Request, _res: Response, next: NextFunction) {
+    const user = req.user as AuthenticatedUser | undefined;
+    if (!user || user.role !== 'SUPER_ADMIN') {
+      return next(new createHttpError.Forbidden('슈퍼 관리자 권한이 필요합니다.'));
+    }
+    next();
   }
 }
 

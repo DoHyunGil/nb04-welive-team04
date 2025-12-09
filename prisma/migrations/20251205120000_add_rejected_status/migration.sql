@@ -1,3 +1,0 @@
--- AlterEnum (already applied to test DB)
--- This migration ensures REJECTED is in the enum
--- ALTER TYPE "joinStatus" ADD VALUE IF NOT EXISTS 'REJECTED';

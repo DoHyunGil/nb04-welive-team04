@@ -16,11 +16,56 @@ class AdminRepository {
   async findAdminByUsername(username: string) {
     const admin = await prisma.user.findFirst({
       where: {
-        username: username
+        username: username,
       },
     });
 
     return admin;
+  }
+
+  // email로 관리자 찾기
+  async findAdminByEmail(email: string) {
+    const admin = await prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+
+    return admin;
+  }
+
+  // 아파트 이름으로 아파트 찾기
+  async findApartmentByName(name: string) {
+    const apartment = await prisma.adminOf.findFirst({
+      where: {
+        name: name,
+      },
+    });
+
+    return apartment;
+  }
+
+  // 관리자에게 연결된 입주민 수 확인
+  async countResidentsByAdminId(adminId: number) {
+    // adminOf를 통해 아파트 ID를 가져온 후, 해당 아파트의 입주민 수 확인
+    const adminOf = await prisma.adminOf.findFirst({
+      where: { userId: adminId },
+    });
+
+    if (!adminOf) {
+      return 0;
+    }
+
+    // Resident 모델에서 해당 아파트 건물/호수에 속한 입주민 수 확인
+    const residentCount = await prisma.resident.count({
+      where: {
+        user: {
+          role: Role.RESIDENT,
+        },
+      },
+    });
+
+    return residentCount;
   }
 
   // 슈퍼 관리자 계정 생성

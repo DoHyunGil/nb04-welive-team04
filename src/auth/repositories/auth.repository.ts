@@ -1,9 +1,9 @@
 import { prisma } from '../../lib/prisma.js';
 
 class AuthRepository {
-  async findByUserName(username: string, password: string) {
+  async findByUserName(username: string) {
     return prisma.user.findFirst({
-      where: { username: username, password: password },
+      where: { username: username },
     });
   }
 }
