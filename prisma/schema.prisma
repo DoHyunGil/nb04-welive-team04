@@ -31,6 +31,7 @@ model User {
   Complain   Complain[]
   Poll       Poll[]
   Comment    Comment[]
+  PollVote   PollVote[]
 }
 
 model adminOf {
@@ -65,13 +66,13 @@ model Apartment {
   units        Int[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @default(now()) @updatedAt
-  adminOf      adminOf    @relation(fields: [adminOfId], references: [id])
-  adminOfId    Int
-  resident     Resident[]
   Complain     Complain[]
   Poll         Poll[]
   Notice       Notice[]
   Event        Event[]
+  adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
+  adminOfId    Int?
+  Resident     Resident[]
 }
 
 model Complain {
@@ -91,18 +92,68 @@ model Complain {
 }
 
 model Poll {
-  id          Int        @id @default(autoincrement())
-  title       String
-  content     String
-  status      PollStatus
+  id      String     @id @default(cuid())
+  title   String
+  content String     @db.Text
+  status  PollStatus @default(PENDING)
+
   apartmentId Int
-  apartment   Apartment  @relation(fields: [apartmentId], references: [id])
-  authorId    Int
-  author      User       @relation(fields: [authorId], references: [id])
-  startDate   DateTime
-  endDate     DateTime
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @default(now()) @updatedAt
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  building    Int?
+
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId Int
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  options PollOption[]
+  votes   PollVote[]
+
+  noticeCreated Boolean @default(false)
+
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([authorId])
+  @@index([apartmentId])
+  @@index([building])
+}
+
+model PollOption {
+  id     String @id @default(cuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  title String
+  order Int    @default(0)
+
+  votes PollVote[]
+
+  createdAt DateTime @default(now())
+
+  @@index([pollId])
+}
+
+model PollVote {
+  id String @id @default(cuid())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  optionId String
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  votedAt DateTime @default(now())
+
+  @@unique([userId, pollId])
+  @@index([pollId])
+  @@index([userId])
+  @@index([optionId])
 }
 
 model Comment {
@@ -136,8 +187,8 @@ model Event {
   title       String
   apartmentId Int
   apartment   Apartment @relation(fields: [apartmentId], references: [id])
-  //resourceId
-  //ResourceType
+  // resourceId
+  // ResourceType
   startDate   DateTime
   endDate     DateTime
   createdAt   DateTime  @default(now())
@@ -161,6 +212,8 @@ enum complainStatus {
 
 enum PollStatus {
   PENDING
+  IN_PROGRESS
+  CLOSED
 }
 
 enum NoticeCategory {

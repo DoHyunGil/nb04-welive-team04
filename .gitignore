@@ -5,3 +5,5 @@ dist
 .env.test
 .idea
 .DS_Store
+.gitignore
+prisma/migrations
