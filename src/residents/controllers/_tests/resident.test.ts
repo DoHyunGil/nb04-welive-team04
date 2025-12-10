@@ -1,12 +1,12 @@
-import { prisma } from '../../lib/prisma.js';
+import { prisma } from '../../../lib/prisma.js';
 import { config } from 'dotenv';
 import type {
   User,
   Apartment,
   Resident,
-} from '../../../generated/prisma/client.js';
-import residentService from '../residents.service.js';
-import residentRepository from '../residents.repository.js';
+} from '../../../../generated/prisma/client.js';
+import residentService from '../../services/residents.service.js';
+import residentRepository from '../../repositories/residents.repository.js';
 
 config();
 

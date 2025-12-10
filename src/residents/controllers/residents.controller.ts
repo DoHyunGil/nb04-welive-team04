@@ -3,7 +3,7 @@ import type {
   GetResidentsQuery,
   CreateResidentBody,
 } from 'src/lib/type/express/resident.index.js';
-import residentService from '../residents/residents.service.js';
+import residentService from '../services/residents.service.js';
 
 class ResidentsController {
   async getResidents(req: Request, res: Response, next: NextFunction) {
