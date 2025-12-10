@@ -2,6 +2,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { PollStatus } from '../../../generated/prisma/client.js';
 import pollsService from '../services/polls.service.js';
+import type { GetPollsQuery } from '../services/polls.service.js';
 
 class PollsController {
   async createPoll(req: Request, res: Response, next: NextFunction) {
@@ -17,12 +18,15 @@ class PollsController {
   async getPolls(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const query = {
-        page: req.query.page ? Number(req.query.page) : undefined,
-        limit: req.query.limit ? Number(req.query.limit) : undefined,
-        searchKeyword: req.query.searchKeyword as string | undefined,
-        status: req.query.status as PollStatus | undefined,
-        building: req.query.building ? Number(req.query.building) : undefined,
+      const { page, limit, searchKeyword, status, building } = req.query;
+
+      const query: GetPollsQuery = {
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
+        searchKeyword:
+          typeof searchKeyword === 'string' ? searchKeyword : undefined,
+        status: typeof status === 'string' ? (status as PollStatus) : undefined,
+        building: building ? Number(building) : undefined,
       };
 
       const polls = await pollsService.getPolls(userId, query);

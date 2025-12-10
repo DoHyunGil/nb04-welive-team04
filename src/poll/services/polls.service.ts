@@ -21,7 +21,7 @@ interface UpdatePollData {
   options?: Array<{ id?: string; title: string }>;
 }
 
-interface GetPollsQuery {
+export interface GetPollsQuery {
   page?: number;
   limit?: number;
   searchKeyword?: string;
