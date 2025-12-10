@@ -21,13 +21,13 @@ interface UpdatePollData {
   options?: Array<{ id?: string; title: string }>;
 }
 
-export interface GetPollsQuery {
-  page?: number;
-  limit?: number;
-  searchKeyword?: string;
-  status?: PollStatus;
-  building?: number | null;
-}
+// export interface GetPollsQuery {
+//   page?: number;
+//   limit?: number;
+//   searchKeyword?: string;
+//   status?: PollStatus;
+//   building?: number | null;
+// }
 
 class PollsService {
   private async getUserWithResident(userId: number | undefined) {
