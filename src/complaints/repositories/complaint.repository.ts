@@ -1,16 +1,14 @@
 import { prisma } from '../../lib/prisma.js';
-import { complainStatus, Prisma } from '../../../generated/prisma/client.js';
-import type { UpdateData } from '../types/complaint.js';
+import { complainStatus } from '../../../generated/prisma/client.js';
+import * as ComplaintDto from '../schemas/index.js';
 
 class complaintRepository {
   // 민원 등록
   async createComplaint(
-    title: string,
-    content: string,
-    isPublic: boolean,
-    apartmentId: number,
     userId: number,
+    createDto: ComplaintDto.CreateComplaintDto,
   ) {
+    const { title, content, isPublic, apartmentId } = createDto;
     return await prisma.complain.create({
       data: {
         title,
@@ -27,15 +25,9 @@ class complaintRepository {
   }
 
   // 민원 목록 조회
-  async getComplaints(
-    page: number,
-    limit: number,
-    searchKeyword?: string,
-    status?: complainStatus,
-    isPublic?: boolean,
-    building?: number,
-    unit?: number,
-  ) {
+  async getComplaints(getDto: ComplaintDto.GetComplaintsDto) {
+    const { page, limit, searchKeyword, status, isPublic, building, unit } =
+      getDto;
     const offset = (page - 1) * limit;
 
     const searchFilter = searchKeyword
@@ -85,35 +77,6 @@ class complaintRepository {
       },
     });
   }
-  // 민원 개수 조회
-  async getComplaintCount(
-    searchKeyword?: string,
-    status?: string,
-    isPublic?: boolean,
-  ) {
-    const searchFilter = searchKeyword
-      ? {
-          OR: [
-            { title: { contains: searchKeyword } },
-            { content: { contains: searchKeyword } },
-            {
-              complainant: {
-                name: { contains: searchKeyword },
-              },
-            },
-          ],
-        }
-      : {};
-    const statusFilter = status ? { status: status as complainStatus } : {};
-    const isPublicFilter = isPublic ? { isPublic: isPublic === true } : {};
-    return await prisma.complain.count({
-      where: {
-        ...searchFilter,
-        ...statusFilter,
-        ...isPublicFilter,
-      },
-    });
-  }
   // Id로 민원 조회
   async getComplaintById(complaintId: number) {
     return await prisma.complain.findUnique({
@@ -147,7 +110,10 @@ class complaintRepository {
     });
   }
   // 민원 수정
-  async updateComplaint(complaintId: number, updateData: UpdateData) {
+  async updateComplaint(
+    complaintId: number,
+    updateData: ComplaintDto.UpdateComplaintDto,
+  ) {
     return await prisma.complain.update({
       where: { id: complaintId },
       data: updateData,

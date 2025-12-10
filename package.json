@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npm run prisma:reset && npm run prisma:migrate && node --experimental-vm-modules ./node_modules/.bin/jest --config jest.config.cjs --detectOpenHandles",
-    "dev": "tsx watch ./src/server.ts",
-    "start": "node ./dist/src/server.js",
+    "test": "npm run prisma:reset && npm run prisma:migrate && node --experimental-vm-modules ./node_modules/.bin/jest --config jest.config.cjs",
+    "dev": "tsx watch ./src/main.ts",
+    "start": "node ./dist/src/main.js",
     "build": "tsc",
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",

@@ -1,57 +1,39 @@
 import complaintRepository from '../repositories/complaint.repository.js';
 import { complainStatus } from '../../../generated/prisma/client.js';
-import type { UpdateData } from '../types/complaint.js';
+import * as ComplaintDto from '../schemas/index.js';
 import createHttpError from 'http-errors';
 
 class ComplaintService {
   // 민원 등록
   async createComplaint(
     userId: number,
-    title: string,
-    content: string,
-    isPublic: boolean,
-    apartmentId: number,
+    createDto: ComplaintDto.CreateComplaintDto,
   ) {
-    if (!title || !content || !apartmentId) {
-      throw createHttpError(400, '필수 값이 비어있습니다.');
+    if (!createDto.title) {
+      throw createHttpError(400, '제목이 비어있습니다.');
+    }
+    if (!createDto.content) {
+      throw createHttpError(400, '내용이 비어있습니다.');
+    }
+    if (createDto.apartmentId === undefined || isNaN(createDto.apartmentId)) {
+      throw createHttpError(400, '아파트 id가 비어있습니다.');
     }
     const complaint = await complaintRepository.createComplaint(
-      title,
-      content,
-      isPublic,
-      apartmentId,
       userId,
+      createDto,
     );
     return complaint;
   }
   // 민원 목록 조회
-  async getComplaints(
-    page: number,
-    limit: number,
-    searchKeyword?: string,
-    status?: complainStatus,
-    isPublic?: boolean,
-    building?: number,
-    unit?: number,
-  ) {
-    const complaints = await complaintRepository.getComplaints(
-      page,
-      limit,
-      searchKeyword,
-      status,
-      isPublic,
-      building,
-      unit,
-    );
+  async getComplaints(getDto: ComplaintDto.GetComplaintsDto) {
+    const complaints = await complaintRepository.getComplaints(getDto);
     const data = complaints.map(({ _count, ...rest }) => ({
       ...rest,
       commentCount: _count.comments,
     }));
-    const totalCount = await complaintRepository.getComplaintCount(
-      searchKeyword,
-      status,
-      isPublic,
-    );
+    const totalCount = complaints.length;
+    const page = getDto.page;
+    const limit = getDto.limit;
     const hasNext = page * limit < totalCount;
     const result = { data, totalCount, page, limit, hasNext };
     return result;
@@ -84,7 +66,7 @@ class ComplaintService {
   async updateComplaint(
     userId: number,
     complaintId: number,
-    updateData: UpdateData,
+    updateData: ComplaintDto.UpdateComplaintDto,
   ) {
     const complaint = await complaintRepository.getComplaintById(complaintId);
     if (!complaint) {

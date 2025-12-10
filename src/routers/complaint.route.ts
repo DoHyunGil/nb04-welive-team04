@@ -1,17 +1,23 @@
 import express from 'express';
-
 import complaintController from '../complaints/controllers/complaint.controller.js';
+import * as complaintSchema from '../complaints/schemas/index.js';
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(complaintController.createComplaint)
-  .get(complaintController.getComplaints);
+  .post(
+    complaintSchema.createComplaintSchema,
+    complaintController.createComplaint,
+  )
+  .get(complaintSchema.getComplaintSchema, complaintController.getComplaints);
 router
   .route('/:id')
   .get(complaintController.getComplaintById)
-  .patch(complaintController.updateComplaint)
+  .patch(
+    complaintSchema.updateComplaintSchema,
+    complaintController.updateComplaint,
+  )
   .delete(complaintController.deleteComplaint);
 router.patch('/:id/status', complaintController.updateComplaintStatus);
 
