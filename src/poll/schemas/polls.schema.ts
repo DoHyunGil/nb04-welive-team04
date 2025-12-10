@@ -67,20 +67,11 @@ const vote = z
   .strict();
 
 const getPollsQuery = z.object({
-  page: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number(val) : undefined)),
-  limit: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number(val) : undefined)),
+  page: z.coerce.number().min(1).optional(),
+  limit: z.coerce.number().min(1).optional(),
   searchKeyword: z.string().optional(),
   status: z.enum(['PENDING', 'IN_PROGRESS', 'CLOSED']).optional(),
-  building: z
-    .string()
-    .optional()
-    .transform((val) => (val ? Number(val) : undefined)),
+  building: z.coerce.number().positive().optional(),
 });
 
 class PollsSchema {
@@ -122,9 +113,8 @@ class PollsSchema {
 
   getPollsQuerySchema(req: Request, res: Response, next: NextFunction) {
     const result = getPollsQuery.safeParse(req.query);
+
     if (result.success) {
-      // 검증된 쿼리로 교체
-      req.query = result.data as unknown as Request['query'];
       return next();
     } else {
       const errorMessage = result.error.issues

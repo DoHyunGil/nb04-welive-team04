@@ -1,9 +1,7 @@
-// src/polls/services/polls.service.ts
+// src/poll/services/polls.service.ts
 import { prisma } from '../../lib/prisma.js';
 import createError from 'http-errors';
-import { Prisma } from '../../../generated/prisma/client.js';
-
-type PollStatus = 'PENDING' | 'IN_PROGRESS' | 'CLOSED';
+import { Prisma, PollStatus } from '../../../generated/prisma/client.js';
 
 interface CreatePollData {
   title: string;
@@ -32,7 +30,11 @@ interface GetPollsQuery {
 }
 
 class PollsService {
-  private async getUserWithResident(userId: number) {
+  private async getUserWithResident(userId: number | undefined) {
+    if (!userId) {
+      throw createError(401, '인증이 필요합니다.');
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { resident: true },
@@ -50,7 +52,7 @@ class PollsService {
     return { user, resident: user.resident };
   }
 
-  async createPoll(userId: number, data: CreatePollData) {
+  async createPoll(userId: number | undefined, data: CreatePollData) {
     const { user, resident } = await this.getUserWithResident(userId);
 
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
@@ -77,7 +79,7 @@ class PollsService {
         endDate: end,
         apartmentId: resident.apartmentId,
         building: data.building ?? null,
-        authorId: userId,
+        authorId: user.id,
         options: {
           create: data.options.map((opt, index) => ({
             title: opt.title,
@@ -92,11 +94,10 @@ class PollsService {
     });
 
     // TODO: 일정 서비스에 데이터 전달
-
     return this.formatPollResponse(poll);
   }
 
-  async getPolls(userId: number, query: GetPollsQuery) {
+  async getPolls(userId: number | undefined, query: GetPollsQuery) {
     const { page = 1, limit = 20, searchKeyword, status, building } = query;
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -139,7 +140,7 @@ class PollsService {
             },
           },
           votes: {
-            where: { userId },
+            where: { userId: user.id },
             select: { optionId: true },
           },
         },
@@ -156,7 +157,7 @@ class PollsService {
     };
   }
 
-  async getPollById(pollId: string, userId: number) {
+  async getPollById(pollId: string, userId: number | undefined) {
     const { user, resident } = await this.getUserWithResident(userId);
 
     const poll = await prisma.poll.findUnique({
@@ -170,7 +171,7 @@ class PollsService {
           orderBy: { order: 'asc' },
         },
         votes: {
-          where: { userId },
+          where: { userId: user.id },
           select: { optionId: true },
         },
       },
@@ -193,7 +194,11 @@ class PollsService {
     return this.formatPollResponse(poll);
   }
 
-  async updatePoll(pollId: string, userId: number, data: UpdatePollData) {
+  async updatePoll(
+    pollId: string,
+    userId: number | undefined,
+    data: UpdatePollData,
+  ) {
     const { user, resident } = await this.getUserWithResident(userId);
 
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
@@ -271,11 +276,10 @@ class PollsService {
     });
 
     // TODO:투표 변경시에 일정 서비스에 수정 요청
-
     return this.formatPollResponse(updatedPoll);
   }
 
-  async deletePoll(pollId: string, userId: number) {
+  async deletePoll(pollId: string, userId: number | undefined) {
     const { user, resident } = await this.getUserWithResident(userId);
 
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
@@ -294,13 +298,12 @@ class PollsService {
     }
 
     // TODO: 투표삭제시에 일정 서비스에 삭제 요청
-
     await prisma.poll.delete({ where: { id: pollId } });
     return { message: '투표가 삭제되었습니다.' };
   }
 
-  async vote(pollId: string, optionId: string, userId: number) {
-    const { resident } = await this.getUserWithResident(userId);
+  async vote(pollId: string, optionId: string, userId: number | undefined) {
+    const { resident, user } = await this.getUserWithResident(userId);
 
     const poll = await prisma.poll.findUnique({
       where: { id: pollId },
@@ -326,7 +329,7 @@ class PollsService {
 
     try {
       await prisma.pollVote.create({
-        data: { userId, pollId, optionId },
+        data: { userId: user.id, pollId, optionId },
       });
     } catch (error) {
       const prismaError = error as { code?: string };
@@ -339,28 +342,27 @@ class PollsService {
     return { message: '투표가 완료되었습니다.' };
   }
 
-  async unvote(pollId: string, userId: number) {
+  async unvote(pollId: string, userId: number | undefined) {
+    const { user } = await this.getUserWithResident(userId);
+
     const poll = await prisma.poll.findUnique({ where: { id: pollId } });
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
-
     if (poll.status !== 'IN_PROGRESS') {
       throw createError(400, '진행 중인 투표가 아닙니다.');
     }
 
     const vote = await prisma.pollVote.findFirst({
-      where: { userId, pollId },
+      where: { userId: user.id, pollId },
     });
 
     if (!vote) throw createError(404, '투표 기록을 찾을 수 없습니다.');
 
     await prisma.pollVote.delete({ where: { id: vote.id } });
-
     return { message: '투표가 취소되었습니다.' };
   }
 
   async updatePollStatuses() {
     const now = new Date();
-
     const { count: startedCount } = await prisma.poll.updateMany({
       where: { status: 'PENDING', startDate: { lte: now } },
       data: { status: 'IN_PROGRESS' },
@@ -395,7 +397,6 @@ class PollsService {
     }
 
     // TODO: 투표 시작/마감 알림 함수
-
     return {
       message: '투표 상태가 업데이트되었습니다.',
       startedCount,

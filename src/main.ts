@@ -15,15 +15,6 @@ const PORT = process.env.PORT || 4000;
 app.use(express.json());
 app.use(passport.initialize());
 
-app.use((req, res, next) => {
-  req.user = {
-    id: 1,
-    email: 'test@test.com',
-    role: 'ADMIN',
-  };
-  next();
-});
-
 app.use('/api/v2/polls', pollsRouter);
 
 app.use(
