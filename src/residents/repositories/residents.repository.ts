@@ -15,7 +15,7 @@ class ResidentsRepository {
     console.log(admin);
     return prisma.resident.findMany({
       where: {
-        apartmentId: admin?.Apartment[0]?.id,
+        apartmentId: admin?.Apartment?.id,
         ...filters,
       },
       take: Number(limit),

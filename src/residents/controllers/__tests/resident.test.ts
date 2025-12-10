@@ -4,6 +4,7 @@ import type {
   User,
   Apartment,
   Resident,
+  adminOf,
 } from '../../../../generated/prisma/client.js';
 import residentService from '../../services/residents.service.js';
 import residentRepository from '../../repositories/residents.repository.js';
@@ -12,10 +13,13 @@ config();
 
 describe('Repository & Service Test', () => {
   let adminUser: User;
+  let residentUser: User;
   let apt1: Apartment;
   let apt2: Apartment;
   let residentA: Resident;
   let residentB: Resident;
+  let adminOf1: adminOf;
+  let adminOf2: adminOf;
   beforeAll(async () => {
     await prisma.adminOf.deleteMany();
     await prisma.resident.deleteMany();
@@ -37,9 +41,29 @@ describe('Repository & Service Test', () => {
         isActive: true,
       },
     });
-    const adminOf1 = await prisma.adminOf.create({
+    residentUser = await prisma.user.create({
+      data: {
+        username: '입주민',
+        password: '1234',
+        email: 'resident@test.com',
+        contact: '010-2222-3333',
+        name: '테스트 입주민',
+        role: 'RESIDENT',
+        avatar: '',
+        joinStatus: 'PENDING',
+        isActive: true,
+      },
+    });
+    adminOf1 = await prisma.adminOf.create({
       data: {
         userId: adminUser.id,
+        id: adminUser.id,
+      },
+    });
+    adminOf2 = await prisma.adminOf.create({
+      data: {
+        userId: residentUser.id,
+        id: residentUser.id,
       },
     });
     apt1 = await prisma.apartment.create({
@@ -61,7 +85,7 @@ describe('Repository & Service Test', () => {
         officeNumber: 3,
         buildings: [1, 2],
         units: [201, 202, 203],
-        adminOfId: 10,
+        adminOfId: adminOf2.id,
       },
     });
 

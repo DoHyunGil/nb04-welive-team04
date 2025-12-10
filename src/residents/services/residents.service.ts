@@ -67,7 +67,7 @@ class ResidentsService {
   }
   async createResidents(userId: number, residentData: CreateResidentBody) {
     const admin = await residentsRepository.findById(userId);
-    const apartmentId = admin?.adminOf?.Apartment[0]?.id;
+    const apartmentId = admin?.adminOf?.Apartment?.id;
     if (!admin || !admin.adminOf) {
       throw new AppError('관리자 권한이 없습니다.', 403);
     }

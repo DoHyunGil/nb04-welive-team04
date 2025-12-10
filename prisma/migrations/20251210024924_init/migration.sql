@@ -151,6 +151,9 @@ CREATE TABLE "Event" (
 -- CreateIndex
 CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Apartment_adminOfId_key" ON "Apartment"("adminOfId");
+
 -- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
