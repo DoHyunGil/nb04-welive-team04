@@ -7,7 +7,7 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "target": "es2023",
+    "target": "esnext",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "baseUrl": ".",
@@ -40,7 +40,6 @@
     //"jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": false,
     "moduleDetection": "force",
     "skipLibCheck": true
   },

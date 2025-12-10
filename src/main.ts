@@ -20,6 +20,7 @@ app.use(
 );
 
 app.use('/auth', routers.authRouter);
+app.use('/api/v2/apartments', routers.apartmentRouter);
 
 app.use(errorHandler);
 

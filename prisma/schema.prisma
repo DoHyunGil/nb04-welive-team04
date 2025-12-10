@@ -60,7 +60,7 @@ model Apartment {
   name         String
   address      String
   description  String
-  officeNumber Int
+  officeNumber String
   buildings    Int[]
   units        Int[]
   createdAt    DateTime   @default(now())
