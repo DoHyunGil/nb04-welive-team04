@@ -1,7 +1,6 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
-import residentsRepository from '../residents/residents.repository.js';
-import { AppError } from './residents.schema.js';
-// import { CustomError } from '../middlewares/errorClass.js';
+import residentsRepository from '../repositories/residents.repository.js';
+import { AppError } from '../../middlewares/errorClass.js';
 
 class ResidentsService {
   async getResidents(

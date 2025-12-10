@@ -1,5 +1,5 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
-import { prisma } from './../lib/prisma.js';
+import { prisma } from './../../lib/prisma.js';
 
 class ResidentsRepository {
   async getResidents(
@@ -73,16 +73,6 @@ class ResidentsRepository {
           },
         },
       },
-    });
-  }
-  async findByContact(contact: string) {
-    return prisma.resident.findFirst({
-      where: { contact },
-    });
-  }
-  async findByName(name: string) {
-    return prisma.resident.findFirst({
-      where: { name },
     });
   }
   async findByEmail(email: string) {

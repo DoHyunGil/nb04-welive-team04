@@ -20,7 +20,7 @@ app.use(
 );
 
 app.use('/auth', routers.authRouter);
-app.use('/residents', routers.residentRouter);
+app.use('/residents', routers.residentsRouter);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
