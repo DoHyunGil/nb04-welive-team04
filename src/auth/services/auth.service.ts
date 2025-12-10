@@ -1,5 +1,5 @@
 import authRepository from '../repositories/auth.repository.js';
-import authMiddleware from '../../middlewares/auth.middleware.js';
+import { verifyPassword } from '../../lib/password.js';
 import type { Response } from 'express';
 import Jwt from '../utils/jwt.js';
 import createError from 'http-errors';
@@ -11,13 +11,7 @@ class AuthService {
       throw createError(404, '사용자를 찾을 수 없습니다.');
     }
 
-    const isValid = await authMiddleware.verifyPassword(
-      password,
-      user.password,
-    );
-    if (!isValid) {
-      throw createError(404, '비밀번호가 일치하지 않습니다');
-    }
+    await verifyPassword(password, user.password);
 
     const accessToken = Jwt.signAccessToken({ userId: user.id });
     const refreshToken = Jwt.signRefreshToken({ userId: user.id });

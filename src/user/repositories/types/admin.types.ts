@@ -28,6 +28,15 @@ export interface AdminInput {
   adminOf: AdminOfInput;
 }
 
+// 컨트롤러에서 서비스로 전달하는 파라미터
+export interface FindAdminsServiceParams {
+  page: number;
+  limit: number;
+  searchKeyword?: string;
+  joinStatusString?: string;
+}
+
+// 서비스에서 레포지토리로 전달하는 파라미터
 export interface FindAdminsParams {
   searchKeyword?: string;
   joinStatusString?: string;

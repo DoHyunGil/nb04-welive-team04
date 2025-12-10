@@ -1,5 +1,5 @@
 import createError from 'http-errors';
-import authMiddleware from '../../middlewares/auth.middleware.js';
+import { hashPassword, verifyPassword } from '../../lib/password.js';
 import userRepository from '../repositories/user.repository.js';
 import type { UserPasswordUpdateRequest } from '../repositories/types/user.types.js';
 
@@ -29,13 +29,7 @@ class UserService {
     }
 
     // 2. 현재 비밀번호 확인
-    const isPasswordValid = await authMiddleware.verifyPassword(
-      data.currentPassword,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      throw createError(400, '현재 비밀번호가 일치하지 않습니다.');
-    }
+    await verifyPassword(data.currentPassword, user.password);
 
     // 3. 새 비밀번호가 현재 비밀번호와 다른지 확인
     if (data.currentPassword === data.newPassword) {
@@ -43,11 +37,11 @@ class UserService {
     }
 
     // 4. 새 비밀번호 해시화
-    const hashedPassword = await authMiddleware.hashPassword(data.newPassword);
+    const hashedNewPassword = await hashPassword(data.newPassword);
 
     // 5. 비밀번호 업데이트
     const updatedUser = await userRepository.updatePassword(userId, {
-      password: hashedPassword,
+      password: hashedNewPassword,
     });
 
     return updatedUser;
