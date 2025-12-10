@@ -15,7 +15,7 @@
     "prisma:migrate": "npx dotenv -e .env.test -- prisma migrate deploy"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "npx tsx prisma/seed.ts"
   },
   "type": "module",
   "author": "",
