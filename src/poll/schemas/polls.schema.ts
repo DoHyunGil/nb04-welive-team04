@@ -67,11 +67,20 @@ const vote = z
   .strict();
 
 const getPollsQuery = z.object({
-  page: z.coerce.number().min(1).optional(),
-  limit: z.coerce.number().min(1).optional(),
-  searchKeyword: z.string().optional(),
-  status: z.enum(['PENDING', 'IN_PROGRESS', 'CLOSED']).optional(),
-  building: z.coerce.number().positive().optional(),
+  page: z
+    .string()
+    .default('1')
+    .transform((val) => Number(val)),
+  limit: z
+    .string()
+    .default('20')
+    .transform((val) => Number(val)),
+  searchKeyword: z.string().nullable().default(null),
+  status: z.enum(['PENDING', 'IN_PROGRESS', 'CLOSED']).nullable().default(null),
+  building: z
+    .string()
+    .optional()
+    .transform((val) => (val ? Number(val) : null)),
 });
 
 class PollsSchema {

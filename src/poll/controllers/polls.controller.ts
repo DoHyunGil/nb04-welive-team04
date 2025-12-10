@@ -1,6 +1,5 @@
 // src/poll/controllers/polls.controller.ts
 import type { NextFunction, Request, Response } from 'express';
-import { PollStatus } from '../../../generated/prisma/client.js';
 import pollsService from '../services/polls.service.js';
 import type { GetPollsQuery } from '../services/polls.service.js';
 
@@ -18,17 +17,7 @@ class PollsController {
   async getPolls(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const { page, limit, searchKeyword, status, building } = req.query;
-
-      const query: GetPollsQuery = {
-        page: page ? Number(page) : undefined,
-        limit: limit ? Number(limit) : undefined,
-        searchKeyword:
-          typeof searchKeyword === 'string' ? searchKeyword : undefined,
-        status: typeof status === 'string' ? (status as PollStatus) : undefined,
-        building: building ? Number(building) : undefined,
-      };
-
+      const query = req.query as unknown as GetPollsQuery;
       const polls = await pollsService.getPolls(userId, query);
       res.status(200).json(polls);
     } catch (error) {
@@ -39,7 +28,8 @@ class PollsController {
   async getPollById(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const { pollId } = req.params as { pollId: string };
+      const pollId = req.params.pollId!;
+
       const poll = await pollsService.getPollById(pollId, userId);
       res.status(200).json(poll);
     } catch (error) {
@@ -50,7 +40,7 @@ class PollsController {
   async updatePoll(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const { pollId } = req.params as { pollId: string };
+      const pollId = req.params.pollId!;
 
       await pollsService.updatePoll(pollId, userId, req.body);
       res.status(204).send();
@@ -62,7 +52,7 @@ class PollsController {
   async deletePoll(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const { pollId } = req.params as { pollId: string };
+      const pollId = req.params.pollId!;
 
       await pollsService.deletePoll(pollId, userId);
       res.status(204).send();
@@ -74,8 +64,8 @@ class PollsController {
   async vote(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const { pollId } = req.params as { pollId: string };
-      const { optionId } = req.body as { optionId: string };
+      const pollId = req.params.pollId!;
+      const optionId = req.body.optionId!;
 
       await pollsService.vote(pollId, optionId, userId);
       res.status(204).send();
@@ -87,7 +77,7 @@ class PollsController {
   async unvote(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const { pollId } = req.params as { pollId: string };
+      const pollId = req.params.pollId!;
 
       await pollsService.unvote(pollId, userId);
       res.status(204).send();
