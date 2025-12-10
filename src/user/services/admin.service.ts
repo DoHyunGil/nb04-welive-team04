@@ -1,5 +1,5 @@
 import createError from 'http-errors';
-import authMiddleware from '../../middlewares/auth.middleware.js';
+import { hashPassword } from '../../lib/password.js';
 import adminRepository from '../repositories/admin.repository.js';
 import { joinStatus } from '../../../generated/prisma/enums.js';
 import type {
@@ -40,8 +40,7 @@ class AdminService {
     }
 
     // 3. 비밀번호를 해시로 암호화
-    const hashedPassword = await authMiddleware.hashPassword(data.password);
-    data.password = hashedPassword;
+    data.password = await hashPassword(data.password);
 
     // 4. 슈퍼 관리자 계정 생성
     const newSuperAdmin = await adminRepository.createSuperAccount(data);
@@ -76,8 +75,7 @@ class AdminService {
     }
 
     // 4. 비밀번호를 해시로 암호화
-    const hashedPassword = await authMiddleware.hashPassword(data.password);
-    data.password = hashedPassword;
+    data.password = await hashPassword(data.password);
 
     // 5. 관리자 계정 생성
     const newUser = await adminRepository.createAccount(data);

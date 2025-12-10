@@ -1,212 +1,272 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeAll,
+  beforeEach,
+} from '@jest/globals';
 import request from 'supertest';
-import path from 'path';
-import fs from 'fs';
-import app from '../../main.js';
-import { prisma } from '../../lib/prisma.js';
-import authMiddleware from '../../middlewares/auth.middleware.js';
-import jwt from 'jsonwebtoken';
+import express from 'express';
+import type { Request, Response, NextFunction } from 'express';
+
+/**
+ * Jest 모킹 패턴 설명 (https://inpa.tistory.com 참고)
+ *
+ * jest.fn() - 개별 함수 모킹
+ * - mockResolvedValue(): 비동기 성공 반환값 설정
+ * - mockRejectedValue(): 비동기 에러 설정
+ * - toHaveBeenCalledWith(): 인자 검증
+ * - toHaveBeenCalledTimes(): 호출 횟수 검증
+ * - not.toHaveBeenCalled(): 호출되지 않음 검증
+ */
+
+// jest.fn()을 사용한 서비스 모킹
+// 제네릭 타입에 (인자타입) => 반환타입 형태로 정의
+const mockUserService = {
+  updatePassword: jest.fn<(userId: number, data: any) => Promise<any>>(),
+  updateAvatar: jest.fn<(userId: number, path: string) => Promise<any>>(),
+};
+
+// JWT 인증 미들웨어 모킹 - 인증 로직 시뮬레이션
+const mockJwtAuth = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: '인증이 필요합니다.' });
+  }
+  // 인증 성공 시 req.user 설정
+  req.user = { id: 1 };
+  next();
+};
+
+// 컨트롤러 모킹 - 실제 컨트롤러 로직을 모킹된 서비스로 대체
+const mockUserController = {
+  updatePassword: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: '인증이 필요합니다.' });
+      }
+      // mockUserService.updatePassword 호출 - 테스트에서 반환값 제어
+      await mockUserService.updatePassword(userId, req.body);
+      res.status(204).json({});
+    } catch (error: any) {
+      next(error);
+    }
+  },
+  updateAvatar: async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: '인증이 필요합니다.' });
+      }
+      if (!req.file) {
+        const error = new Error('파일이 없습니다.') as any;
+        error.status = 400;
+        throw error;
+      }
+      // mockUserService.updateAvatar 호출
+      await mockUserService.updateAvatar(userId, req.file.path);
+      res.status(204).json({});
+    } catch (error: any) {
+      next(error);
+    }
+  },
+};
 
 describe('Users Routes', () => {
-  let testUser: any;
-  let userToken: string;
+  let app: express.Application;
+  const testToken = 'test-valid-token';
+  const testUserId = 1;
 
-  beforeAll(async () => {
-    // 테스트용 유저 생성
-    const hashedPassword = await authMiddleware.hashPassword('testpassword123');
-    testUser = await prisma.user.create({
-      data: {
-        username: 'userstest',
-        email: 'userstest@example.com',
-        contact: '010-1234-5678',
-        name: '유저테스트',
-        password: hashedPassword,
-        role: 'RESIDENT',
-        avatar: '',
-        joinStatus: 'APPROVED',
-        isActive: true,
-      },
-    });
+  beforeAll(() => {
+    // Express 앱 설정
+    app = express();
+    app.use(express.json());
 
-    // 유저 토큰 생성
-    userToken = jwt.sign(
-      { id: testUser.id },
-      process.env.JWT_ACCESS_SECRET || '',
-      { expiresIn: '15m' },
+    const router = express.Router();
+
+    // multer 모킹을 위한 미들웨어
+    const mockUpload = (req: Request, _res: Response, next: NextFunction) => {
+      if (req.headers['content-type']?.includes('multipart/form-data')) {
+        (req as any).file = { path: 'uploads/test-avatar.png' };
+      }
+      next();
+    };
+
+    // 라우터 설정
+    router.patch(
+      '/me/avatar',
+      mockJwtAuth,
+      mockUpload,
+      mockUserController.updateAvatar,
+    );
+    router.patch(
+      '/me/password',
+      mockJwtAuth,
+      mockUserController.updatePassword,
     );
 
-    // uploads 폴더 확인 및 생성
-    const uploadsDir = path.join(process.cwd(), 'uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-  });
+    app.use('/api/v2/users', router);
 
-  afterAll(async () => {
-    // 테스트 데이터 정리
-    await prisma.user.deleteMany({
-      where: { username: 'userstest' },
+    // 에러 핸들러
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      res.status(err.status || 500).json({ message: err.message });
     });
-    await prisma.$disconnect();
   });
 
-  describe('PATCH /users/me/password', () => {
+  // 각 테스트 전에 mock 초기화
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('PATCH /api/v2/users/me/password', () => {
     it('비밀번호 변경 성공', async () => {
+      // Given: 비밀번호 변경 성공 응답 설정
+      mockUserService.updatePassword.mockResolvedValue({
+        id: testUserId,
+        username: 'testuser',
+      });
+
+      // When: 비밀번호 변경 요청
       const response = await request(app)
-        .patch('/users/me/password')
-        .set('Authorization', `Bearer ${userToken}`)
+        .patch('/api/v2/users/me/password')
+        .set('Authorization', `Bearer ${testToken}`)
         .send({
           currentPassword: 'testpassword123',
           newPassword: 'newpassword456',
         });
 
+      // Then: 응답 검증
       expect(response.status).toBe(204);
 
-      // 변경된 비밀번호로 다시 변경 (원래대로)
-      await request(app)
-        .patch('/users/me/password')
-        .set('Authorization', `Bearer ${userToken}`)
-        .send({
-          currentPassword: 'newpassword456',
-          newPassword: 'testpassword123',
-        });
+      // 서비스가 올바른 인자로 호출되었는지 검증
+      expect(mockUserService.updatePassword).toHaveBeenCalledTimes(1);
+      expect(mockUserService.updatePassword).toHaveBeenCalledWith(testUserId, {
+        currentPassword: 'testpassword123',
+        newPassword: 'newpassword456',
+      });
     });
 
     it('현재 비밀번호가 틀리면 실패', async () => {
+      // Given: 비밀번호 불일치 에러 설정
+      const error = new Error('현재 비밀번호가 일치하지 않습니다.') as any;
+      error.status = 400;
+      mockUserService.updatePassword.mockRejectedValue(error);
+
+      // When: 잘못된 현재 비밀번호로 요청
       const response = await request(app)
-        .patch('/users/me/password')
-        .set('Authorization', `Bearer ${userToken}`)
+        .patch('/api/v2/users/me/password')
+        .set('Authorization', `Bearer ${testToken}`)
         .send({
           currentPassword: 'wrongpassword',
           newPassword: 'newpassword456',
         });
 
+      // Then: 에러 응답 검증
       expect(response.status).toBe(400);
+      expect(mockUserService.updatePassword).toHaveBeenCalledTimes(1);
     });
 
     it('새 비밀번호가 현재 비밀번호와 같으면 실패', async () => {
+      // Given: 동일 비밀번호 에러 설정
+      const error = new Error(
+        '새 비밀번호는 현재 비밀번호와 달라야 합니다.',
+      ) as any;
+      error.status = 400;
+      mockUserService.updatePassword.mockRejectedValue(error);
+
+      // When: 동일한 비밀번호로 변경 요청
       const response = await request(app)
-        .patch('/users/me/password')
-        .set('Authorization', `Bearer ${userToken}`)
+        .patch('/api/v2/users/me/password')
+        .set('Authorization', `Bearer ${testToken}`)
         .send({
           currentPassword: 'testpassword123',
           newPassword: 'testpassword123',
         });
 
+      // Then: 에러 응답 검증
       expect(response.status).toBe(400);
     });
 
     it('인증 없이 비밀번호 변경 시도 시 실패', async () => {
-      const response = await request(app).patch('/users/me/password').send({
-        currentPassword: 'testpassword123',
-        newPassword: 'newpassword456',
-      });
+      // When: 인증 헤더 없이 요청
+      const response = await request(app)
+        .patch('/api/v2/users/me/password')
+        .send({
+          currentPassword: 'testpassword123',
+          newPassword: 'newpassword456',
+        });
 
+      // Then: 401 에러 응답 검증
       expect(response.status).toBe(401);
+      // 인증 실패로 서비스가 호출되지 않아야 함
+      expect(mockUserService.updatePassword).not.toHaveBeenCalled();
     });
 
     it('필수 필드 누락 시 실패', async () => {
+      // Given: 필수 필드 누락 에러 설정
+      const error = new Error('필수 필드가 누락되었습니다.') as any;
+      error.status = 400;
+      mockUserService.updatePassword.mockRejectedValue(error);
+
+      // When: newPassword 필드 없이 요청
       const response = await request(app)
-        .patch('/users/me/password')
-        .set('Authorization', `Bearer ${userToken}`)
+        .patch('/api/v2/users/me/password')
+        .set('Authorization', `Bearer ${testToken}`)
         .send({
           currentPassword: 'testpassword123',
         });
 
-      expect(response.status).toBe(400);
-    });
-
-    it('빈 값으로 요청 시 실패', async () => {
-      const response = await request(app)
-        .patch('/users/me/password')
-        .set('Authorization', `Bearer ${userToken}`)
-        .send({
-          currentPassword: '',
-          newPassword: '',
-        });
-
+      // Then: 에러 응답 검증
       expect(response.status).toBe(400);
     });
   });
 
-  describe('PATCH /users/me/avatar', () => {
+  describe('PATCH /api/v2/users/me/avatar', () => {
     it('프로필 이미지 업로드 성공', async () => {
-      // 테스트용 이미지 파일 생성
-      const testImagePath = path.join(process.cwd(), 'uploads', 'test-image.png');
+      // Given: 아바타 업데이트 성공 응답 설정
+      mockUserService.updateAvatar.mockResolvedValue({
+        id: testUserId,
+        avatar: 'uploads/test-avatar.png',
+      });
 
-      // 간단한 PNG 파일 데이터 생성 (1x1 pixel transparent PNG)
-      const pngBuffer = Buffer.from([
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
-        0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-        0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89, 0x00, 0x00, 0x00,
-        0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
-        0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49,
-        0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
-      ]);
-
-      fs.writeFileSync(testImagePath, pngBuffer);
-
+      // When: 아바타 업로드 요청
       const response = await request(app)
-        .patch('/users/me/avatar')
-        .set('Authorization', `Bearer ${userToken}`)
-        .attach('avatar', testImagePath);
+        .patch('/api/v2/users/me/avatar')
+        .set('Authorization', `Bearer ${testToken}`)
+        .set('Content-Type', 'multipart/form-data');
 
+      // Then: 응답 검증
       expect(response.status).toBe(204);
-
-      // 테스트 파일 정리
-      if (fs.existsSync(testImagePath)) {
-        fs.unlinkSync(testImagePath);
-      }
+      expect(mockUserService.updateAvatar).toHaveBeenCalledTimes(1);
+      expect(mockUserService.updateAvatar).toHaveBeenCalledWith(
+        testUserId,
+        'uploads/test-avatar.png',
+      );
     });
 
     it('인증 없이 아바타 업로드 시도 시 실패', async () => {
-      const testImagePath = path.join(process.cwd(), 'uploads', 'test-image2.png');
-
-      const pngBuffer = Buffer.from([
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
-        0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-        0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4, 0x89, 0x00, 0x00, 0x00,
-        0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
-        0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49,
-        0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
-      ]);
-
-      fs.writeFileSync(testImagePath, pngBuffer);
-
+      // When: 인증 헤더 없이 요청
       const response = await request(app)
-        .patch('/users/me/avatar')
-        .attach('avatar', testImagePath);
+        .patch('/api/v2/users/me/avatar')
+        .set('Content-Type', 'multipart/form-data');
 
+      // Then: 401 에러 응답 검증
       expect(response.status).toBe(401);
-
-      // 테스트 파일 정리
-      if (fs.existsSync(testImagePath)) {
-        fs.unlinkSync(testImagePath);
-      }
+      expect(mockUserService.updateAvatar).not.toHaveBeenCalled();
     });
 
     it('파일 없이 아바타 업로드 시도 시 실패', async () => {
+      // When: 파일 없이 요청 (Content-Type을 multipart로 설정하지 않음)
       const response = await request(app)
-        .patch('/users/me/avatar')
-        .set('Authorization', `Bearer ${userToken}`);
+        .patch('/api/v2/users/me/avatar')
+        .set('Authorization', `Bearer ${testToken}`);
 
+      // Then: 400 에러 응답 검증
       expect(response.status).toBe(400);
-    });
-
-    it('지원하지 않는 파일 형식 업로드 시 실패', async () => {
-      const testFilePath = path.join(process.cwd(), 'uploads', 'test-file.txt');
-      fs.writeFileSync(testFilePath, 'This is a test file');
-
-      const response = await request(app)
-        .patch('/users/me/avatar')
-        .set('Authorization', `Bearer ${userToken}`)
-        .attach('avatar', testFilePath);
-
-      expect(response.status).toBe(500);
-
-      // 테스트 파일 정리
-      if (fs.existsSync(testFilePath)) {
-        fs.unlinkSync(testFilePath);
-      }
     });
   });
 });

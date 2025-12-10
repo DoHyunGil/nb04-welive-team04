@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import userController from '../user/controllers/user.controller.js';
-import authMiddleware from '../middlewares/auth.middleware.js';
+import passports from '../lib/passports/index.js';
 
 const router = express.Router();
 
@@ -44,16 +44,12 @@ const upload = multer({
 // 프로필 이미지 수정
 router.patch(
   '/me/avatar',
-  authMiddleware.authenticate,
+  passports.jwtAuth,
   upload.single('avatar'),
   userController.updateAvatar,
 );
 
 // 비밀번호 변경
-router.patch(
-  '/me/password',
-  authMiddleware.authenticate,
-  userController.updatePassword,
-);
+router.patch('/me/password', passports.jwtAuth, userController.updatePassword);
 
 export default router;

@@ -1,6 +1,6 @@
 import { prisma } from '../../lib/prisma.js';
-import authMiddleware from '../../middlewares/auth.middleware.js';
-import jwt from 'jsonwebtoken';
+import { hashPassword } from '../../lib/password.js';
+import jwt, { type Secret, type SignOptions } from 'jsonwebtoken';
 import { Role } from '../../../generated/prisma/enums.js';
 
 export async function createTestUser(data: {
@@ -9,7 +9,7 @@ export async function createTestUser(data: {
   password: string;
   role?: Role;
 }) {
-  const hashedPassword = await authMiddleware.hashPassword(data.password);
+  const hashedPassword = await hashPassword(data.password);
 
   return await prisma.user.create({
     data: {
@@ -26,12 +26,10 @@ export async function createTestUser(data: {
   });
 }
 
-export function generateToken(userId: number, expiresIn = '15m') {
-  return jwt.sign(
-    { id: userId },
-    process.env.JWT_ACCESS_SECRET || '',
-    { expiresIn },
-  );
+export function generateToken(userId: number, expiresIn: number = 900) {
+  const secret: Secret = process.env.JWT_ACCESS_SECRET || 'test-secret';
+  const options: SignOptions = { expiresIn };
+  return jwt.sign({ id: userId }, secret, options);
 }
 
 export async function cleanupTestData(usernames: string[]) {
