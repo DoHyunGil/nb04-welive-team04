@@ -5,7 +5,7 @@ CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'RESIDENT');
 CREATE TYPE "joinStatus" AS ENUM ('PENDING');
 
 -- CreateEnum
-CREATE TYPE "complainStatus" AS ENUM ('PENDING');
+CREATE TYPE "complainStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJECTED');
 
 -- CreateEnum
 CREATE TYPE "PollStatus" AS ENUM ('PENDING');
@@ -76,9 +76,9 @@ CREATE TABLE "Complain" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "isPublic" BOOLEAN NOT NULL,
-    "viewCount" INTEGER NOT NULL,
-    "status" "complainStatus" NOT NULL,
+    "isPublic" BOOLEAN NOT NULL DEFAULT true,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "status" "complainStatus" NOT NULL DEFAULT 'PENDING',
     "apartmentId" INTEGER NOT NULL,
     "complainantId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
