@@ -1,14 +1,15 @@
 import complaintRepository from '../repositories/complaint.repository.js';
 import { complainStatus } from '../../../generated/prisma/client.js';
-import * as ComplaintDto from '../schemas/index.js';
+import type {
+  GetComplaintsDto,
+  CreateComplaintDto,
+  UpdateComplaintDto,
+} from '../schemas/complaint.schema.js';
 import createHttpError from 'http-errors';
 
 class ComplaintService {
   // 민원 등록
-  async createComplaint(
-    userId: number,
-    createDto: ComplaintDto.CreateComplaintDto,
-  ) {
+  async createComplaint(userId: number, createDto: CreateComplaintDto) {
     if (!createDto.title) {
       throw createHttpError(400, '제목이 비어있습니다.');
     }
@@ -25,7 +26,7 @@ class ComplaintService {
     return complaint;
   }
   // 민원 목록 조회
-  async getComplaints(getDto: ComplaintDto.GetComplaintsDto) {
+  async getComplaints(getDto: GetComplaintsDto) {
     const complaints = await complaintRepository.getComplaints(getDto);
     const data = complaints.map(({ _count, ...rest }) => ({
       ...rest,
@@ -70,7 +71,7 @@ class ComplaintService {
   async updateComplaint(
     userId: number,
     complaintId: number,
-    updateData: ComplaintDto.UpdateComplaintDto,
+    updateData: UpdateComplaintDto,
   ) {
     const complaint = await complaintRepository.getComplaintById(complaintId);
     if (!complaint) {

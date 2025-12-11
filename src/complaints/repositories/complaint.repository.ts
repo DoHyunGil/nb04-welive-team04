@@ -1,13 +1,14 @@
 import { prisma } from '../../lib/prisma.js';
 import { complainStatus } from '../../../generated/prisma/client.js';
-import * as ComplaintDto from '../schemas/index.js';
+import type {
+  GetComplaintsDto,
+  CreateComplaintDto,
+  UpdateComplaintDto,
+} from '../schemas/complaint.schema.js';
 
 class complaintRepository {
   // 민원 등록
-  async createComplaint(
-    userId: number,
-    createDto: ComplaintDto.CreateComplaintDto,
-  ) {
+  async createComplaint(userId: number, createDto: CreateComplaintDto) {
     const { title, content, isPublic, apartmentId } = createDto;
     return await prisma.complain.create({
       data: {
@@ -25,7 +26,7 @@ class complaintRepository {
   }
 
   // 민원 목록 조회
-  async getComplaints(getDto: ComplaintDto.GetComplaintsDto) {
+  async getComplaints(getDto: GetComplaintsDto) {
     const { page, limit, searchKeyword, status, isPublic, building, unit } =
       getDto;
     const offset = (page - 1) * limit;
@@ -139,10 +140,7 @@ class complaintRepository {
     });
   }
   // 민원 수정
-  async updateComplaint(
-    complaintId: number,
-    updateData: ComplaintDto.UpdateComplaintDto,
-  ) {
+  async updateComplaint(complaintId: number, updateData: UpdateComplaintDto) {
     return await prisma.complain.update({
       where: { id: complaintId },
       data: updateData,

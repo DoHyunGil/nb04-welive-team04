@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import complaintService from '../services/complaint.service.js';
-import { complainStatus } from '../../../generated/prisma/client.js';
+import type { LocalResponse } from '../schemas/complaint.schema.js';
 import createHttpError from 'http-errors';
 
 class ComplaintController {
@@ -11,9 +11,11 @@ class ComplaintController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
+      const localRes = res as unknown as LocalResponse;
+      const createBody = localRes.locals.createBody;
       const newComplaint = await complaintService.createComplaint(
         userId,
-        req.createBody,
+        createBody,
       );
       res.status(201).json(newComplaint);
     } catch (error) {
@@ -23,9 +25,9 @@ class ComplaintController {
   // 민원 목록 조회
   async getComplaints(req: Request, res: Response, next: NextFunction) {
     try {
-      const complaints = await complaintService.getComplaints(
-        req.validatedQuery!,
-      );
+      const localRes = res as unknown as LocalResponse;
+      const query = localRes.locals.validatedQuery;
+      const complaints = await complaintService.getComplaints(query);
       res.status(200).json(complaints);
     } catch (error) {
       next(error);
@@ -38,7 +40,8 @@ class ComplaintController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const complaintId = req.statusParam.id;
+      const localRes = res as unknown as LocalResponse;
+      const complaintId = localRes.locals.complaint.id;
       const complaint = await complaintService.getComplaintById(
         complaintId,
         userId,
@@ -55,11 +58,12 @@ class ComplaintController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-
-      const complaintId = req.statusParam.id;
-      const updateData = req.updateBody;
+      const localRes = res as unknown as LocalResponse;
+      const complaintId = localRes.locals.complaint.id;
+      const updateData = localRes.locals.updateBody;
 
       await complaintService.updateComplaint(userId, complaintId, updateData);
+
       res.status(204).send();
     } catch (error) {
       next(error);
@@ -72,7 +76,8 @@ class ComplaintController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const complaintId = req.statusParam.id;
+      const localRes = res as unknown as LocalResponse;
+      const complaintId = localRes.locals.complaint.id;
       await complaintService.deleteComplaint(userId, complaintId);
       res.status(204).send();
     } catch (error) {
@@ -86,8 +91,9 @@ class ComplaintController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const complaintId = req.statusParam.id;
-      const status = req.statusBody.status;
+      const localRes = res as unknown as LocalResponse;
+      const complaintId = localRes.locals.complaint.id;
+      const status = localRes.locals.statusBody.status;
       await complaintService.updateComplaintStatus(userId, complaintId, status);
       res.status(204).send();
     } catch (error) {

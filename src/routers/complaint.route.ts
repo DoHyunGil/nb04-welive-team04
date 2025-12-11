@@ -1,27 +1,42 @@
 import express from 'express';
 import complaintController from '../complaints/controllers/complaint.controller.js';
-import * as complaintSchema from '../complaints/schemas/index.js';
+import { complaintValidator } from '../complaints/schemas/complaint.schema.js';
 
 const router = express.Router();
 
 router
   .route('/')
   .post(
-    complaintSchema.createComplaintSchema,
+    complaintValidator.validateUserId,
+    complaintValidator.createComplaintSchema,
     complaintController.createComplaint,
   )
-  .get(complaintSchema.getComplaintSchema, complaintController.getComplaints);
+  .get(
+    complaintValidator.getComplaintsSchema,
+    complaintController.getComplaints,
+  );
 router
   .route('/:id')
-  .get(complaintSchema.paramSchema, complaintController.getComplaintById)
+  .get(
+    complaintValidator.validateUserId,
+    complaintValidator.paramSchema,
+    complaintController.getComplaintById,
+  )
   .patch(
-    complaintSchema.updateComplaintSchema,
+    complaintValidator.validateUserId,
+    complaintValidator.paramSchema,
+    complaintValidator.updateComplaintSchema,
     complaintController.updateComplaint,
   )
-  .delete(complaintSchema.paramSchema, complaintController.deleteComplaint);
+  .delete(
+    complaintValidator.validateUserId,
+    complaintValidator.paramSchema,
+    complaintController.deleteComplaint,
+  );
 router.patch(
   '/:id/status',
-  complaintSchema.updateStatusSchema,
+  complaintValidator.validateUserId,
+  complaintValidator.updateStatusSchema,
   complaintController.updateComplaintStatus,
 );
 
