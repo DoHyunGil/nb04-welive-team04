@@ -7,7 +7,6 @@ const router = express.Router();
 router
   .route('/')
   .post(
-    complaintValidator.validateUserId,
     complaintValidator.createComplaintSchema,
     complaintController.createComplaint,
   )
@@ -17,25 +16,15 @@ router
   );
 router
   .route('/:id')
-  .get(
-    complaintValidator.validateUserId,
-    complaintValidator.paramSchema,
-    complaintController.getComplaintById,
-  )
+  .get(complaintValidator.paramSchema, complaintController.getComplaintById)
   .patch(
-    complaintValidator.validateUserId,
     complaintValidator.paramSchema,
     complaintValidator.updateComplaintSchema,
     complaintController.updateComplaint,
   )
-  .delete(
-    complaintValidator.validateUserId,
-    complaintValidator.paramSchema,
-    complaintController.deleteComplaint,
-  );
+  .delete(complaintValidator.paramSchema, complaintController.deleteComplaint);
 router.patch(
   '/:id/status',
-  complaintValidator.validateUserId,
   complaintValidator.updateStatusSchema,
   complaintController.updateComplaintStatus,
 );

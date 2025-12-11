@@ -48,9 +48,6 @@ const statusBodySchema = z.object({
     message: '유효하지 않은 상태 값입니다.',
   }),
 });
-const userIdSchema = z.object({
-  userId: z.coerce.number().int().positive(),
-});
 
 export type GetComplaintsDto = z.infer<typeof getQuerySchema>;
 export type CreateComplaintDto = z.infer<typeof createBodySchema>;
@@ -116,16 +113,6 @@ class complaintSchema {
       return next();
     } else {
       return next(createHttpError(400, '잘못된 입력값입니다.'));
-    }
-  };
-  validateUserId = (req: Request, res: Response, next: NextFunction) => {
-    const result = userIdSchema.safeParse(req.body);
-    if (result.success) {
-      req.user = { id: result.data.userId };
-      return next();
-    } else {
-      const errorMessage = result.error.message;
-      return next(createHttpError(400, `잘못된 입력값: ${errorMessage}`));
     }
   };
 }
