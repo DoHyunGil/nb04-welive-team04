@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'RESIDENT');
 
 -- CreateEnum
-CREATE TYPE "joinStatus" AS ENUM ('PENDING');
+CREATE TYPE "joinStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
 CREATE TYPE "complainStatus" AS ENUM ('PENDING');
@@ -22,7 +22,7 @@ CREATE TABLE "User" (
     "contact" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" "Role" NOT NULL,
-    "avatar" TEXT NOT NULL,
+    "avatar" TEXT,
     "joinStatus" "joinStatus" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

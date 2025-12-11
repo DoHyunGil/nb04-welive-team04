@@ -8,7 +8,7 @@ import residentService from '../services/residents.service.js';
 class ResidentsController {
   async getResidents(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.user!.id);
+      const userId = Number(req.user?.id);
       const {
         page,
         limit,
@@ -23,8 +23,8 @@ class ResidentsController {
         page ? Number(page) : 1,
         limit ? Number(limit) : 10,
         searchKeyword,
-        building,
-        unit,
+        Number(building),
+        Number(unit),
         isHouseholder,
         isRegistered,
       );
@@ -35,8 +35,9 @@ class ResidentsController {
   }
   async getResidentsById(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.user!.id);
+      const userId = Number(req.user?.id);
       const residentId = Number(req.params.id);
+      console.log(residentId);
       const data = await residentService.getResidentsById(userId, residentId);
       res.send(data);
     } catch (error) {
@@ -45,7 +46,7 @@ class ResidentsController {
   }
   async createResidents(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.user!.id);
+      const userId = Number(req.user?.id);
       const residentData: CreateResidentBody = req.body;
       const data = await residentService.createResidents(userId, residentData);
       res.status(201).send(data);
@@ -55,7 +56,7 @@ class ResidentsController {
   }
   async updateResidents(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.user!.id);
+      const userId = Number(req.user?.id || 1);
       const residentData: Partial<CreateResidentBody> = req.body;
       const residentId = Number(req.params.id);
       const data = await residentService.updateResidents(
@@ -70,7 +71,7 @@ class ResidentsController {
   }
   async deleteResidentById(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.user!.id);
+      const userId = Number(req.user?.id || 1);
       const residentId = Number(req.params.id);
       const data = await residentService.deleteResidentById(userId, residentId);
       res.send(data);

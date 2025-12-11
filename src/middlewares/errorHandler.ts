@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { isHttpError } from 'http-errors';
 import { AppError } from './errorClass.js';
 
@@ -6,6 +6,7 @@ export default function errorHandler(
   err: unknown,
   _req: Request,
   res: Response,
+  next: NextFunction,
 ) {
   if (isHttpError(err)) {
     const status = err.status ?? err.statusCode ?? 500;
@@ -21,6 +22,7 @@ export default function errorHandler(
       code: err.status,
       name: err.name,
     });
+    next();
   } else {
     console.error(err);
     return res.status(500).send('서버 내부 오류입니다.');

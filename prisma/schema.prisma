@@ -21,7 +21,7 @@ model User {
   contact    String
   name       String
   role       Role
-  avatar     String
+  avatar     String?
   joinStatus joinStatus
   isActive   Boolean
   adminOf    adminOf?
@@ -57,6 +57,9 @@ model Resident {
   apartment     Apartment @relation(fields: [apartmentId], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
+
+  @@unique([email, apartmentId])
+  @@unique([contact, apartmentId])
 }
 
 model Apartment {
@@ -157,6 +160,8 @@ enum Role {
 
 enum joinStatus {
   PENDING
+  APPROVED
+  REJECTED
 }
 
 enum complainStatus {

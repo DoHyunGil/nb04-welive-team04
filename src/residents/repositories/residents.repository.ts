@@ -4,18 +4,17 @@ import { prisma } from './../../lib/prisma.js';
 class ResidentsRepository {
   async getResidents(
     userId: number,
-    limit: number,
     page: number,
+    limit: number,
     filters: Record<string, unknown>,
   ) {
     const admin = await prisma.adminOf.findUnique({
       where: { id: userId },
-      select: { Apartment: true },
+      include: { Apartment: true },
     });
-    console.log(admin);
     return prisma.resident.findMany({
       where: {
-        apartmentId: admin?.Apartment?.id,
+        apartmentId: Number(admin?.Apartment?.id),
         ...filters,
       },
       take: Number(limit),
@@ -27,11 +26,7 @@ class ResidentsRepository {
       where: { id: residentId },
     });
   }
-  async createResidents(
-    residentData: CreateResidentBody,
-    apartmentId: number,
-    userId?: number,
-  ) {
+  async createResidents(residentData: CreateResidentBody, apartmentId: number) {
     const data: CreateResidentBody = {
       name: residentData.name,
       contact: residentData.contact,
@@ -40,7 +35,7 @@ class ResidentsRepository {
       unit: residentData.unit,
       isHouseholder: residentData.isHouseholder,
       apartmentId,
-      userId: userId ?? null,
+      userId: null,
     };
 
     return prisma.resident.create({ data });

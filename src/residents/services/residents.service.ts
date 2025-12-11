@@ -5,13 +5,13 @@ import { AppError } from '../../middlewares/errorClass.js';
 class ResidentsService {
   async getResidents(
     userId: number,
-    limit: number,
     page: number,
+    limit: number,
     searchKeyword?: string,
     building?: number,
     unit?: number,
-    isHouseholder?: boolean,
-    isRegistered?: boolean,
+    isHouseholder?: string | boolean,
+    isRegistered?: string | boolean,
   ) {
     const filters: Record<string, unknown> = {};
     if (searchKeyword) {
@@ -22,27 +22,35 @@ class ResidentsService {
     }
     if (building) filters.building = building;
     if (unit) filters.unit = unit;
-    if (isHouseholder !== undefined) filters.isHouseholder = isHouseholder;
-    if (isRegistered !== undefined) filters.isRegistered = isRegistered;
-
+    if (isHouseholder !== undefined)
+      filters.isHouseholder =
+        isHouseholder === true || isHouseholder === 'true';
+    if (isRegistered !== undefined)
+      filters.isRegistered = isRegistered === true || isRegistered === 'true';
     const residents = await residentsRepository.getResidents(
       userId,
-      limit,
       page,
+      limit,
       filters,
     );
     const data = residents.map((resident) => ({
       id: resident.id,
       createdAt: resident.createdAt,
       email: resident.email,
-      name: resident.name,
       contact: resident.contact,
+      name: resident.name,
       building: resident.building,
       unit: resident.unit,
       isHouseholder: resident.isHouseholder,
       userId: resident.userId, // isRegistered 확인용 인듯 (프론트와 연결시 확인 필요)
     }));
-    return { data, total: data.length };
+    return {
+      data,
+      total: data.length,
+      page,
+      limit,
+      //hasNext
+    };
   }
   async getResidentsById(userId: number, residentId: number) {
     if (!residentId) {
@@ -60,7 +68,7 @@ class ResidentsService {
       name: residents?.name,
       building: residents?.building,
       unit: residents?.unit,
-      isHouseholder: residents?.isHouseholder,
+      isHouseholder: residents?.isHouseholder, // string으로 나가는지 boolean 값으로 나가는지 확인 필요
       userId: residents?.userId,
     };
     return data;
@@ -81,10 +89,10 @@ class ResidentsService {
     const residents = await residentsRepository.createResidents(
       residentData,
       apartmentId,
-      userId,
     );
     const data = {
       id: residents.id,
+      createdAt: new Date(),
       email: residents.email,
       contact: residents.contact,
       name: residents.name,
