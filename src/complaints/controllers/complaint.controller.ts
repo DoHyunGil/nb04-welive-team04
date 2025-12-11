@@ -7,7 +7,7 @@ class ComplaintController {
   // 민원 등록
   async createComplaint(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user!.id;
+      const userId = req.user?.id;
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
@@ -34,14 +34,11 @@ class ComplaintController {
   // 민원 상세 조회
   async getComplaintById(req: Request, res: Response, next: NextFunction) {
     try {
-      const complaintId = parseInt(req.params.id!);
-      if (req.body.userId) {
-        req.user = { id: req.body.userId };
-      }
-      const userId = req.user!.id;
+      const userId = req.user?.id;
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
+      const complaintId = req.statusParam.id;
       const complaint = await complaintService.getComplaintById(
         complaintId,
         userId,
@@ -54,15 +51,12 @@ class ComplaintController {
   // 민원 수정
   async updateComplaint(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.body.userId) {
-        req.user = { id: req.body.userId };
-      }
-      const userId = req.user!.id;
+      const userId = req.user?.id;
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
 
-      const complaintId = parseInt(req.params.id!);
+      const complaintId = req.statusParam.id;
       const updateData = req.updateBody;
 
       await complaintService.updateComplaint(userId, complaintId, updateData);
@@ -74,14 +68,11 @@ class ComplaintController {
   // 민원 삭제
   async deleteComplaint(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.body.userId) {
-        req.user = { id: req.body.userId };
-      }
-      const userId = req.user!.id;
+      const userId = req.user?.id;
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const complaintId = parseInt(req.params.id!);
+      const complaintId = req.statusParam.id;
       await complaintService.deleteComplaint(userId, complaintId);
       res.status(204).send();
     } catch (error) {
@@ -91,12 +82,12 @@ class ComplaintController {
   // 민원 상태 업데이트 - 관리자 전용
   async updateComplaintStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      if (req.body.userId) {
-        req.user = { id: req.body.userId };
+      const userId = req.user?.id;
+      if (!userId) {
+        throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const userId = req.user!.id;
-      const complaintId = parseInt(req.params.id!);
-      const status: complainStatus = req.body.status;
+      const complaintId = req.statusParam.id;
+      const status = req.statusBody.status;
       await complaintService.updateComplaintStatus(userId, complaintId, status);
       res.status(204).send();
     } catch (error) {

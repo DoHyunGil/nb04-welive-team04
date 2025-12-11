@@ -2,15 +2,12 @@ import { z } from 'zod';
 import createHttpError from 'http-errors';
 import type { Request, Response, NextFunction } from 'express';
 
-const ComplaintBodySchema = z
-  .object({
-    title: z.string(),
-    content: z.string(),
-    isPublic: z.boolean().default(false),
-    apartmentId: z.coerce.number(),
-  })
-  .strict();
-
+const ComplaintBodySchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  isPublic: z.boolean().default(false),
+  apartmentId: z.coerce.number(),
+});
 export const createComplaintSchema = (
   req: Request,
   res: Response,

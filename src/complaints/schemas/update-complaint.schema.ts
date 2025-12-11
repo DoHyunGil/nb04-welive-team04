@@ -2,14 +2,11 @@ import { z } from 'zod';
 import createHttpError from 'http-errors';
 import type { Request, Response, NextFunction } from 'express';
 
-const updateSchema = z
-  .object({
-    title: z.string().optional(),
-    content: z.string().optional(),
-    isPublic: z.boolean().optional(),
-  })
-  .strict();
-
+const updateSchema = z.object({
+  title: z.string().optional(),
+  content: z.string().optional(),
+  isPublic: z.boolean().optional(),
+});
 export const updateComplaintSchema = (
   req: Request,
   res: Response,

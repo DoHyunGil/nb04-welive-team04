@@ -43,7 +43,7 @@ class complaintRepository {
           ],
         }
       : {};
-    const statusFilter = status ? { status: status as complainStatus } : {};
+    const statusFilter = status ? { status } : {};
     const isPublicFilter = isPublic ? { isPublic: isPublic === true } : {};
     return await prisma.complain.findMany({
       where: {
@@ -74,6 +74,35 @@ class complaintRepository {
         _count: {
           select: { comments: true },
         },
+      },
+    });
+  }
+  // 민원 개수 조회
+  async getComplaintCount(
+    searchKeyword?: string,
+    status?: complainStatus,
+    isPublic?: boolean,
+  ) {
+    const searchFilter = searchKeyword
+      ? {
+          OR: [
+            { title: { contains: searchKeyword } },
+            { content: { contains: searchKeyword } },
+            {
+              complainant: {
+                name: { contains: searchKeyword },
+              },
+            },
+          ],
+        }
+      : {};
+    const statusFilter = status ? { status } : {};
+    const isPublicFilter = isPublic ? { isPublic: isPublic === true } : {};
+    return await prisma.complain.count({
+      where: {
+        ...searchFilter,
+        ...statusFilter,
+        ...isPublicFilter,
       },
     });
   }

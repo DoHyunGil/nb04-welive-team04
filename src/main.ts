@@ -24,8 +24,6 @@ app.use('/complaints', routers.complaintRouter);
 
 app.use(errorHandler);
 
-// app.listen(PORT, () => {
-//   console.log('server running');
-// });
-
-export default app;
+app.listen(PORT, () => {
+  console.log('server running');
+});

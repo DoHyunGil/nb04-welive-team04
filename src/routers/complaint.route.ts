@@ -13,12 +13,16 @@ router
   .get(complaintSchema.getComplaintSchema, complaintController.getComplaints);
 router
   .route('/:id')
-  .get(complaintController.getComplaintById)
+  .get(complaintSchema.paramSchema, complaintController.getComplaintById)
   .patch(
     complaintSchema.updateComplaintSchema,
     complaintController.updateComplaint,
   )
-  .delete(complaintController.deleteComplaint);
-router.patch('/:id/status', complaintController.updateComplaintStatus);
+  .delete(complaintSchema.paramSchema, complaintController.deleteComplaint);
+router.patch(
+  '/:id/status',
+  complaintSchema.updateStatusSchema,
+  complaintController.updateComplaintStatus,
+);
 
 export default router;

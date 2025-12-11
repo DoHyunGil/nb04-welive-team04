@@ -31,7 +31,11 @@ class ComplaintService {
       ...rest,
       commentCount: _count.comments,
     }));
-    const totalCount = complaints.length;
+    const totalCount = await complaintRepository.getComplaintCount(
+      getDto.searchKeyword,
+      getDto.status,
+      getDto.isPublic,
+    );
     const page = getDto.page;
     const limit = getDto.limit;
     const hasNext = page * limit < totalCount;
