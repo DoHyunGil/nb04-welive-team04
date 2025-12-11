@@ -1,7 +1,7 @@
 // src/routers/polls.route.ts
 import express from 'express';
-import pollsController from '../poll/controllers/polls.controller.js';
-import { pollsSchema } from '../poll/schemas/polls.schema.js';
+import pollsController from '../polls/controllers/polls.controller.js';
+import { pollsSchema } from '../polls/schemas/polls.schema.js';
 
 const router = express.Router();
 

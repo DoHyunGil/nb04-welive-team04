@@ -1,4 +1,4 @@
-// src/poll/services/__tests/polls.service.test.ts
+// src/polls/services/__tests/polls.service.test.ts
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 type AsyncFn = (...args: unknown[]) => Promise<unknown>;

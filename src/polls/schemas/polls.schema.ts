@@ -1,4 +1,4 @@
-// src/poll/schemas/polls.schema.ts
+// src/polls/schemas/polls.schema.ts
 import type { Request, Response, NextFunction } from 'express';
 import createError from 'http-errors';
 import { z } from 'zod';
@@ -69,6 +69,7 @@ const vote = z
 const getPollsQuery = z.object({
   page: z
     .string()
+    .optional()
     .default('1')
     .transform((val) => Number(val)),
   limit: z

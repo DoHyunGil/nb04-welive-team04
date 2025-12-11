@@ -1,4 +1,4 @@
-// src/poll/utils/polls.scheduler.ts
+// src/polls/utils/polls.scheduler.ts
 import cron from 'node-cron';
 import pollsService from '../services/polls.service.js';
 

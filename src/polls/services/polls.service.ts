@@ -1,33 +1,12 @@
-// src/poll/services/polls.service.ts
+// src/polls/services/polls.service.ts
 import { prisma } from '../../lib/prisma.js';
 import createError from 'http-errors';
 import { Prisma, PollStatus } from '../../../generated/prisma/client.js';
-
-interface CreatePollData {
-  title: string;
-  content: string;
-  startDate: string | Date;
-  endDate: string | Date;
-  building?: number | null;
-  options: Array<{ title: string }>;
-}
-
-interface UpdatePollData {
-  title?: string;
-  content?: string;
-  startDate?: string | Date;
-  endDate?: string | Date;
-  building?: number | null;
-  options?: Array<{ id?: string; title: string }>;
-}
-
-// export interface GetPollsQuery {
-//   page?: number;
-//   limit?: number;
-//   searchKeyword?: string;
-//   status?: PollStatus;
-//   building?: number | null;
-// }
+import type {
+  GetPollsQuery,
+  CreatePollData,
+  UpdatePollData,
+} from '../controllers/polls.types.ts';
 
 class PollsService {
   private async getUserWithResident(userId: number | undefined) {

@@ -1,4 +1,4 @@
-// src/poll/__tests/polls.e2e.test.ts
+// src/polls/__tests/polls.e2e.test.ts
 import {
   afterAll,
   beforeAll,

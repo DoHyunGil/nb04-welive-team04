@@ -1,4 +1,4 @@
-// src/poll/controllers/__tests/polls.controller.test.ts
+// src/polls/controllers/__tests/polls.controller.test.ts
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { Request, Response, NextFunction } from 'express';
 

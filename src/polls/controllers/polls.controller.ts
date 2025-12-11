@@ -1,8 +1,7 @@
-// src/poll/controllers/polls.controller.ts
+// src/polls/controllers/polls.controller.ts
 import type { NextFunction, Request, Response } from 'express';
 import pollsService from '../services/polls.service.js';
-// import type { GetPollsQuery } from '../services/polls.service.js';
-import type { GetPollsQuery } from './polls.types.js';
+import type { GetPollsQuery } from './polls.types.ts';
 
 class PollsController {
   async createPoll(req: Request, res: Response, next: NextFunction) {
@@ -18,7 +17,6 @@ class PollsController {
   async getPolls(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      // const query = req.query as unknown as GetPollsQuery;
       const query: GetPollsQuery = {
         ...req.query,
       };
