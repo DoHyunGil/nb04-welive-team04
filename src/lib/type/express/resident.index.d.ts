@@ -7,6 +7,9 @@ export interface GetResidentsQuery {
   isHouseholder?: boolean;
   isRegistered?: boolean;
 }
+export type GetResidentsAuthQuery = GetResidentsQuery & {
+  joinStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+};
 
 export interface CreateResidentBody {
   userId?: number | null;
@@ -19,23 +22,16 @@ export interface CreateResidentBody {
   apartmentId: number;
 }
 
-export interface CreateResidentAuthBody {
+export type CreateResidentAuthBody = CreateResidentBody & {
   userId: number;
   username: string;
-  name: string;
-  contact: string;
-  email: string;
-  building: number;
-  unit: number;
-  isHouseholder: boolean;
   apartmentName: string;
   password: string;
-  residentId: number;
-  role: 'RESIDENT' | 'ADMIN';
+  role: 'RESIDENT' | 'ADMIN' | 'SUPER_ADMIN';
   joinStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   avatar?: string;
   isActive?: boolean;
-}
+};
 
 export {};
 
