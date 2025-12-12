@@ -3,6 +3,7 @@ import { verifyPassword } from '../../lib/password.js';
 import type { Response } from 'express';
 import Jwt from '../utils/jwt.js';
 import createError from 'http-errors';
+import { clearAuthCookies } from '../../lib/cookie.js';
 
 class AuthService {
   async login(username: string, password: string) {
@@ -20,19 +21,7 @@ class AuthService {
   }
 
   async logout(res: Response) {
-    res.clearCookie('access-token', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-    });
-
-    res.clearCookie('refresh-token', {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      path: '/',
-    });
+    clearAuthCookies(res);
   }
 
   async refresh(discardToken: string) {

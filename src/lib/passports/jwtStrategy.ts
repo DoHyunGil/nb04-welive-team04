@@ -9,7 +9,8 @@ const accessTokenOptions = {
 };
 
 const refreshTokenOptions = {
-  jwtFromRequest: (req: Request) => req.cookies[TOKEN.REFRESH_TOKEN_COOKIE_NAME],
+  jwtFromRequest: (req: Request) =>
+    req.cookies[TOKEN.REFRESH_TOKEN_COOKIE_NAME],
   secretOrKey: TOKEN.JWT_REFRESH_TOKEN_SECRET,
 };
 
@@ -28,5 +29,11 @@ async function jwtVerify(payload: { id: number }, done: VerifiedCallback) {
   }
 }
 
-export const accessTokenStrategy = new JwtStrategy(accessTokenOptions, jwtVerify);
-export const refreshTokenStrategy = new JwtStrategy(refreshTokenOptions, jwtVerify);
+export const accessTokenStrategy = new JwtStrategy(
+  accessTokenOptions,
+  jwtVerify,
+);
+export const refreshTokenStrategy = new JwtStrategy(
+  refreshTokenOptions,
+  jwtVerify,
+);

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
   jest,
   describe,
@@ -12,11 +12,11 @@ import request from 'supertest';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import type { Request, Response, NextFunction } from 'express';
-
-const tokenConfig = {
-  refresh_token: { expireAt: 7 * 24 * 60 * 60 * 1000 },
-  access_token: { expireAt: 15 * 60 * 1000 },
-};
+import {
+  setAccessTokenCookie,
+  setRefreshTokenCookie,
+  clearAuthCookies,
+} from '../../lib/cookie.js';
 
 const mockAuthService = {
   login: jest.fn<(username: string, password: string) => Promise<any>>(),
@@ -29,20 +29,8 @@ const mockAuthController = {
     try {
       const { username, password } = req.body;
       const data = await mockAuthService.login(username, password);
-      res.cookie('refresh-token', data.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        path: '/',
-        maxAge: tokenConfig.refresh_token.expireAt,
-      });
-      res.cookie('access-token', data.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: tokenConfig.access_token.expireAt,
-        path: '/',
-      });
+      setRefreshTokenCookie(res, data.refreshToken);
+      setAccessTokenCookie(res, data.accessToken);
       res.send(data.user);
     } catch (error: any) {
       next(error);
@@ -51,18 +39,7 @@ const mockAuthController = {
   logout: async (_req: Request, res: Response, next: NextFunction) => {
     try {
       await mockAuthService.logout();
-      res.clearCookie('access-token', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        path: '/',
-      });
-      res.clearCookie('refresh-token', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        path: '/',
-      });
+      clearAuthCookies(res);
       res.status(204).json({});
     } catch (error: any) {
       next(error);
@@ -79,20 +56,8 @@ const mockAuthController = {
         throw error;
       }
       const tokens = await mockAuthService.refresh(refreshToken);
-      res.cookie('refresh-token', tokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: tokenConfig.refresh_token.expireAt,
-        path: '/',
-      });
-      res.cookie('access-token', tokens.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: tokenConfig.access_token.expireAt,
-        path: '/',
-      });
+      setRefreshTokenCookie(res, tokens.refreshToken);
+      setAccessTokenCookie(res, tokens.accessToken);
       res.status(200).json({ message: '토큰이 갱신되었습니다.' });
     } catch (error: any) {
       next(error);
@@ -153,7 +118,10 @@ describe('Auth Routes', () => {
       expect(response.body).toHaveProperty('id');
       expect(response.body.username).toBe('testuser');
       expect(response.headers['set-cookie']).toBeDefined();
-      expect(mockAuthService.login).toHaveBeenCalledWith('testuser', 'testpassword');
+      expect(mockAuthService.login).toHaveBeenCalledWith(
+        'testuser',
+        'testpassword',
+      );
       expect(mockAuthService.login).toHaveBeenCalledTimes(1);
     });
 
@@ -168,7 +136,10 @@ describe('Auth Routes', () => {
       });
 
       expect(response.status).toBe(404);
-      expect(mockAuthService.login).toHaveBeenCalledWith('testuser', 'wrongpassword');
+      expect(mockAuthService.login).toHaveBeenCalledWith(
+        'testuser',
+        'wrongpassword',
+      );
     });
 
     it('존재하지 않는 사용자로 로그인 실패', async () => {
@@ -210,7 +181,9 @@ describe('Auth Routes', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('토큰이 갱신되었습니다.');
-      expect(mockAuthService.refresh).toHaveBeenCalledWith('mock-refresh-token');
+      expect(mockAuthService.refresh).toHaveBeenCalledWith(
+        'mock-refresh-token',
+      );
     });
 
     it('refresh token 없이 요청 시 실패', async () => {

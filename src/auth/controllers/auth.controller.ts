@@ -1,28 +1,19 @@
 import type { NextFunction, Request, Response } from 'express';
 import authService from '../services/auth.service.js';
-import { token } from '../config/token.constants.js';
 import createError from 'http-errors';
+import {
+  setAccessTokenCookie,
+  setRefreshTokenCookie,
+} from '../../lib/cookie.js';
 
 class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { username, password } = req.body;
       const data = await authService.login(username, password);
-      res.cookie('refresh-token', data.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        path: '/',
-        maxAge: token.refresh_token.expireAt,
-      });
 
-      res.cookie('access-token', data.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: token.access_token.expireAt, // 15분
-        path: '/',
-      });
+      setRefreshTokenCookie(res, data.refreshToken);
+      setAccessTokenCookie(res, data.accessToken);
 
       res.send(data.user);
     } catch (error) {
@@ -52,21 +43,8 @@ class AuthController {
       }
       const tokens = await authService.refresh(refreshToken);
 
-      res.cookie('refresh-token', tokens.refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: token.refresh_token.expireAt,
-        path: '/',
-      });
-
-      res.cookie('access-token', tokens.accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: token.access_token.expireAt,
-        path: '/',
-      });
+      setRefreshTokenCookie(res, tokens.refreshToken);
+      setAccessTokenCookie(res, tokens.accessToken);
     } catch (error) {
       next(error);
     }

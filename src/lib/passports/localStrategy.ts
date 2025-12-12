@@ -2,12 +2,18 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { prisma } from '../prisma.js';
 import bcrypt from 'bcrypt';
 
+type DoneCallback = (
+  error: unknown,
+  user?: Express.User | false,
+  options?: { message: string },
+) => void;
+
 export const localStrategy = new LocalStrategy(
   {
     usernameField: 'username',
     passwordField: 'password',
   },
-  async (username: string, password: string, done: any) => {
+  async (username: string, password: string, done: DoneCallback) => {
     try {
       const user = await prisma.user.findFirst({ where: { username } });
       if (!user) {

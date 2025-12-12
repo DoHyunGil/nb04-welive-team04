@@ -1,7 +1,8 @@
 import { prisma } from '../../lib/prisma.js';
 import {
   Role,
-  joinStatus as JoinStatusEnum,
+  joinStatus as JoinStatus,
+  Prisma,
 } from '../../../generated/prisma/client.js';
 import type {
   SuperAdminsInput,
@@ -79,7 +80,7 @@ class AdminRepository {
         password: data.password,
         role: Role.SUPER_ADMIN, // 역할을 SUPER_ADMIN으로 설정
         avatar: '',
-        joinStatus: JoinStatusEnum.APPROVED, // 가입 상태를 APPROVED로 설정
+        joinStatus: JoinStatus.APPROVED, // 가입 상태를 APPROVED로 설정
         isActive: true,
       },
     });
@@ -98,7 +99,7 @@ class AdminRepository {
         password: data.password,
         role: Role.ADMIN, // 역할을 ADMIN으로 설정
         avatar: '',
-        joinStatus: JoinStatusEnum.PENDING, // 가입 상태를 PENDING으로 설정
+        joinStatus: JoinStatus.PENDING, // 가입 상태를 PENDING으로 설정
         isActive: true,
       },
     });
@@ -137,19 +138,17 @@ class AdminRepository {
     // joinStatus를 enum으로 변환
     let joinStatusFilter = undefined;
     if (joinStatusString) {
-      joinStatusFilter = JoinStatusEnum[
-        joinStatusString as keyof typeof JoinStatusEnum
-      ] as JoinStatusEnum;
+      joinStatusFilter = JoinStatus[
+        joinStatusString as keyof typeof JoinStatus
+      ] as JoinStatus;
     }
 
     // where 조건 만들기
-    const whereCondition: any = {
-      AND: [],
-    };
+    const andConditions: Prisma.UserWhereInput[] = [];
 
     // 검색 키워드가 있으면 OR 조건 추가
     if (searchKeyword) {
-      whereCondition.AND.push({
+      andConditions.push({
         OR: [
           { name: { contains: searchKeyword } },
           { email: { contains: searchKeyword } },
@@ -167,15 +166,14 @@ class AdminRepository {
 
     // 가입 상태 필터가 있으면 추가
     if (joinStatusFilter) {
-      whereCondition.AND.push({
+      andConditions.push({
         joinStatus: joinStatusFilter,
       });
     }
 
-    // 조건이 없으면 빈 객체로 설정
-    if (whereCondition.AND.length === 0) {
-      delete whereCondition.AND;
-    }
+    // 조건 구성
+    const whereCondition: Prisma.UserWhereInput =
+      andConditions.length > 0 ? { AND: andConditions } : {};
 
     // 관리자 목록 조회
     const admins = await prisma.user.findMany({
@@ -199,18 +197,16 @@ class AdminRepository {
     // joinStatus를 enum으로 변환
     let joinStatusFilter = undefined;
     if (joinStatusString) {
-      joinStatusFilter = JoinStatusEnum[
-        joinStatusString as keyof typeof JoinStatusEnum
-      ] as JoinStatusEnum;
+      joinStatusFilter = JoinStatus[
+        joinStatusString as keyof typeof JoinStatus
+      ] as JoinStatus;
     }
 
     // where 조건 만들기 (findAdmins와 동일)
-    const whereCondition: any = {
-      AND: [],
-    };
+    const andConditions: Prisma.UserWhereInput[] = [];
 
     if (searchKeyword) {
-      whereCondition.AND.push({
+      andConditions.push({
         OR: [
           { name: { contains: searchKeyword } },
           { email: { contains: searchKeyword } },
@@ -227,14 +223,13 @@ class AdminRepository {
     }
 
     if (joinStatusFilter) {
-      whereCondition.AND.push({
+      andConditions.push({
         joinStatus: joinStatusFilter,
       });
     }
 
-    if (whereCondition.AND.length === 0) {
-      delete whereCondition.AND;
-    }
+    const whereCondition: Prisma.UserWhereInput =
+      andConditions.length > 0 ? { AND: andConditions } : {};
 
     // 조건에 맞는 관리자 수 세기
     const count = await prisma.user.count({
@@ -245,7 +240,7 @@ class AdminRepository {
   }
 
   // 여러 관리자의 가입 상태 변경
-  async updateManyJoinStatus(joinStatus: JoinStatusEnum) {
+  async updateManyJoinStatus(joinStatus: JoinStatus) {
     const result = await prisma.user.updateMany({
       where: { role: Role.ADMIN }, // ADMIN 역할을 가진 모든 사용자
       data: { joinStatus: joinStatus },
@@ -255,7 +250,7 @@ class AdminRepository {
   }
 
   // 특정 관리자의 가입 상태 변경
-  async updateJoinStatusById(id: number, joinStatus: JoinStatusEnum) {
+  async updateJoinStatusById(id: number, joinStatus: JoinStatus) {
     const updatedAdmin = await prisma.user.update({
       where: { id: id },
       data: { joinStatus: joinStatus },
@@ -280,7 +275,7 @@ class AdminRepository {
     },
   ) {
     // adminOf 데이터가 있으면 함께 업데이트
-    let updateData: any = {
+    const updateData: Prisma.UserUpdateInput = {
       email: userData.email,
       contact: userData.contact,
       name: userData.name,
@@ -324,7 +319,7 @@ class AdminRepository {
     const rejectedAdmins = await prisma.user.findMany({
       where: {
         role: Role.ADMIN,
-        joinStatus: 'REJECTED' as JoinStatusEnum,
+        joinStatus: JoinStatus.REJECTED,
       },
       select: { id: true }, // id만 가져오기
     });

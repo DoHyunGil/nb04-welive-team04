@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
   jest,
   describe,
@@ -17,7 +17,8 @@ const mockAdminService = {
   adminRegister: jest.fn<(data: any) => Promise<any>>(),
   findAdmins: jest.fn<(params: any) => Promise<any>>(),
   updateManyJoinStatus: jest.fn<(joinStatus: string) => Promise<number>>(),
-  updateJoinStatusById: jest.fn<(id: number, joinStatus: string) => Promise<any>>(),
+  updateJoinStatusById:
+    jest.fn<(id: number, joinStatus: string) => Promise<any>>(),
   updateAdmin: jest.fn<(id: number, data: any) => Promise<any>>(),
   deleteAdmin: jest.fn<(id: number) => Promise<any>>(),
   deleteRejectedAdmins: jest.fn<() => Promise<number>>(),
@@ -33,7 +34,11 @@ const mockJwtAuth = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const mockAdminController = {
-  superAdminsRegister: async (req: Request, res: Response, next: NextFunction) => {
+  superAdminsRegister: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       await mockAdminService.superAdminRegister(req.body);
       res.status(204).json({});
@@ -68,15 +73,25 @@ const mockAdminController = {
       next(error);
     }
   },
-  updateManyJoinStatus: async (req: Request, res: Response, next: NextFunction) => {
+  updateManyJoinStatus: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
-      const updatedCount = await mockAdminService.updateManyJoinStatus(req.body.joinStatus);
+      const updatedCount = await mockAdminService.updateManyJoinStatus(
+        req.body.joinStatus,
+      );
       res.json({ updatedCount, joinStatus: req.body.joinStatus });
     } catch (error: any) {
       next(error);
     }
   },
-  updateJoinStatusById: async (req: Request, res: Response, next: NextFunction) => {
+  updateJoinStatusById: async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       const adminId = Number(req.params.id);
       await mockAdminService.updateJoinStatusById(adminId, req.body.joinStatus);
@@ -103,7 +118,11 @@ const mockAdminController = {
       next(error);
     }
   },
-  deleteRejectedAdmins: async (_req: Request, res: Response, next: NextFunction) => {
+  deleteRejectedAdmins: async (
+    _req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     try {
       await mockAdminService.deleteRejectedAdmins();
       res.status(204).json({});
@@ -127,10 +146,22 @@ describe('User Admin Routes', () => {
     const adminRouter = express.Router();
     adminRouter.post('/', mockAdminController.adminsRegister);
     adminRouter.get('/', mockJwtAuth, mockAdminController.getAdmins);
-    adminRouter.patch('/join-status', mockJwtAuth, mockAdminController.updateManyJoinStatus);
-    adminRouter.patch('/:id/join-status', mockJwtAuth, mockAdminController.updateJoinStatusById);
+    adminRouter.patch(
+      '/join-status',
+      mockJwtAuth,
+      mockAdminController.updateManyJoinStatus,
+    );
+    adminRouter.patch(
+      '/:id/join-status',
+      mockJwtAuth,
+      mockAdminController.updateJoinStatusById,
+    );
     adminRouter.patch('/:id', mockJwtAuth, mockAdminController.updateAdmin);
-    adminRouter.delete('/rejected', mockJwtAuth, mockAdminController.deleteRejectedAdmins);
+    adminRouter.delete(
+      '/rejected',
+      mockJwtAuth,
+      mockAdminController.deleteRejectedAdmins,
+    );
     adminRouter.delete('/:id', mockJwtAuth, mockAdminController.deleteAdmin);
 
     app.use('/api/v2/users/super-admins', superAdminRouter);
@@ -166,7 +197,9 @@ describe('User Admin Routes', () => {
 
       expect(response.status).toBe(204);
       expect(mockAdminService.superAdminRegister).toHaveBeenCalledTimes(1);
-      expect(mockAdminService.superAdminRegister).toHaveBeenCalledWith(requestBody);
+      expect(mockAdminService.superAdminRegister).toHaveBeenCalledWith(
+        requestBody,
+      );
     });
 
     it('중복된 username으로 계정 생성 실패', async () => {
@@ -320,7 +353,10 @@ describe('User Admin Routes', () => {
 
       expect(response.status).toBe(204);
       expect(mockAdminService.updateJoinStatusById).toHaveBeenCalledTimes(1);
-      expect(mockAdminService.updateJoinStatusById).toHaveBeenCalledWith(3, 'APPROVED');
+      expect(mockAdminService.updateJoinStatusById).toHaveBeenCalledWith(
+        3,
+        'APPROVED',
+      );
     });
   });
 
@@ -364,7 +400,9 @@ describe('User Admin Routes', () => {
     });
 
     it('입주민이 있는 관리자 삭제 실패', async () => {
-      const error = new Error('입주민이 등록된 관리자는 삭제할 수 없습니다.') as any;
+      const error = new Error(
+        '입주민이 등록된 관리자는 삭제할 수 없습니다.',
+      ) as any;
       error.status = 400;
       mockAdminService.deleteAdmin.mockRejectedValue(error);
 
@@ -402,7 +440,9 @@ describe('User Admin Routes', () => {
       expect(response.body).toHaveProperty('updatedCount', 10);
       expect(response.body).toHaveProperty('joinStatus', 'APPROVED');
       expect(mockAdminService.updateManyJoinStatus).toHaveBeenCalledTimes(1);
-      expect(mockAdminService.updateManyJoinStatus).toHaveBeenCalledWith('APPROVED');
+      expect(mockAdminService.updateManyJoinStatus).toHaveBeenCalledWith(
+        'APPROVED',
+      );
     });
   });
 });

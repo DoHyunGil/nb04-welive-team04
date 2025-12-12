@@ -40,7 +40,9 @@ class AdminController {
   // 여러 관리자의 가입 상태를 한번에 변경하는 API
   async updateManyJoinStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const updatedCount = await adminService.updateManyJoinStatus(req.body.joinStatus);
+      const updatedCount = await adminService.updateManyJoinStatus(
+        req.body.joinStatus,
+      );
       res.json({
         updatedCount,
         joinStatus: req.body.joinStatus,
@@ -53,7 +55,10 @@ class AdminController {
   // 특정 관리자의 가입 상태를 변경하는 API
   async updateJoinStatusById(req: Request, res: Response, next: NextFunction) {
     try {
-      await adminService.updateJoinStatusById(Number(req.params.id), req.body.joinStatus);
+      await adminService.updateJoinStatusById(
+        Number(req.params.id),
+        req.body.joinStatus,
+      );
       res.status(204).json({});
     } catch (error) {
       next(error);

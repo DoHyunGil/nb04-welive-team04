@@ -16,17 +16,6 @@ const config = {
     // node_modules만 무시하고 나머지는 ts-jest가 변환하도록 강제
     '/node_modules/',
   ],
-  // dist 폴더, .d.ts 파일, helper 유틸리티 파일 제외
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '\\.d\\.ts$',
-  ],
-  // 테스트 파일 패턴 지정 (*.test.ts 파일만 테스트로 인식)
-  testMatch: [
-    '**/__tests__/**/*.test.ts',
-    '**/*.test.ts',
-  ],
 };
 
 module.exports = config;

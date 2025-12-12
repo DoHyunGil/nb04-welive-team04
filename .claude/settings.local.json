@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(NODE_ENV=test DATABASE_URL=\"postgresql://postgres:1234@localhost:5432/nb4-welive-team4-test\" node:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

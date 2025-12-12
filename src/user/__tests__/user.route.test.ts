@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import {
   jest,
   describe,
@@ -76,8 +76,17 @@ describe('Users Routes', () => {
       next();
     };
 
-    router.patch('/me/avatar', mockJwtAuth, mockUpload, mockUserController.updateAvatar);
-    router.patch('/me/password', mockJwtAuth, mockUserController.updatePassword);
+    router.patch(
+      '/me/avatar',
+      mockJwtAuth,
+      mockUpload,
+      mockUserController.updateAvatar,
+    );
+    router.patch(
+      '/me/password',
+      mockJwtAuth,
+      mockUserController.updatePassword,
+    );
 
     app.use('/api/v2/users', router);
 
@@ -131,7 +140,9 @@ describe('Users Routes', () => {
     });
 
     it('새 비밀번호가 현재 비밀번호와 같으면 실패', async () => {
-      const error = new Error('새 비밀번호는 현재 비밀번호와 달라야 합니다.') as any;
+      const error = new Error(
+        '새 비밀번호는 현재 비밀번호와 달라야 합니다.',
+      ) as any;
       error.status = 400;
       mockUserService.updatePassword.mockRejectedValue(error);
 
@@ -188,7 +199,10 @@ describe('Users Routes', () => {
 
       expect(response.status).toBe(204);
       expect(mockUserService.updateAvatar).toHaveBeenCalledTimes(1);
-      expect(mockUserService.updateAvatar).toHaveBeenCalledWith(testUserId, 'uploads/test-avatar.png');
+      expect(mockUserService.updateAvatar).toHaveBeenCalledWith(
+        testUserId,
+        'uploads/test-avatar.png',
+      );
     });
 
     it('인증 없이 아바타 업로드 시도 시 실패', async () => {

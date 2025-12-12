@@ -1,7 +1,7 @@
 import createError from 'http-errors';
 import { hashPassword } from '../../lib/password.js';
 import adminRepository from '../repositories/admin.repository.js';
-import { joinStatus } from '../../../generated/prisma/enums.js';
+import { joinStatus } from '../../../generated/prisma/client.js';
 import type {
   SuperAdminsInput,
   AdminInput,
@@ -19,12 +19,16 @@ function parseJoinStatus(joinStatusString: string): joinStatus {
 class AdminService {
   // 슈퍼 관리자 회원가입
   async superAdminRegister(data: SuperAdminsInput) {
-    const existingAdminByUsername = await adminRepository.findAdminByUsername(data.username);
+    const existingAdminByUsername = await adminRepository.findAdminByUsername(
+      data.username,
+    );
     if (existingAdminByUsername) {
       throw createError(409, '이미 존재하는 아이디입니다.');
     }
 
-    const existingAdminByEmail = await adminRepository.findAdminByEmail(data.email);
+    const existingAdminByEmail = await adminRepository.findAdminByEmail(
+      data.email,
+    );
     if (existingAdminByEmail) {
       throw createError(409, '이미 존재하는 이메일입니다.');
     }
@@ -37,17 +41,23 @@ class AdminService {
 
   // 일반 관리자 회원가입
   async adminRegister(data: AdminInput) {
-    const existingAdminByUsername = await adminRepository.findAdminByUsername(data.username);
+    const existingAdminByUsername = await adminRepository.findAdminByUsername(
+      data.username,
+    );
     if (existingAdminByUsername) {
       throw createError(409, '이미 존재하는 아이디입니다.');
     }
 
-    const existingAdminByEmail = await adminRepository.findAdminByEmail(data.email);
+    const existingAdminByEmail = await adminRepository.findAdminByEmail(
+      data.email,
+    );
     if (existingAdminByEmail) {
       throw createError(409, '이미 존재하는 이메일입니다.');
     }
 
-    const existingApartment = await adminRepository.findApartmentByName(data.adminOf.name);
+    const existingApartment = await adminRepository.findApartmentByName(
+      data.adminOf.name,
+    );
     if (existingApartment) {
       throw createError(409, '이미 등록된 아파트입니다.');
     }
@@ -72,7 +82,10 @@ class AdminService {
       skip,
       limit,
     });
-    const totalCountPromise = adminRepository.countAdmins({ searchKeyword, joinStatusString });
+    const totalCountPromise = adminRepository.countAdmins({
+      searchKeyword,
+      joinStatusString,
+    });
 
     const adminList = await adminListPromise;
     const totalCount = await totalCountPromise;
@@ -91,14 +104,18 @@ class AdminService {
   // 여러 관리자의 가입 상태를 한번에 변경
   async updateManyJoinStatus(joinStatusString: string) {
     const joinStatusEnum = parseJoinStatus(joinStatusString);
-    const updateResult = await adminRepository.updateManyJoinStatus(joinStatusEnum);
+    const updateResult =
+      await adminRepository.updateManyJoinStatus(joinStatusEnum);
     return updateResult.count;
   }
 
   // 특정 관리자의 가입 상태 변경
   async updateJoinStatusById(id: number, joinStatusString: string) {
     const joinStatusEnum = parseJoinStatus(joinStatusString);
-    const updatedAdmin = await adminRepository.updateJoinStatusById(id, joinStatusEnum);
+    const updatedAdmin = await adminRepository.updateJoinStatusById(
+      id,
+      joinStatusEnum,
+    );
     return updatedAdmin;
   }
 
@@ -124,7 +141,11 @@ class AdminService {
       name: data.name,
     };
 
-    const updatedAdmin = await adminRepository.updateAdmin(id, userData, adminOfData);
+    const updatedAdmin = await adminRepository.updateAdmin(
+      id,
+      userData,
+      adminOfData,
+    );
     return updatedAdmin;
   }
 
