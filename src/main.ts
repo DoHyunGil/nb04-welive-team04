@@ -24,6 +24,7 @@ app.use('/api/v2/auth', routers.authRouter);
 app.use('/api/v2/users/super-admins', routers.superAdminRouter);
 app.use('/api/v2/users/admins', routers.adminRouter);
 app.use('/api/v2/users', routers.meRouter);
+app.use('/api/v2/complaints', routers.complaintRouter);
 
 app.use(errorHandler);
 
