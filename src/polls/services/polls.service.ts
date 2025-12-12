@@ -1,12 +1,14 @@
 // src/polls/services/polls.service.ts
-import { prisma } from '../../lib/prisma.js';
 import createError from 'http-errors';
 import { Prisma, PollStatus } from '../../../generated/prisma/client.js';
 import type {
   GetPollsQuery,
   CreatePollData,
   UpdatePollData,
-} from '../controllers/polls.types.ts';
+} from '../controllers/polls.types.js';
+import pollsRepository from '../repositories/polls.repository.js';
+
+const allowedRoles = ['ADMIN', 'SUPER_ADMIN'];
 
 class PollsService {
   private async getUserWithResident(userId: number | undefined) {
@@ -14,10 +16,7 @@ class PollsService {
       throw createError(401, '인증이 필요합니다.');
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { resident: true },
-    });
+    const user = await pollsRepository.findUserWithResident(userId);
 
     if (!user) throw createError(404, '사용자를 찾을 수 없습니다.');
 
@@ -34,7 +33,7 @@ class PollsService {
   async createPoll(userId: number | undefined, data: CreatePollData) {
     const { user, resident } = await this.getUserWithResident(userId);
 
-    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (!allowedRoles.includes(user.role)) {
       throw createError(403, '관리자만 투표를 생성할 수 있습니다.');
     }
 
@@ -50,26 +49,15 @@ class PollsService {
       throw createError(400, '종료 시간은 현재 시간보다 이후여야 합니다.');
     }
 
-    const poll = await prisma.poll.create({
-      data: {
-        title: data.title,
-        content: data.content,
-        startDate: start,
-        endDate: end,
-        apartmentId: resident.apartmentId,
-        building: data.building ?? null,
-        authorId: user.id,
-        options: {
-          create: data.options.map((opt, index) => ({
-            title: opt.title,
-            order: index,
-          })),
-        },
-      },
-      include: {
-        author: { select: { id: true, name: true } },
-        options: true,
-      },
+    const poll = await pollsRepository.createPoll({
+      title: data.title,
+      content: data.content,
+      startDate: start,
+      endDate: end,
+      apartmentId: resident.apartmentId,
+      building: data.building ?? null,
+      authorId: user.id,
+      options: data.options.map((opt) => opt.title),
     });
 
     // TODO: 일정 서비스에 데이터 전달
@@ -81,6 +69,7 @@ class PollsService {
     const skip = (Number(page) - 1) * Number(limit);
 
     const { user, resident } = await this.getUserWithResident(userId);
+
 
     const where: Prisma.PollWhereInput = {
       apartmentId: resident.apartmentId,
@@ -105,27 +94,12 @@ class PollsService {
       where.building = building === 0 ? null : Number(building);
     }
 
-    const [totalCount, polls] = await Promise.all([
-      prisma.poll.count({ where }),
-      prisma.poll.findMany({
-        where,
-        skip,
-        take: Number(limit),
-        include: {
-          author: { select: { id: true, name: true } },
-          options: {
-            include: {
-              _count: { select: { votes: true } },
-            },
-          },
-          votes: {
-            where: { userId: user.id },
-            select: { optionId: true },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-    ]);
+    const [totalCount, polls] = await pollsRepository.findAllPolls(
+      where,
+      skip,
+      Number(limit),
+      user.id,
+    );
 
     return {
       data: polls.map((poll) => this.formatPollResponse(poll)),
@@ -138,23 +112,7 @@ class PollsService {
 
   async getPollById(pollId: string, userId: number | undefined) {
     const { user, resident } = await this.getUserWithResident(userId);
-
-    const poll = await prisma.poll.findUnique({
-      where: { id: pollId },
-      include: {
-        author: { select: { id: true, name: true } },
-        options: {
-          include: {
-            _count: { select: { votes: true } },
-          },
-          orderBy: { order: 'asc' },
-        },
-        votes: {
-          where: { userId: user.id },
-          select: { optionId: true },
-        },
-      },
-    });
+    const poll = await pollsRepository.findPollById(pollId, user.id);
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
@@ -180,14 +138,11 @@ class PollsService {
   ) {
     const { user, resident } = await this.getUserWithResident(userId);
 
-    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (!allowedRoles.includes(user.role)) {
       throw createError(403, '관리자만 투표를 수정할 수 있습니다.');
     }
 
-    const poll = await prisma.poll.findUnique({
-      where: { id: pollId },
-      include: { options: true },
-    });
+    const poll = await pollsRepository.findPollSimple(pollId);
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
@@ -206,53 +161,7 @@ class PollsService {
       throw createError(400, '종료 시간은 시작 시간보다 이후여야 합니다.');
     }
 
-    const updatedPoll = await prisma.$transaction(async (tx) => {
-      if (data.options && data.options.length > 0) {
-        const existingOptionIds = data.options
-          .filter((opt) => opt.id)
-          .map((opt) => opt.id as string);
-
-        await tx.pollOption.deleteMany({
-          where: {
-            pollId,
-            id: { notIn: existingOptionIds },
-          },
-        });
-
-        for (let i = 0; i < data.options.length; i++) {
-          const opt = data.options[i];
-          if (!opt) continue;
-
-          if (opt.id) {
-            await tx.pollOption.update({
-              where: { id: opt.id },
-              data: { title: opt.title, order: i },
-            });
-          } else {
-            await tx.pollOption.create({
-              data: { pollId, title: opt.title, order: i },
-            });
-          }
-        }
-      }
-
-      return tx.poll.update({
-        where: { id: pollId },
-        data: {
-          ...(data.title !== undefined && { title: data.title }),
-          ...(data.content !== undefined && { content: data.content }),
-          ...(data.startDate && { startDate: new Date(data.startDate) }),
-          ...(data.endDate && { endDate: new Date(data.endDate) }),
-          ...(data.building !== undefined && {
-            building: data.building ?? null,
-          }),
-        },
-        include: {
-          author: { select: { id: true, name: true } },
-          options: { orderBy: { order: 'asc' } },
-        },
-      });
-    });
+    const updatedPoll = await pollsRepository.updatePoll(pollId, data);
 
     // TODO:투표 변경시에 일정 서비스에 수정 요청
     return this.formatPollResponse(updatedPoll);
@@ -261,11 +170,11 @@ class PollsService {
   async deletePoll(pollId: string, userId: number | undefined) {
     const { user, resident } = await this.getUserWithResident(userId);
 
-    if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+    if (!allowedRoles.includes(user.role)) {
       throw createError(403, '관리자만 투표를 삭제할 수 있습니다.');
     }
 
-    const poll = await prisma.poll.findUnique({ where: { id: pollId } });
+    const poll = await pollsRepository.findPollSimple(pollId);
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
     if (poll.apartmentId !== resident.apartmentId) {
@@ -277,17 +186,14 @@ class PollsService {
     }
 
     // TODO: 투표삭제시에 일정 서비스에 삭제 요청
-    await prisma.poll.delete({ where: { id: pollId } });
+    await pollsRepository.deletePoll(pollId);
     return { message: '투표가 삭제되었습니다.' };
   }
 
   async vote(pollId: string, optionId: string, userId: number | undefined) {
     const { resident, user } = await this.getUserWithResident(userId);
 
-    const poll = await prisma.poll.findUnique({
-      where: { id: pollId },
-      include: { options: true },
-    });
+    const poll = await pollsRepository.findPollSimple(pollId);
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
@@ -307,9 +213,7 @@ class PollsService {
     if (!option) throw createError(400, '유효하지 않은 투표 옵션입니다.');
 
     try {
-      await prisma.pollVote.create({
-        data: { userId: user.id, pollId, optionId },
-      });
+      await pollsRepository.createVote(user.id, pollId, optionId);
     } catch (error) {
       const prismaError = error as { code?: string };
       if (prismaError.code === 'P2002') {
@@ -324,54 +228,32 @@ class PollsService {
   async unvote(pollId: string, userId: number | undefined) {
     const { user } = await this.getUserWithResident(userId);
 
-    const poll = await prisma.poll.findUnique({ where: { id: pollId } });
+    const poll = await pollsRepository.findPollSimple(pollId);
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
     if (poll.status !== 'IN_PROGRESS') {
       throw createError(400, '진행 중인 투표가 아닙니다.');
     }
 
-    const vote = await prisma.pollVote.findFirst({
-      where: { userId: user.id, pollId },
-    });
+    const vote = await pollsRepository.findVote(user.id, pollId);
 
     if (!vote) throw createError(404, '투표 기록을 찾을 수 없습니다.');
 
-    await prisma.pollVote.delete({ where: { id: vote.id } });
+    await pollsRepository.deleteVote(vote.id);
     return { message: '투표가 취소되었습니다.' };
   }
 
   async updatePollStatuses() {
     const now = new Date();
-    const { count: startedCount } = await prisma.poll.updateMany({
-      where: { status: 'PENDING', startDate: { lte: now } },
-      data: { status: 'IN_PROGRESS' },
-    });
+    const { count: startedCount } =
+      await pollsRepository.updateStatusToInProgress(now);
 
-    const closingPolls = await prisma.poll.findMany({
-      where: {
-        status: 'IN_PROGRESS',
-        endDate: { lte: now },
-        noticeCreated: false,
-      },
-      include: {
-        options: {
-          include: {
-            _count: { select: { votes: true } },
-          },
-        },
-      },
-    });
+    const closingPolls = await pollsRepository.findClosingPolls(now);
 
     let closedCount = 0;
     for (const poll of closingPolls) {
-      await prisma.$transaction(async (tx) => {
-        await tx.poll.update({
-          where: { id: poll.id },
-          data: { status: 'CLOSED', noticeCreated: true },
-        });
+      await pollsRepository.closePoll(poll.id);
 
-        // TODO: 공지사항 자동 생성
-      });
+      // TODO: 공지사항 자동 생성
       closedCount++;
     }
 
