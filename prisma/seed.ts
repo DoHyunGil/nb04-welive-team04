@@ -35,6 +35,10 @@ async function main() {
       address: "서울시 강남구 테헤란로 100",
       description: "래미안 퍼스티지 아파트 단지입니다.",
       officeNumber: "02-3000-0000",
+      buildingNumberFrom,
+      buildingNumberTo,
+      floorCountPerBuilding,
+      unitCountPerFloor,
       buildings: buildings,
       units: units,
       adminOf: {
@@ -64,6 +68,10 @@ async function main() {
       address: "서울시 송파구 올림픽로 200",
       description: "자이 아파트 단지입니다.",
       officeNumber: "02-4000-0000",
+      buildingNumberFrom,
+      buildingNumberTo,
+      floorCountPerBuilding,
+      unitCountPerFloor,
       buildings: buildings,
       units: units,
       adminOf: {
@@ -87,6 +95,9 @@ async function main() {
   });
 
   console.log("🌱 Seed completed!");
+  
+  //seed의 db값 테스트
+  //console.log(await prisma.apartment.findMany());
 }
 
 main()

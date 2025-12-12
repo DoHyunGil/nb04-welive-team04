@@ -8,6 +8,10 @@ const apartment_select = {
   address: true,
   description: true,
   officeNumber: true,
+  buildingNumberFrom: true,
+  buildingNumberTo: true,
+  floorCountPerBuilding: true,
+  unitCountPerFloor: true,
   buildings: true,
   units: true,
 };

@@ -19,14 +19,15 @@ class ApartmentController {
       
       return res.status(200).json({
         data: [apartment],
-        
       });
 
     } catch (error) {
-      console.error('Error fetching apartment:', error);
+      console.error('아파트 조회 오류:', error);
+
       return res.status(500).json({
-        success: false,
-        message: 'Internal Server Error',
+        message: '인증에 실패했습니다. 토큰이 없습니다.',
+        error: 'Unauthorized',
+        statusCode: 401,
       });
     }
   }
