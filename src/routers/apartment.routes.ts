@@ -1,9 +1,14 @@
 import { Router } from 'express';
+import { apartmentSchema } from 'src/apartment/schemas/apartment.schema.js';
 import apartmentController from '../apartment/apartment.controller.js';
 
 const router = Router();
 
 router.get('/', apartmentController.getApartments);
-router.get('/:id', apartmentController.getApartmentById);
+router.get(
+  '/:id',
+  apartmentSchema.apartmentIdSchema,
+  apartmentController.getApartmentById,
+);
 
 export default router;

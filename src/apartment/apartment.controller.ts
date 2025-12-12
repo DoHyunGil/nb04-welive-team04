@@ -1,7 +1,7 @@
-import { type Request, type Response, type NextFunction, response } from 'express';
+import { type Request, type Response, type NextFunction } from 'express';
 import apartmentService from './apartment.service.js';
 import createHttpError from 'http-errors';
-import { NumberIdSchema } from './apartment.validator.js';
+import { NumberIdSchema } from './schemas/apartment.schema.js';
 
 class ApartmentController {
   async getApartmentById(req: Request, res: Response) {
@@ -13,13 +13,11 @@ class ApartmentController {
       if (!apartment) {
         throw createHttpError(404, 'Apartment not found');
       }
-      
+
       return res.status(200).json({
         data: [apartment],
       });
-
     } catch (error) {
-      
       console.error('아파트 조회 오류:', error);
 
       return res.status(500).json({
