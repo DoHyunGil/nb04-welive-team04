@@ -14,7 +14,7 @@ const StatusValues = Object.values(COMPLAINT_STATUS);
 const getQuerySchema = z
   .object({
     page: z.coerce.number().int().positive().optional().default(1),
-    limit: z.coerce.number().int().positive().optional().default(10),
+    limit: z.coerce.number().int().positive().optional().default(20),
     searchKeyword: z.string().optional(),
     status: z
       .enum(StatusValues as [complainStatus, ...complainStatus[]], {
@@ -81,8 +81,7 @@ class complaintSchema {
       res.locals.createBody = result.data;
       return next();
     } else {
-      const errorMessage = result.error.message;
-      return next(createHttpError(400, `잘못된 입력값: ${errorMessage}`));
+      return next(createHttpError(400, `잘못된 입력값입니다.`));
     }
   };
   updateComplaintSchema = (req: Request, res: Response, next: NextFunction) => {
@@ -91,8 +90,7 @@ class complaintSchema {
       res.locals.updateBody = result.data;
       return next();
     } else {
-      const errorMessage = result.error.message;
-      return next(createHttpError(400, `잘못된 입력값: ${errorMessage}`));
+      return next(createHttpError(400, `잘못된 입력값입니다.`));
     }
   };
   updateStatusSchema = (req: Request, res: Response, next: NextFunction) => {
@@ -112,7 +110,7 @@ class complaintSchema {
       res.locals.complaint = result.data;
       return next();
     } else {
-      return next(createHttpError(400, '잘못된 입력값입니다.'));
+      return next(createHttpError(400, '잘못된 민원 ID입니다.'));
     }
   };
 }

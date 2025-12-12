@@ -1,5 +1,5 @@
 import complaintRepository from '../repositories/complaint.repository.js';
-import { complainStatus } from '../../../generated/prisma/client.js';
+import type { complainStatus } from 'generated/prisma/enums.js';
 import type {
   GetComplaintsDto,
   CreateComplaintDto,
@@ -10,15 +10,6 @@ import createHttpError from 'http-errors';
 class ComplaintService {
   // 민원 등록
   async createComplaint(userId: number, createDto: CreateComplaintDto) {
-    if (!createDto.title) {
-      throw createHttpError(400, '제목이 비어있습니다.');
-    }
-    if (!createDto.content) {
-      throw createHttpError(400, '내용이 비어있습니다.');
-    }
-    if (createDto.apartmentId === undefined || isNaN(createDto.apartmentId)) {
-      throw createHttpError(400, '아파트 id가 비어있습니다.');
-    }
     const complaint = await complaintRepository.createComplaint(
       userId,
       createDto,
