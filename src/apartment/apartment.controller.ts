@@ -1,15 +1,12 @@
 import { type Request, type Response, type NextFunction, response } from 'express';
 import apartmentService from './apartment.service.js';
 import createHttpError from 'http-errors';
+import { NumberIdSchema } from './apartment.validator.js';
 
 class ApartmentController {
   async getApartmentById(req: Request, res: Response) {
     try {
-      const id = Number(req.params.id);
-
-      if (isNaN(id)) {
-        throw createHttpError(400, 'Invalid apartment Id');
-      }
+      const id = NumberIdSchema.parse(req.params.id);
 
       const apartment = await apartmentService.getApartmentById(id);
 
@@ -22,6 +19,7 @@ class ApartmentController {
       });
 
     } catch (error) {
+      
       console.error('아파트 조회 오류:', error);
 
       return res.status(500).json({
