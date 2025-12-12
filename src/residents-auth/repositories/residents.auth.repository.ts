@@ -4,8 +4,8 @@ import { prisma } from '../../lib/prisma.js';
 class ResidentsAuthRepository {
   async getResidentsAuth(
     userId: number,
-    limit: number,
     page: number,
+    limit: number,
     filters: Record<string, unknown>,
   ) {
     const admin = await prisma.adminOf.findUnique({
@@ -70,33 +70,18 @@ class ResidentsAuthRepository {
     });
   }
 
-  // async getResidentsAuthById(userId: number, residentId: number) {
-  //   return prisma.resident.findMany({
-  //     where: { id: residentId },
-  //   });
-  // }
-
-  // async updateResidents(
-  //   residentId: number,
-  //   residentData: Partial<CreateResidentBody>,
-  // ) {
-  //   const data: Partial<CreateResidentBody> = {
-  //     name: residentData.name,
-  //     contact: residentData.contact,
-  //     building: residentData.building,
-  //     unit: residentData.unit,
-  //     isHouseholder: residentData.isHouseholder,
-  //   };
-
-  //   return prisma.resident.update({
-  //     where: { id: residentId },
-  //     data,
-  //   });
-  // }
-
-  async updateapproveResidentsAuth(apartmentId: number, residentId: number) {
+  async findByapartmentId(apartmentId: number, residentId?: number) {
+    return prisma.resident.findMany({
+      where: {
+        apartmentId,
+        ...(residentId !== undefined && { id: residentId }),
+      },
+      select: { userId: true },
+    });
+  }
+  async updateapproveResidentsAuth(resident: number[]) {
     return prisma.user.updateMany({
-      where: { id: residentId, apartmentId: apartmentId },
+      where: { id: { in: resident } }, // 배열 사용
       data: { isActive: true, joinStatus: 'APPROVED' },
     });
   }

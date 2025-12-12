@@ -8,7 +8,8 @@ import ResidentsAuthService from '../services/residents.auth.service.js';
 class ResidentsAuthController {
   async getResidentsAuth(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.user!.id);
+      const userId = Number(req.user?.id || 1);
+      console.log(userId);
       const { page, limit, searchKeyword, joinStatus, building, unit } =
         req.query as GetResidentsAuthQuery;
       const data = await ResidentsAuthService.getResidentsAuth(

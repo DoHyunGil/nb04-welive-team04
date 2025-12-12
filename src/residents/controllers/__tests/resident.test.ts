@@ -11,7 +11,7 @@ import residentRepository from '../../repositories/residents.repository.js';
 
 config();
 
-describe('Repository & Service Test', () => {
+describe('Resident Repository & Service Test', () => {
   let adminUser: User;
   let residentUser: User;
   let apt1: Apartment;
@@ -116,8 +116,8 @@ describe('Repository & Service Test', () => {
   test('Repository.getResidents → apt1 입주민 조회', async () => {
     const result = await residentRepository.getResidents(
       adminUser.id,
-      10,
       1,
+      10,
       {},
     );
 
@@ -127,7 +127,7 @@ describe('Repository & Service Test', () => {
   });
 
   test('Service.getResidents → 입주민 조회 + 반환 형식 검증', async () => {
-    const result = await residentService.getResidents(adminUser.id, 10, 1);
+    const result = await residentService.getResidents(adminUser.id, 1, 10);
 
     expect(result.data.length).toBe(1);
     expect(result.total).toBe(1);

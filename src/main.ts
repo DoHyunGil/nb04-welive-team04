@@ -19,7 +19,7 @@ app.use(
   }),
 );
 
-app.use('/auth', routers.authRouter);
+// app.use('/auth', routers.authRouter);
 app.use('/', routers.residentsRouter);
 app.use('/', routers.residentsAuthRouter);
 app.use(errorHandler);

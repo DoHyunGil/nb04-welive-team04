@@ -8,8 +8,8 @@ import type { User } from 'generated/prisma/browser.js';
 class ResidentsAuthService {
   async getResidentsAuth(
     userId: number,
-    limit: number,
     page: number,
+    limit: number,
     searchKeyword?: string,
     joinStatus?: 'PENDING' | 'APPROVED' | 'REJECTED',
     building?: number,
@@ -28,8 +28,8 @@ class ResidentsAuthService {
 
     const residents = await residentsAuthRepository.getResidentsAuth(
       userId,
-      limit,
       page,
+      limit,
       filters,
     );
     const data = residents.map((resident) => ({
@@ -123,10 +123,15 @@ class ResidentsAuthService {
       throw new AppError('관리자 권한이 없습니다.', 403);
     }
     const apartmentId: number = admin.adminOf.Apartment!.id;
-    const data = await residentsAuthRepository.updateapproveResidentsAuth(
+    const residents = await residentsAuthRepository.findByapartmentId(
       apartmentId,
       residentId,
     );
+    // resident는 배열 : 로그인한 관리자 아파트에 속한 user의 Id
+    const userIds = residents.map((r) => r.userId);
+    const validUserIds = userIds.filter((id): id is number => id !== null);
+    const data =
+      await residentsAuthRepository.updateapproveResidentsAuth(validUserIds);
     return data;
   }
 }
