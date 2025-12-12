@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'RESIDENT');
 
 -- CreateEnum
-CREATE TYPE "joinStatus" AS ENUM ('PENDING');
+CREATE TYPE "joinStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 
 -- CreateEnum
 CREATE TYPE "complainStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJECTED');
@@ -18,6 +18,7 @@ CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
     "password" TEXT NOT NULL,
     "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "contact" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -32,6 +33,23 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+<<<<<<<< HEAD:prisma/migrations/20251209074242_init/migration.sql
+CREATE TABLE "AdminOf" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "officeNumber" TEXT NOT NULL,
+    "buildingNumberFrom" INTEGER NOT NULL,
+    "buildingNumberTo" INTEGER NOT NULL,
+    "floorCountPerBuilding" INTEGER NOT NULL,
+    "unitCountPerFloor" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AdminOf_pkey" PRIMARY KEY ("id")
+========
 CREATE TABLE "adminOf" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -53,6 +71,7 @@ CREATE TABLE "Resident" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Resident_pkey" PRIMARY KEY ("id")
+>>>>>>>> origin/develop:prisma/migrations/20251203063652_init/migration.sql
 );
 
 -- CreateTable
@@ -145,6 +164,12 @@ CREATE TABLE "Event" (
 );
 
 -- CreateIndex
+<<<<<<<< HEAD:prisma/migrations/20251209074242_init/migration.sql
+CREATE UNIQUE INDEX "AdminOf_userId_key" ON "AdminOf"("userId");
+
+-- AddForeignKey
+ALTER TABLE "AdminOf" ADD CONSTRAINT "AdminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+========
 CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 
 -- CreateIndex
@@ -152,6 +177,7 @@ CREATE UNIQUE INDEX "Resident_userId_key" ON "Resident"("userId");
 
 -- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+>>>>>>>> origin/develop:prisma/migrations/20251203063652_init/migration.sql
 
 -- AddForeignKey
 ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -15,8 +15,8 @@ datasource db {
 
 model User {
   id         Int        @id @default(autoincrement())
-  password   String
   username   String
+  password   String
   email      String
   contact    String
   name       String
@@ -34,12 +34,20 @@ model User {
 }
 
 model adminOf {
-  id              Int         @id @default(autoincrement())
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @default(now()) @updatedAt
-  userId          Int         @unique
-  user            User        @relation(fields: [userId], references: [id])
-  ownedApartments Apartment[]
+  id                    Int         @id @default(autoincrement())
+  name                  String
+  address               String
+  description           String
+  officeNumber          String
+  buildingNumberFrom    Int
+  buildingNumberTo      Int
+  floorCountPerBuilding Int
+  unitCountPerFloor     Int
+  userId                Int         @unique
+  user                  User        @relation(fields: [userId], references: [id])
+  ownedApartments       Apartment[]
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @default(now()) @updatedAt
 }
 
 model Resident {
@@ -153,6 +161,8 @@ enum Role {
 
 enum joinStatus {
   PENDING
+  APPROVED
+  REJECTED
 }
 
 enum complainStatus {
