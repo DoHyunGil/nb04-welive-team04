@@ -25,6 +25,7 @@ CREATE TABLE "User" (
     "avatar" TEXT,
     "joinStatus" "joinStatus" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
+    "residentID" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -44,7 +45,6 @@ CREATE TABLE "adminOf" (
 -- CreateTable
 CREATE TABLE "Resident" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER,
     "email" TEXT NOT NULL,
     "isHouseholder" BOOLEAN NOT NULL,
     "contact" TEXT NOT NULL,
@@ -149,19 +149,28 @@ CREATE TABLE "Event" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_residentID_key" ON "User"("residentID");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Resident_email_apartmentId_key" ON "Resident"("email", "apartmentId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Resident_contact_apartmentId_key" ON "Resident"("contact", "apartmentId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Apartment_adminOfId_key" ON "Apartment"("adminOfId");
 
 -- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_residentID_fkey" FOREIGN KEY ("residentID") REFERENCES "Resident"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Resident" ADD CONSTRAINT "Resident_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Resident" ADD CONSTRAINT "Resident_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Apartment" ADD CONSTRAINT "Apartment_adminOfId_fkey" FOREIGN KEY ("adminOfId") REFERENCES "adminOf"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

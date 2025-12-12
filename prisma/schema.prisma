@@ -25,7 +25,8 @@ model User {
   joinStatus joinStatus
   isActive   Boolean
   adminOf    adminOf?
-  resident   Resident[]
+  residentID   Int @unique
+  resident Resident  @relation (fields: [residentID], references: [id], onDelete: Cascade) 
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
   Complain   Complain[]
@@ -39,13 +40,12 @@ model adminOf {
   updatedAt       DateTime    @default(now()) @updatedAt
   userId          Int         @unique
   user            User        @relation(fields: [userId], references: [id])
-  Apartment       Apartment?
+  ownedApartments Apartment[] //변수명 Apartment 에서 ownedApartments로 원복시키기
 }
 
 model Resident {
   id            Int       @id @default(autoincrement())
-  userId        Int?      // @unique null이 허용되어야 함
-  user          User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        User?     
   email         String
   isHouseholder Boolean
   contact       String
@@ -57,9 +57,6 @@ model Resident {
   apartment     Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
-
-  @@unique([email, apartmentId])
-  @@unique([contact, apartmentId])
 }
 
 model Apartment {

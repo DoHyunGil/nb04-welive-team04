@@ -16,14 +16,6 @@ const config = {
     // node_modules만 무시하고 나머지는 ts-jest가 변환하도록 강제
     '/node_modules/',
   ],
-
-  extensionsToTreatAsEsm: ['.ts'],
-
-  globals: {
-    'ts-jest': {
-      useESM: true,
-    },
-  },
 };
 
 module.exports = config;

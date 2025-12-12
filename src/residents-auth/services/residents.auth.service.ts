@@ -24,7 +24,7 @@ class ResidentsAuthService {
     }
     if (building) filters.building = building;
     if (unit) filters.unit = unit;
-    if (joinStatus !== undefined) filters.joinStatus = joinStatus;
+    if (joinStatus) filters.joinStatus = joinStatus;
 
     const residents = await residentsAuthRepository.getResidentsAuth(
       userId,
