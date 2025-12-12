@@ -7,13 +7,26 @@ import type {
   AdminInput,
   FindAdminsServiceParams,
 } from '../repositories/types/admin.types.js';
+import type {
+  GetAdminsDto,
+  UpdateJoinStatusDto,
+  UpdateJoinStatusByIdDto,
+  UpdateAdminDto,
+  DeleteAdminDto,
+} from '../types/admin.dto.js';
 
 // joinStatus 문자열을 enum으로 변환하는 함수
 function parseJoinStatus(joinStatusString: string): joinStatus {
-  if (joinStatusString === 'PENDING') return joinStatus.PENDING;
-  if (joinStatusString === 'APPROVED') return joinStatus.APPROVED;
-  if (joinStatusString === 'REJECTED') return joinStatus.REJECTED;
-  throw createError(400, '잘못된 joinStatus 값입니다.');
+  switch (joinStatusString) {
+    case 'PENDING':
+      return joinStatus.PENDING;
+    case 'APPROVED':
+      return joinStatus.APPROVED;
+    case 'REJECTED':
+      return joinStatus.REJECTED;
+    default:
+      throw createError(400, '잘못된 joinStatus 값입니다.');
+  }
 }
 
 class AdminService {
@@ -70,8 +83,8 @@ class AdminService {
   }
 
   // 관리자 목록 조회 (페이지네이션 포함)
-  async findAdmins(params: FindAdminsServiceParams) {
-    const { page, limit, searchKeyword, joinStatusString } = params;
+  async findAdmins(dto: GetAdminsDto) {
+    const { page, limit, searchKeyword, joinStatusString } = dto;
 
     // 페이지 계산 (서비스에서 처리)
     const skip = (page - 1) * limit;
@@ -102,47 +115,34 @@ class AdminService {
   }
 
   // 여러 관리자의 가입 상태를 한번에 변경
-  async updateManyJoinStatus(joinStatusString: string) {
-    const joinStatusEnum = parseJoinStatus(joinStatusString);
+  async updateManyJoinStatus(dto: UpdateJoinStatusDto) {
+    const joinStatusEnum = parseJoinStatus(dto.joinStatus);
     const updateResult =
       await adminRepository.updateManyJoinStatus(joinStatusEnum);
     return updateResult.count;
   }
 
   // 특정 관리자의 가입 상태 변경
-  async updateJoinStatusById(id: number, joinStatusString: string) {
-    const joinStatusEnum = parseJoinStatus(joinStatusString);
+  async updateJoinStatusById(dto: UpdateJoinStatusByIdDto) {
+    const joinStatusEnum = parseJoinStatus(dto.joinStatus);
     const updatedAdmin = await adminRepository.updateJoinStatusById(
-      id,
+      dto.id,
       joinStatusEnum,
     );
     return updatedAdmin;
   }
 
   // 관리자 정보 수정
-  async updateAdmin(
-    id: number,
-    data: {
-      email?: string;
-      contact?: string;
-      name?: string;
-      adminOf?: {
-        name?: string;
-        address?: string;
-        description?: string;
-        officeNumber?: string;
-      };
-    },
-  ) {
-    const adminOfData = data.adminOf;
+  async updateAdmin(dto: UpdateAdminDto) {
+    const adminOfData = dto.adminOf;
     const userData = {
-      email: data.email,
-      contact: data.contact,
-      name: data.name,
+      email: dto.email,
+      contact: dto.contact,
+      name: dto.name,
     };
 
     const updatedAdmin = await adminRepository.updateAdmin(
-      id,
+      dto.id,
       userData,
       adminOfData,
     );
@@ -150,8 +150,8 @@ class AdminService {
   }
 
   // 관리자 삭제
-  async deleteAdmin(id: number) {
-    const residentCount = await adminRepository.countResidentsByAdminId(id);
+  async deleteAdmin(dto: DeleteAdminDto) {
+    const residentCount = await adminRepository.countResidentsByAdminId(dto.id);
     if (residentCount > 0) {
       throw createError(
         400,
@@ -159,7 +159,7 @@ class AdminService {
       );
     }
 
-    const deletedAdmin = await adminRepository.deleteAdmin(id);
+    const deletedAdmin = await adminRepository.deleteAdmin(dto.id);
     return deletedAdmin;
   }
 
