@@ -70,7 +70,6 @@ class PollsService {
 
     const { user, resident } = await this.getUserWithResident(userId);
 
-
     const where: Prisma.PollWhereInput = {
       apartmentId: resident.apartmentId,
     };
@@ -191,9 +190,10 @@ class PollsService {
   }
 
   async vote(pollId: string, optionId: string, userId: number | undefined) {
-    const { resident, user } = await this.getUserWithResident(userId);
-
-    const poll = await pollsRepository.findPollSimple(pollId);
+    const [{ user, resident }, poll] = await Promise.all([
+      this.getUserWithResident(userId),
+      pollsRepository.findPollSimple(pollId),
+    ]);
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
@@ -226,9 +226,10 @@ class PollsService {
   }
 
   async unvote(pollId: string, userId: number | undefined) {
-    const { user } = await this.getUserWithResident(userId);
-
-    const poll = await pollsRepository.findPollSimple(pollId);
+    const [{ user }, poll] = await Promise.all([
+      this.getUserWithResident(userId),
+      pollsRepository.findPollSimple(pollId),
+    ]);
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
     if (poll.status !== 'IN_PROGRESS') {
       throw createError(400, '진행 중인 투표가 아닙니다.');
