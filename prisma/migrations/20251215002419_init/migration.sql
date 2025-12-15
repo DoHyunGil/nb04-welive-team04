@@ -11,12 +11,11 @@ CREATE TYPE "complainStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJ
 CREATE TYPE "PollStatus" AS ENUM ('PENDING');
 
 -- CreateEnum
-CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE');
+CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'ETC');
 
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
-    "password" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -33,8 +32,7 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-<<<<<<<< HEAD:prisma/migrations/20251209074242_init/migration.sql
-CREATE TABLE "AdminOf" (
+CREATE TABLE "adminOf" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "address" TEXT NOT NULL,
@@ -47,14 +45,6 @@ CREATE TABLE "AdminOf" (
     "userId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "AdminOf_pkey" PRIMARY KEY ("id")
-========
-CREATE TABLE "adminOf" (
-    "id" SERIAL NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" INTEGER NOT NULL,
 
     CONSTRAINT "adminOf_pkey" PRIMARY KEY ("id")
 );
@@ -71,7 +61,6 @@ CREATE TABLE "Resident" (
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Resident_pkey" PRIMARY KEY ("id")
->>>>>>>> origin/develop:prisma/migrations/20251203063652_init/migration.sql
 );
 
 -- CreateTable
@@ -95,7 +84,7 @@ CREATE TABLE "Complain" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "isPublic" BOOLEAN NOT NULL DEFAULT true,
+    "isPublic" BOOLEAN NOT NULL DEFAULT false,
     "viewCount" INTEGER NOT NULL DEFAULT 0,
     "status" "complainStatus" NOT NULL DEFAULT 'PENDING',
     "apartmentId" INTEGER NOT NULL,
@@ -130,6 +119,7 @@ CREATE TABLE "Comment" (
     "complainId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "noticeId" INTEGER,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
@@ -141,8 +131,10 @@ CREATE TABLE "Notice" (
     "content" TEXT NOT NULL,
     "category" "NoticeCategory" NOT NULL,
     "isPinned" BOOLEAN NOT NULL,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "authorId" INTEGER NOT NULL,
     "apartmentId" INTEGER NOT NULL,
-    "eventId" INTEGER NOT NULL,
+    "eventId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -164,20 +156,16 @@ CREATE TABLE "Event" (
 );
 
 -- CreateIndex
-<<<<<<<< HEAD:prisma/migrations/20251209074242_init/migration.sql
-CREATE UNIQUE INDEX "AdminOf_userId_key" ON "AdminOf"("userId");
-
--- AddForeignKey
-ALTER TABLE "AdminOf" ADD CONSTRAINT "AdminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-========
 CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Resident_userId_key" ON "Resident"("userId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Apartment_adminOfId_key" ON "Apartment"("adminOfId");
+
 -- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
->>>>>>>> origin/develop:prisma/migrations/20251203063652_init/migration.sql
 
 -- AddForeignKey
 ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -207,10 +195,16 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("autho
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_complainId_fkey" FOREIGN KEY ("complainId") REFERENCES "Complain"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_noticeId_fkey" FOREIGN KEY ("noticeId") REFERENCES "Notice"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notice" ADD CONSTRAINT "Notice_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Notice" ADD CONSTRAINT "Notice_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notice" ADD CONSTRAINT "Notice_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Notice" ADD CONSTRAINT "Notice_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
