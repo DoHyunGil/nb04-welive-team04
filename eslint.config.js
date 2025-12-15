@@ -36,6 +36,15 @@ export default [
         project: true, // 또는 './tsconfig.json' 파일 경로
       },
     },
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+    },
   },
 
   // 4. Prettier 통합 설정

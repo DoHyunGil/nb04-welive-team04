@@ -5,7 +5,7 @@ export default function errorHandler(
   err: unknown,
   _req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ) {
   if (isHttpError(err)) {
     const status = err.status ?? err.statusCode ?? 500;
