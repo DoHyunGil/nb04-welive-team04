@@ -1,16 +1,20 @@
 import passport from 'passport';
-// import { localStrategy } from './localStrategy.js';
-// import { jwtStrategy } from './jwtStrategy.js';
+import { localStrategy } from './localStrategy.js';
+import { accessTokenStrategy, refreshTokenStrategy } from './jwtStrategy.js';
+import TOKEN from '../constants/jwt.tokens.js';
 
-// passport.use(localStrategy);
-// passport.use(jwtStrategy);
-
-const localAuth = passport.authenticate('local', { session: false });
-const jwtAuth = passport.authenticate('jwt', { session: false });
+passport.use('local', localStrategy);
+passport.use(TOKEN.ACCESS_TOKEN_COOKIE_NAME, accessTokenStrategy);
+passport.use(TOKEN.REFRESH_TOKEN_COOKIE_NAME, refreshTokenStrategy);
 
 const passports = {
-  localAuth: localAuth,
-  jwtAuth: jwtAuth,
+  localAuth: passport.authenticate('local', { session: false }),
+  jwtAuth: passport.authenticate(TOKEN.ACCESS_TOKEN_COOKIE_NAME, {
+    session: false,
+  }),
+  jwtRefresh: passport.authenticate(TOKEN.REFRESH_TOKEN_COOKIE_NAME, {
+    session: false,
+  }),
 };
 
 export default passports;
