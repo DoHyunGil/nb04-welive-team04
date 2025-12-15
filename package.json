@@ -12,7 +12,11 @@
     "format:check": "prettier --check .",
     "format:write": "prettier --write .",
     "prisma:reset": "npx dotenv -e .env.test -- prisma migrate reset --force",
-    "prisma:migrate": "npx dotenv -e .env.test -- prisma migrate deploy"
+    "prisma:migrate": "npx dotenv -e .env.test -- prisma migrate deploy",
+    "prisma:seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "type": "module",
   "author": "",
