@@ -9,7 +9,7 @@ router
   .post(noticeValidator.createNoticeSchema, noticeController.createNotice)
   .get(noticeValidator.getNoticesSchema, noticeController.getNotices);
 router
-  .route('/:id')
+  .route('/:noticeId')
   .get(noticeValidator.paramNoticeSchema, noticeController.getNoticeById)
   .patch(
     noticeValidator.paramNoticeSchema,

@@ -51,7 +51,7 @@ class NoticeController {
       const localRes = res as unknown as LocalResponse;
       const noticeId = localRes.locals.noticeId;
       const updateBody = localRes.locals.updateBody;
-      await noticeService.updateNotice(noticeId, userId, updateBody);
+      await noticeService.updateNotice(userId, noticeId, updateBody);
       res.status(204).send();
     } catch (error) {
       next(error);

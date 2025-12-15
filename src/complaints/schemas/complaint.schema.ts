@@ -41,7 +41,7 @@ const updateBodySchema = z.object({
   isPublic: z.boolean().optional(),
 });
 const statusParamSchema = z.object({
-  id: z.coerce.number().int().positive(),
+  complaintId: z.coerce.number().int().positive(),
 });
 const statusBodySchema = z.object({
   status: z.enum(StatusValues as [complainStatus, ...complainStatus[]], {
@@ -58,7 +58,7 @@ export interface LocalResponse extends Response {
     validatedQuery: GetComplaintsDto;
     createBody: CreateComplaintDto;
     updateBody: UpdateComplaintDto;
-    complaint: { id: number };
+    complaint: { complaintId: number };
     statusBody: {
       status: complainStatus;
     };

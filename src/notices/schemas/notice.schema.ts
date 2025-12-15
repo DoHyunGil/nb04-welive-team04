@@ -44,7 +44,7 @@ const updateBodySchema = z.object({
   isPinned: z.boolean().optional(),
 });
 const noticeParamSchema = z.object({
-  id: z.coerce.number().int().positive(),
+  noticeId: z.coerce.number().int().positive(),
 });
 
 export type GetNoticesDto = z.infer<typeof getQuerySchema>;
@@ -91,7 +91,7 @@ class noticeSchema {
   paramNoticeSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = noticeParamSchema.safeParse(req.params);
     if (result.success) {
-      res.locals.noticeId = result.data.id;
+      res.locals.noticeId = result.data.noticeId;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 공지 ID입니다.'));

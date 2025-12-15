@@ -15,7 +15,7 @@ router
     complaintController.getComplaints,
   );
 router
-  .route('/:id')
+  .route('/:complaintId')
   .get(complaintValidator.paramSchema, complaintController.getComplaintById)
   .patch(
     complaintValidator.paramSchema,
@@ -24,7 +24,7 @@ router
   )
   .delete(complaintValidator.paramSchema, complaintController.deleteComplaint);
 router.patch(
-  '/:id/status',
+  '/:complaintId/status',
   complaintValidator.updateStatusSchema,
   complaintController.updateComplaintStatus,
 );
