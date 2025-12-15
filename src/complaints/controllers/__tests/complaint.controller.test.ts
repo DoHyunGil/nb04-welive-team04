@@ -21,7 +21,7 @@ const { default: complaintController } =
 const createMockRequest = (
   overrides: Partial<Request> = {},
 ): Partial<Request> => ({
-  user: { id: 1 },
+  user: { id: 1, email: 'test@test.com', role: 'RESIDENT' },
   body: {},
   params: {},
   query: {},
@@ -207,7 +207,7 @@ describe('ComplaintController - 단위 테스트', () => {
       };
       const mockRequest = createMockRequest({
         params: { id: '1' },
-        user: { id: 1 },
+        user: { id: 1, email: 'test@test.com', role: 'RESIDENT' },
       });
       const { status, json, statusMock, jsonMock } = createMockResponse();
       mockComplaintsService.getComplaintById.mockResolvedValue(mockComplaint);
