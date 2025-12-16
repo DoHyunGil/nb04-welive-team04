@@ -1,12 +1,14 @@
 import express from 'express';
 import complaintController from '../complaints/controllers/complaint.controller.js';
 import { complaintValidator } from '../complaints/schemas/complaint.schema.js';
+import passports from '../lib/passports/index.js';
 
 const router = express.Router();
 
 router
   .route('/')
   .post(
+    passports.jwtAuth,
     complaintValidator.createComplaintSchema,
     complaintController.createComplaint,
   )
@@ -15,16 +17,26 @@ router
     complaintController.getComplaints,
   );
 router
-  .route('/:id')
-  .get(complaintValidator.paramSchema, complaintController.getComplaintById)
+  .route('/:complaintId')
+  .get(
+    passports.jwtAuth,
+    complaintValidator.paramSchema,
+    complaintController.getComplaintById,
+  )
   .patch(
+    passports.jwtAuth,
     complaintValidator.paramSchema,
     complaintValidator.updateComplaintSchema,
     complaintController.updateComplaint,
   )
-  .delete(complaintValidator.paramSchema, complaintController.deleteComplaint);
+  .delete(
+    passports.jwtAuth,
+    complaintValidator.paramSchema,
+    complaintController.deleteComplaint,
+  );
 router.patch(
-  '/:id/status',
+  '/:complaintId/status',
+  passports.jwtAuth,
   complaintValidator.updateStatusSchema,
   complaintController.updateComplaintStatus,
 );
