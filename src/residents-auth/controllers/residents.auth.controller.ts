@@ -1,13 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { CreateResidentAuthBody } from 'src/lib/type/express/resident.index.js';
 import ResidentsAuthService from '../services/residents.auth.service.js';
-import { GetResidentsAuthDto } from '../residents.auth.dto.js';
+import { GetResidentsAuthDto } from '../../lib/type/express/resident.index.js';
 
 class ResidentsAuthController {
   async getResidentsAuth(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = Number(req.user?.id);
-      const dto = new GetResidentsAuthDto(req.query);
+      const dto: GetResidentsAuthDto = { ...req.query };
+      // const dto = new GetResidentsAuthDto(req.query);
       const data = await ResidentsAuthService.getResidentsAuth(userId, dto);
       res.send(data);
     } catch (error) {

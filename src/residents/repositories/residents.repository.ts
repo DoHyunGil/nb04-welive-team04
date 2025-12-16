@@ -4,8 +4,8 @@ import { prisma } from './../../lib/prisma.js';
 class ResidentsRepository {
   async getResidents(
     userId: number,
-    page: number,
-    limit: number,
+    page: number = 1,
+    limit: number = 10,
     filters: Record<string, unknown>,
   ) {
     const admin = await prisma.adminOf.findUnique({
