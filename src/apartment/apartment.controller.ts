@@ -1,6 +1,6 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import apartmentService from './apartment.service.js';
-import createHttpError from 'http-errors';
+import createError from 'http-errors';
 import { NumberIdSchema } from './schemas/apartment.schema.js';
 
 class ApartmentController {
@@ -11,7 +11,7 @@ class ApartmentController {
       const apartment = await apartmentService.getApartmentById(id);
 
       if (!apartment) {
-        throw createHttpError(404, 'Apartment not found');
+        throw createError(404, 'Apartment not found');
       }
 
       return res.status(200).json({
@@ -20,11 +20,7 @@ class ApartmentController {
     } catch (error) {
       console.error('아파트 조회 오류:', error);
 
-      return res.status(500).json({
-        message: '인증에 실패했습니다. 토큰이 없습니다.',
-        error: 'Unauthorized',
-        statusCode: 401,
-      });
+      throw createError(401, '인증에 실패했습니다. 토큰이 없습니다.');
     }
   }
 

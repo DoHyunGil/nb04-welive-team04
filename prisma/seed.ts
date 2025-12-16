@@ -98,13 +98,14 @@ async function main() {
   
   //seed의 db값 테스트
   //console.log(await prisma.apartment.findMany());
-}
 
 main()
   .catch((e) => {
+    console.error('❌ 시드 데이터 생성 실패:');
     console.error(e);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
   });
+}
