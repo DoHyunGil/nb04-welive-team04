@@ -34,19 +34,3 @@ export type CreateResidentAuthBody = CreateResidentBody & {
 };
 
 export {};
-
-declare global {
-  namespace Express {
-    interface User {
-      id: number;
-      username: string;
-      email: string;
-      role: 'ADMIN' | 'RESIDENT';
-      apartmentId: number;
-      residentId?: number | null;
-    }
-    interface Request {
-      user?: User;
-    }
-  }
-}

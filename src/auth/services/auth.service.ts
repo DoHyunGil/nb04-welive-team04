@@ -1,18 +1,43 @@
 import authRepository from '../repositories/auth.repository.js';
+import { verifyPassword } from '../../lib/password.js';
+import type { Response } from 'express';
+import Jwt from '../utils/jwt.js';
+import createError from 'http-errors';
+import { clearAuthCookies } from '../../lib/cookie.js';
 
 class AuthService {
-  async login() {
-    //만약 권한 인증 같은걸 해야하면 여기 서비스에서 처리하세요. req.user 어쩌고..
+  async login(username: string, password: string) {
+    const user = await authRepository.findByUserName(username);
+    if (!user) {
+      throw createError(404, '사용자를 찾을 수 없습니다.');
+    }
 
-    //DB에 필요한 매개변수를 보내고, 여기서 반환해오면 됩니다.
-    const data = authRepository.login();
+    await verifyPassword(password, user.password);
 
-    //그리고 여기서 프론트엔드가 원하는 양식대로 API 문서 참고하셔서 가공해주시고,
-    //컨트롤러로 반환해주세요
-    // return reuslt;
+    const accessToken = Jwt.signAccessToken({ userId: user.id });
+    const refreshToken = Jwt.signRefreshToken({ userId: user.id });
+
+    // 비밀번호, createdAt, updatedAt 제외하고 id를 string으로 변환
+    const { password: _, createdAt, updatedAt, id, ...rest } = user;
+    const userResponse = {
+      id: id.toString(),
+      ...rest,
+    };
+
+    return { user: userResponse, accessToken, refreshToken };
   }
-  async logout() {}
-  async refresh() {}
+
+  async logout(res: Response) {
+    clearAuthCookies(res);
+  }
+
+  async refresh(discardToken: string) {
+    const tokens = Jwt.refreshTokens(discardToken);
+
+    const { accessToken, refreshToken } = tokens;
+
+    return { accessToken, refreshToken };
+  }
 }
 
 export default new AuthService();
