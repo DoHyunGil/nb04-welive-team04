@@ -32,7 +32,7 @@ class AuthController {
 
   async refresh(req: Request, res: Response, next: NextFunction) {
     try {
-      const { refreshToken } = req.cookies['refresh-token'];
+      const refreshToken = req.cookies['refresh-token'];
       if (!refreshToken) {
         return next(
           createError(
@@ -45,6 +45,8 @@ class AuthController {
 
       setRefreshTokenCookie(res, tokens.refreshToken);
       setAccessTokenCookie(res, tokens.accessToken);
+
+      res.status(200).json({ message: '토큰이 갱신되었습니다.' });
     } catch (error) {
       next(error);
     }
