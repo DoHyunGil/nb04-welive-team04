@@ -4,7 +4,7 @@ import residentsRepository from '../../residents/repositories/residents.reposito
 import createError from 'http-errors';
 import { joinStatus } from 'generated/prisma/enums.js';
 import type { User } from 'generated/prisma/browser.js';
-import { GetResidentsAuthDto } from '../residents.auth.dto.js';
+import type { GetResidentsAuthDto } from '../../lib/type/express/resident.index.js';
 
 class ResidentsAuthService {
   async getResidentsAuth(userId: number, dto: GetResidentsAuthDto) {
@@ -21,8 +21,8 @@ class ResidentsAuthService {
 
     const residents = await residentsAuthRepository.getResidentsAuth(
       userId,
-      dto.page,
-      dto.limit,
+      (dto.page = 1),
+      (dto.limit = 10),
       filters,
     );
     const data = residents.map((resident) => ({

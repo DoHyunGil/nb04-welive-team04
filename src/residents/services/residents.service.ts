@@ -1,7 +1,7 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import residentsRepository from '../repositories/residents.repository.js';
 import createError from 'http-errors';
-import { GetResidentsDto } from '../../lib/type/express/resident.index.js';
+import type { GetResidentsDto } from '../../lib/type/express/resident.index.js';
 
 class ResidentsService {
   async getResidents(userId: number, dto: GetResidentsDto) {
