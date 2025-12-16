@@ -1,6 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
 import { isHttpError } from 'http-errors';
-import { AppError } from './errorClass.js';
 
 export default function errorHandler(
   err: unknown,
@@ -14,13 +13,6 @@ export default function errorHandler(
     return res
       .status(status)
       .json({ message: err.message, code: status, name: err.name });
-  } else if (err instanceof AppError) {
-    console.error(`[${err.status}] ${err.name}: ${err.message}`);
-    return res.status(err.status).json({
-      message: err.message,
-      code: err.status,
-      name: err.name,
-    });
     next();
   } else {
     console.error(err);

@@ -1,33 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
-import type {
-  GetResidentsQuery,
-  CreateResidentBody,
-} from 'src/lib/type/express/resident.index.js';
+import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import residentService from '../services/residents.service.js';
+import { GetResidentsDto } from '../residents.dto.js';
 
 class ResidentsController {
   async getResidents(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = Number(req.user?.id);
-      const {
-        page,
-        limit,
-        searchKeyword,
-        building,
-        unit,
-        isHouseholder,
-        isRegistered,
-      } = req.query as GetResidentsQuery;
-      const data = await residentService.getResidents(
-        userId,
-        page ? Number(page) : 1,
-        limit ? Number(limit) : 10,
-        searchKeyword,
-        Number(building),
-        Number(unit),
-        isHouseholder,
-        isRegistered,
-      );
+      const dto = new GetResidentsDto(req.query);
+      const data = await residentService.getResidents(userId, dto);
       res.send(data);
     } catch (error) {
       next(error);

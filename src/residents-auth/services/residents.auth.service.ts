@@ -4,32 +4,25 @@ import residentsRepository from '../../residents/repositories/residents.reposito
 import createError from 'http-errors';
 import { joinStatus } from 'generated/prisma/enums.js';
 import type { User } from 'generated/prisma/browser.js';
+import { GetResidentsAuthDto } from '../residents.auth.dto.js';
 
 class ResidentsAuthService {
-  async getResidentsAuth(
-    userId: number,
-    page: number,
-    limit: number,
-    searchKeyword?: string,
-    joinStatus?: 'PENDING' | 'APPROVED' | 'REJECTED',
-    building?: number,
-    unit?: number,
-  ) {
+  async getResidentsAuth(userId: number, dto: GetResidentsAuthDto) {
     const filters: Record<string, unknown> = {};
-    if (searchKeyword) {
+    if (dto.searchKeyword) {
       filters.OR = [
-        { contact: { contains: searchKeyword } },
-        { name: { contains: searchKeyword } },
+        { contact: { contains: dto.searchKeyword } },
+        { name: { contains: dto.searchKeyword } },
       ];
     }
-    if (building) filters.building = building;
-    if (unit) filters.unit = unit;
-    if (joinStatus) filters.joinStatus = joinStatus;
+    if (dto.building) filters.building = dto.building;
+    if (dto.unit) filters.unit = dto.unit;
+    if (dto.joinStatus) filters.joinStatus = dto.joinStatus;
 
     const residents = await residentsAuthRepository.getResidentsAuth(
       userId,
-      page,
-      limit,
+      dto.page,
+      dto.limit,
       filters,
     );
     const data = residents.map((resident) => ({

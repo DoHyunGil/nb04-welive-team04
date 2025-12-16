@@ -1,26 +1,14 @@
 import type { NextFunction, Request, Response } from 'express';
-import type {
-  GetResidentsAuthQuery,
-  CreateResidentAuthBody,
-} from 'src/lib/type/express/resident.index.js';
+import type { CreateResidentAuthBody } from 'src/lib/type/express/resident.index.js';
 import ResidentsAuthService from '../services/residents.auth.service.js';
+import { GetResidentsAuthDto } from '../residents.auth.dto.js';
 
 class ResidentsAuthController {
   async getResidentsAuth(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.user?.id || 1);
-      console.log(userId);
-      const { page, limit, searchKeyword, joinStatus, building, unit } =
-        req.query as GetResidentsAuthQuery;
-      const data = await ResidentsAuthService.getResidentsAuth(
-        userId,
-        page ? Number(page) : 1,
-        limit ? Number(limit) : 10,
-        searchKeyword,
-        joinStatus,
-        building,
-        unit,
-      );
+      const userId = Number(req.user?.id);
+      const dto = new GetResidentsAuthDto(req.query);
+      const data = await ResidentsAuthService.getResidentsAuth(userId, dto);
       res.send(data);
     } catch (error) {
       next(error);
@@ -28,7 +16,7 @@ class ResidentsAuthController {
   }
   async createResidents(req: Request, res: Response, next: NextFunction) {
     try {
-      const residentData: CreateResidentAuthBody = req.body;
+      const residentData: CreateResidentAuthBody = { ...req.body };
       const data = await ResidentsAuthService.createResidentsAuth(residentData);
       res.status(201).send(data);
     } catch (error) {

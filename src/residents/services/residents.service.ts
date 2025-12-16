@@ -1,36 +1,29 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import residentsRepository from '../repositories/residents.repository.js';
 import createError from 'http-errors';
+import { GetResidentsDto } from '../residents.dto.js';
 
 class ResidentsService {
-  async getResidents(
-    userId: number,
-    page: number,
-    limit: number,
-    searchKeyword?: string,
-    building?: number,
-    unit?: number,
-    isHouseholder?: string | boolean,
-    isRegistered?: string | boolean,
-  ) {
+  async getResidents(userId: number, dto: GetResidentsDto) {
     const filters: Record<string, unknown> = {};
-    if (searchKeyword) {
+    if (dto.searchKeyword) {
       filters.OR = [
-        { contact: { contains: searchKeyword } },
-        { name: { contains: searchKeyword } },
+        { contact: { contains: dto.searchKeyword } },
+        { name: { contains: dto.searchKeyword } },
       ];
     }
-    if (building) filters.building = building;
-    if (unit) filters.unit = unit;
-    if (isHouseholder !== undefined)
-      filters.isHouseholder =
-        isHouseholder === true || isHouseholder === 'true';
-    if (isRegistered !== undefined)
-      filters.isRegistered = isRegistered === true || isRegistered === 'true';
+    if (dto.building) filters.building = dto.building;
+    if (dto.unit) filters.unit = dto.unit;
+    if (dto.isHouseholder !== undefined)
+      filters.isHouseholder = dto.isHouseholder === true;
+    // || dto.isHouseholder === 'true'; boolean이아니라 string로 들어올수도 있어서 체크후 삭제 예정
+    if (dto.isRegistered !== undefined)
+      filters.isRegistered = dto.isRegistered === true;
+    // || dto.isRegistered === 'true'; boolean이아니라 string로 들어올수도 있어서 체크후 삭제 예정
     const residents = await residentsRepository.getResidents(
       userId,
-      page,
-      limit,
+      dto.page,
+      dto.limit,
       filters,
     );
     const data = residents.map((resident) => ({
@@ -47,8 +40,8 @@ class ResidentsService {
     return {
       data,
       total: data.length,
-      page,
-      limit,
+      page: dto.page,
+      limit: dto.limit,
       //hasNext
     };
   }
