@@ -14,10 +14,10 @@ const refreshTokenOptions = {
   secretOrKey: TOKEN.JWT_REFRESH_TOKEN_SECRET,
 };
 
-async function jwtVerify(payload: { id: number }, done: VerifiedCallback) {
+async function jwtVerify(payload: { userId: number }, done: VerifiedCallback) {
   try {
     const user = await prisma.user.findUnique({
-      where: { id: payload.id },
+      where: { id: payload.userId },
       select: {
         id: true,
         role: true,

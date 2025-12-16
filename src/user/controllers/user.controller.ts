@@ -46,10 +46,11 @@ class UserController {
       }
 
       // 2. 요청 body에서 비밀번호 정보 가져오기
-      const { currentPassword, newPassword } = req.body;
+      const { password, currentPassword, newPassword } = req.body;
+      const currentPwd = password || currentPassword; // 두 필드 모두 지원
 
       // 3. 필수 값 확인
-      if (!currentPassword || !newPassword) {
+      if (!currentPwd || !newPassword) {
         throw createError(
           400,
           '현재 비밀번호와 새 비밀번호를 모두 입력해주세요.',
@@ -58,7 +59,7 @@ class UserController {
 
       // 4. userService의 updatePassword 함수 호출
       await userService.updatePassword(user.id, {
-        currentPassword,
+        currentPassword: currentPwd,
         newPassword,
       });
 

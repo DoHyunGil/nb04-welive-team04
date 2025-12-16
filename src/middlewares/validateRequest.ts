@@ -21,8 +21,9 @@ export function validateBody(schema: z.ZodType) {
 export function validateQuery(schema: z.ZodType) {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
+      const parsed = schema.parse(req.query);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      req.query = schema.parse(req.query) as any;
+      Object.assign(req.query, parsed as any);
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {

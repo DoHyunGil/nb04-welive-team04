@@ -146,6 +146,14 @@ class AdminRepository {
     // where 조건 만들기
     const andConditions: Prisma.UserWhereInput[] = [];
 
+    // ADMIN 역할이면서 adminOf가 있는 것만 조회
+    andConditions.push({
+      role: Role.ADMIN,
+      adminOf: {
+        isNot: null,
+      },
+    });
+
     // 검색 키워드가 있으면 OR 조건 추가
     if (searchKeyword) {
       andConditions.push({
@@ -172,8 +180,7 @@ class AdminRepository {
     }
 
     // 조건 구성
-    const whereCondition: Prisma.UserWhereInput =
-      andConditions.length > 0 ? { AND: andConditions } : {};
+    const whereCondition: Prisma.UserWhereInput = { AND: andConditions };
 
     // 관리자 목록 조회
     const admins = await prisma.user.findMany({
@@ -205,6 +212,14 @@ class AdminRepository {
     // where 조건 만들기 (findAdmins와 동일)
     const andConditions: Prisma.UserWhereInput[] = [];
 
+    // ADMIN 역할이면서 adminOf가 있는 것만 조회
+    andConditions.push({
+      role: Role.ADMIN,
+      adminOf: {
+        isNot: null,
+      },
+    });
+
     if (searchKeyword) {
       andConditions.push({
         OR: [
@@ -228,8 +243,7 @@ class AdminRepository {
       });
     }
 
-    const whereCondition: Prisma.UserWhereInput =
-      andConditions.length > 0 ? { AND: andConditions } : {};
+    const whereCondition: Prisma.UserWhereInput = { AND: andConditions };
 
     // 조건에 맞는 관리자 수 세기
     const count = await prisma.user.count({
