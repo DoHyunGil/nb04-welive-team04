@@ -8,10 +8,10 @@ CREATE TYPE "joinStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
 CREATE TYPE "complainStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJECTED');
 
 -- CreateEnum
-CREATE TYPE "PollStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'CLOSED');
+CREATE TYPE "PollStatus" AS ENUM ('PENDING');
 
 -- CreateEnum
-CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE');
+CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'ETC');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -74,7 +74,7 @@ CREATE TABLE "Apartment" (
     "units" INTEGER[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "adminOfId" INTEGER,
+    "adminOfId" INTEGER NOT NULL,
 
     CONSTRAINT "Apartment_pkey" PRIMARY KEY ("id")
 );
@@ -97,42 +97,18 @@ CREATE TABLE "Complain" (
 
 -- CreateTable
 CREATE TABLE "Poll" (
-    "id" TEXT NOT NULL,
+    "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
-    "status" "PollStatus" NOT NULL DEFAULT 'PENDING',
+    "status" "PollStatus" NOT NULL,
     "apartmentId" INTEGER NOT NULL,
-    "building" INTEGER,
+    "authorId" INTEGER NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "authorId" INTEGER NOT NULL,
-    "noticeCreated" BOOLEAN NOT NULL DEFAULT false,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Poll_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "PollOption" (
-    "id" TEXT NOT NULL,
-    "pollId" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "order" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "PollOption_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "PollVote" (
-    "id" TEXT NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "pollId" TEXT NOT NULL,
-    "optionId" TEXT NOT NULL,
-    "votedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "PollVote_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -143,6 +119,7 @@ CREATE TABLE "Comment" (
     "complainId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "noticeId" INTEGER,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
@@ -154,8 +131,10 @@ CREATE TABLE "Notice" (
     "content" TEXT NOT NULL,
     "category" "NoticeCategory" NOT NULL,
     "isPinned" BOOLEAN NOT NULL,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "authorId" INTEGER NOT NULL,
     "apartmentId" INTEGER NOT NULL,
-    "eventId" INTEGER NOT NULL,
+    "eventId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -183,34 +162,7 @@ CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 CREATE UNIQUE INDEX "Resident_userId_key" ON "Resident"("userId");
 
 -- CreateIndex
-CREATE INDEX "Poll_status_idx" ON "Poll"("status");
-
--- CreateIndex
-CREATE INDEX "Poll_startDate_endDate_idx" ON "Poll"("startDate", "endDate");
-
--- CreateIndex
-CREATE INDEX "Poll_authorId_idx" ON "Poll"("authorId");
-
--- CreateIndex
-CREATE INDEX "Poll_apartmentId_idx" ON "Poll"("apartmentId");
-
--- CreateIndex
-CREATE INDEX "Poll_building_idx" ON "Poll"("building");
-
--- CreateIndex
-CREATE INDEX "PollOption_pollId_idx" ON "PollOption"("pollId");
-
--- CreateIndex
-CREATE INDEX "PollVote_pollId_idx" ON "PollVote"("pollId");
-
--- CreateIndex
-CREATE INDEX "PollVote_userId_idx" ON "PollVote"("userId");
-
--- CreateIndex
-CREATE INDEX "PollVote_optionId_idx" ON "PollVote"("optionId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "PollVote_userId_pollId_key" ON "PollVote"("userId", "pollId");
+CREATE UNIQUE INDEX "Apartment_adminOfId_key" ON "Apartment"("adminOfId");
 
 -- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -222,7 +174,7 @@ ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userI
 ALTER TABLE "Resident" ADD CONSTRAINT "Resident_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Apartment" ADD CONSTRAINT "Apartment_adminOfId_fkey" FOREIGN KEY ("adminOfId") REFERENCES "adminOf"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Apartment" ADD CONSTRAINT "Apartment_adminOfId_fkey" FOREIGN KEY ("adminOfId") REFERENCES "adminOf"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Complain" ADD CONSTRAINT "Complain_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -231,22 +183,10 @@ ALTER TABLE "Complain" ADD CONSTRAINT "Complain_apartmentId_fkey" FOREIGN KEY ("
 ALTER TABLE "Complain" ADD CONSTRAINT "Complain_complainantId_fkey" FOREIGN KEY ("complainantId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Poll" ADD CONSTRAINT "Poll_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Poll" ADD CONSTRAINT "Poll_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Poll" ADD CONSTRAINT "Poll_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PollOption" ADD CONSTRAINT "PollOption_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_pollId_fkey" FOREIGN KEY ("pollId") REFERENCES "Poll"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_optionId_fkey" FOREIGN KEY ("optionId") REFERENCES "PollOption"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Poll" ADD CONSTRAINT "Poll_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -255,10 +195,16 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("autho
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_complainId_fkey" FOREIGN KEY ("complainId") REFERENCES "Complain"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_noticeId_fkey" FOREIGN KEY ("noticeId") REFERENCES "Notice"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notice" ADD CONSTRAINT "Notice_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Notice" ADD CONSTRAINT "Notice_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notice" ADD CONSTRAINT "Notice_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Notice" ADD CONSTRAINT "Notice_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

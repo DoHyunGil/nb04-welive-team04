@@ -1,10 +1,12 @@
 import type { Response, CookieOptions } from 'express';
 import { token } from '../auth/config/token.constants.js';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: 'none',
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
   path: '/',
 };
 
