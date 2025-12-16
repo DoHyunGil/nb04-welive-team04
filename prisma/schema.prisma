@@ -32,11 +32,12 @@ model User {
   Complain   Complain[]
   Poll       Poll[]
   Comment    Comment[]
+  Notice     Notice[]
   PollVote   PollVote[]
 }
 
 model adminOf {
-  id                    Int         @id @default(autoincrement())
+  id                    Int        @id @default(autoincrement())
   name                  String
   address               String
   description           String
@@ -45,11 +46,11 @@ model adminOf {
   buildingNumberTo      Int
   floorCountPerBuilding Int
   unitCountPerFloor     Int
-  userId                Int         @unique
-  user                  User        @relation(fields: [userId], references: [id])
-  ownedApartments       Apartment[]
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @default(now()) @updatedAt
+  userId                Int        @unique
+  user                  User       @relation(fields: [userId], references: [id])
+  apartment             Apartment?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @default(now()) @updatedAt
 }
 
 model Resident {
@@ -83,8 +84,8 @@ model Apartment {
   Notice       Notice[]
   Event        Event[]
   adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
-  adminOfId    Int?
-  resident     Resident[]
+  adminOfId    Int?       @unique
+  Resident     Resident[]
 }
 
 model Complain {
@@ -177,6 +178,8 @@ model Comment {
   complain   Complain @relation(fields: [complainId], references: [id])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
+  notice     Notice?  @relation(fields: [noticeId], references: [id])
+  noticeId   Int?
 }
 
 model Notice {
@@ -185,10 +188,14 @@ model Notice {
   content     String
   category    NoticeCategory
   isPinned    Boolean
+  viewCount   Int            @default(0)
+  authorId    Int
+  author      User           @relation(fields: [authorId], references: [id])
   apartmentId Int
   apartment   Apartment      @relation(fields: [apartmentId], references: [id])
-  event       Event          @relation(fields: [eventId], references: [id])
-  eventId     Int
+  event       Event?         @relation(fields: [eventId], references: [id])
+  eventId     Int?
+  comments    Comment[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @default(now()) @updatedAt
 }
@@ -235,4 +242,9 @@ enum PollStatus {
 
 enum NoticeCategory {
   MAINTENANCE
+  EMERGENCY
+  COMMUNITY
+  RESIDENT_VOTE
+  RESIDENT_COUNCIL
+  ETC
 }
