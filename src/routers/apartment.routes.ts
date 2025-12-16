@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { apartmentSchema } from 'src/apartment/schemas/apartment.schema.js';
+import { apartmentSchema } from '../apartment/schemas/apartment.schema.js';
 import apartmentController from '../apartment/apartment.controller.js';
 
 const router = Router();

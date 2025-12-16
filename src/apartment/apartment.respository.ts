@@ -1,3 +1,4 @@
+import type { Prisma } from 'generated/prisma/client.js';
 import { prisma } from '../lib/prisma.js';
 
 const apartment_select = {
@@ -17,27 +18,29 @@ const apartment_select = {
 };
 
 class ApartmentRepository {
-  buildSearchCondition(searchKeyword?: string) {
-    if (!searchKeyword) return {};
+  //   buildSearchCondition(searchKeyword?: string) {
+  //     if (!searchKeyword) return {};
 
-    const contains = {
-      contains: searchKeyword,
-      mode: 'insensitive' as const,
-    };
+  //     const contains = {
+  //       contains: searchKeyword,
+  //       mode: 'insensitive' as const,
+  //     };
 
-    return {
-      OR: [
-        { name: contains },
-        { address: contains },
-        { description: contains },
-        { officeNumber: contains },
-      ],
-    };
-  }
+  //     return {
+  //       OR: [
+  //         { name: contains },
+  //         { address: contains },
+  //         { description: contains },
+  //         { officeNumber: contains },
+  //       ],
+  //     };
+  //   }
 
-  async findMany(skip: number, limit: number, searchKeyword?: string) {
-    const where = this.buildSearchCondition(searchKeyword);
-
+  async findMany(
+    skip: number,
+    limit: number,
+    where?: Prisma.ApartmentWhereInput,
+  ) {
     return prisma.apartment.findMany({
       where,
       skip,
@@ -54,8 +57,7 @@ class ApartmentRepository {
     });
   }
 
-  async count(searchKeyword?: string) {
-    const where = this.buildSearchCondition(searchKeyword);
+  async count(where?: Prisma.ApartmentWhereInput) {
     return prisma.apartment.count({ where });
   }
 }

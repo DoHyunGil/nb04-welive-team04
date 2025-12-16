@@ -1,14 +1,17 @@
-import { type Request, type Response, type NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import apartmentService from './apartment.service.js';
 import createError from 'http-errors';
 import { NumberIdSchema } from './schemas/apartment.schema.js';
+import type { ApartmentIdDto, GetApartmentDto } from './dto/apartment.dto.js';
 
 class ApartmentController {
-  async getApartmentById(req: Request, res: Response) {
+  async getApartmentById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = NumberIdSchema.parse(req.params.id);
+      const dto: ApartmentIdDto = {
+        id: NumberIdSchema.parse(req.params.id),
+      };
 
-      const apartment = await apartmentService.getApartmentById(id);
+      const apartment = await apartmentService.getApartmentById(dto);
 
       if (!apartment) {
         throw createError(404, 'Apartment not found');
@@ -18,23 +21,19 @@ class ApartmentController {
         data: [apartment],
       });
     } catch (error) {
-      console.error('아파트 조회 오류:', error);
-
-      throw createError(401, '인증에 실패했습니다. 토큰이 없습니다.');
+      next(error);
     }
   }
 
   async getApartments(req: Request, res: Response, next: NextFunction) {
     try {
-      const page = Number(req.query.page) || 1;
-      const limit = Number(req.query.limit) || 20;
-      const searchKeyword = String(req.query.searchKeyword || '');
+      const dto: GetApartmentDto = {
+        page: Number(req.query.page) || 1,
+        limit: Number(req.query.limit) || 20,
+        searchKeyword: String(req.query.searchKeyword || ''),
+      };
 
-      const result = await apartmentService.getApartments(
-        page,
-        limit,
-        searchKeyword,
-      );
+      const result = await apartmentService.getApartments(dto);
 
       return res.status(200).json(result);
     } catch (error) {
