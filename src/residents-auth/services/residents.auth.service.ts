@@ -1,7 +1,7 @@
 import type { CreateResidentAuthBody } from 'src/lib/type/express/resident.index.js';
 import residentsAuthRepository from '../repositories/residents.auth.repository.js';
 import residentsRepository from '../../residents/repositories/residents.repository.js';
-import { AppError } from '../../middlewares/errorClass.js';
+import createError from 'http-errors';
 import { joinStatus } from 'generated/prisma/enums.js';
 import type { User } from 'generated/prisma/browser.js';
 
@@ -54,13 +54,13 @@ class ResidentsAuthService {
       residentData.username,
     );
     if (userName) {
-      throw new AppError('이미 존재하는 아이디입니다.', 400);
+      throw createError(400, '이미 존재하는 아이디입니다.');
     }
     const apartment = await residentsAuthRepository.findByApartmentId(
       residentData.apartmentName,
     );
     if (!apartment) {
-      throw new AppError('아파트 정보가 없습니다.', 400);
+      throw createError(400, '아파트 정보가 없습니다.');
     }
     const userEmail = await residentsAuthRepository.findByUserEmail(
       residentData.email,
@@ -70,7 +70,7 @@ class ResidentsAuthService {
     );
     let isActive = false;
     if (userEmail && !existingResident) {
-      throw new AppError('이미 존재하는 이메일입니다.', 400);
+      throw createError(400, '이미 존재하는 이메일입니다.');
     } else if (!userEmail && existingResident) {
       isActive = true;
       return isActive;
@@ -120,7 +120,7 @@ class ResidentsAuthService {
   async approveResidentsAuth(userId: number, residentId: number) {
     const admin = await residentsRepository.findById(userId);
     if (!admin || !admin.adminOf) {
-      throw new AppError('관리자 권한이 없습니다.', 403);
+      throw createError(400, '관리자 권한이 없습니다.');
     }
     const apartmentId: number = admin.adminOf.Apartment!.id;
     const residents = await residentsAuthRepository.findByapartmentId(

@@ -1,6 +1,6 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import residentsRepository from '../repositories/residents.repository.js';
-import { AppError } from '../../middlewares/errorClass.js';
+import createError from 'http-errors';
 
 class ResidentsService {
   async getResidents(
@@ -54,7 +54,7 @@ class ResidentsService {
   }
   async getResidentsById(userId: number, residentId: number) {
     if (!residentId) {
-      throw new AppError('입주민 정보가 없습니다.', 400);
+      throw createError(400, '입주민 정보가 없습니다.');
     }
     const residents = await residentsRepository.getResidentsById(
       userId,
@@ -77,14 +77,14 @@ class ResidentsService {
     const admin = await residentsRepository.findById(userId);
     const apartmentId = admin?.adminOf?.Apartment?.id;
     if (!admin || !admin.adminOf) {
-      throw new AppError('관리자 권한이 없습니다.', 403);
+      throw createError(400, '관리자 권한이 없습니다.');
     }
     if (!apartmentId) {
-      throw new AppError('아파트 정보가 없습니다.', 400);
+      throw createError(400, '아파트 정보가 없습니다.');
     }
     const userEmail = await residentsRepository.findByEmail(residentData.email);
     if (userEmail) {
-      throw new AppError('이미 존재하는 사용자입니다.', 400);
+      throw createError(400, '이미 존재하는 사용자입니다.');
     }
     const residents = await residentsRepository.createResidents(
       residentData,
@@ -110,7 +110,7 @@ class ResidentsService {
   ) {
     const admin = await residentsRepository.findById(userId);
     if (!admin || !admin.adminOf) {
-      throw new AppError('관리자 권한이 없습니다.', 403);
+      throw createError(400, '관리자 권한이 없습니다.');
     }
     const residents = await residentsRepository.updateResidents(
       residentId,
@@ -129,7 +129,7 @@ class ResidentsService {
   }
   async deleteResidentById(userId: number, residentId: number) {
     if (!residentId) {
-      throw new AppError('입주민 정보가 없습니다.', 400);
+      throw createError(400, '입주민 정보가 없습니다.');
     }
     return await residentsRepository.deleteResidentById(userId, residentId);
   }

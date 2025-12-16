@@ -40,7 +40,7 @@ model adminOf {
   updatedAt       DateTime    @default(now()) @updatedAt
   userId          Int         @unique
   user            User        @relation(fields: [userId], references: [id])
-  ownedApartments Apartment[]
+  ownedApartments Apartment[] //변수명 Apartment 에서 ownedApartments로 원복시키기
 }
 
 model Resident {

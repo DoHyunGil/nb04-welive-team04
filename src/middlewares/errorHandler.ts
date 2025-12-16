@@ -14,7 +14,6 @@ export default function errorHandler(
     return res
       .status(status)
       .json({ message: err.message, code: status, name: err.name });
-    //  } else if () {
   } else if (err instanceof AppError) {
     console.error(`[${err.status}] ${err.name}: ${err.message}`);
     return res.status(err.status).json({
