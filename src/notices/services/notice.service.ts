@@ -32,8 +32,8 @@ class NoticeService {
       getDto.searchKeyword,
       getDto.category,
     );
-    const page = getDto.page;
-    const limit = getDto.limit;
+    const page = Number(getDto.page) || 1;
+    const limit = Number(getDto.limit) || 20;
     const hasNext = page * limit < totalCount;
     const result = { data, totalCount, page, limit, hasNext };
     return result;

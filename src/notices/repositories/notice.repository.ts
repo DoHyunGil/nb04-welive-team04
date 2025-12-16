@@ -38,7 +38,9 @@ class noticeRepository {
   }
   // 공지 목록 조회
   async getNotices(getDto: GetNoticesDto) {
-    const { page, limit, searchKeyword, category } = getDto;
+    const { searchKeyword, category } = getDto;
+    const page = Number(getDto.page) || 1;
+    const limit = Number(getDto.limit) || 20;
     const offset = (page - 1) * limit;
 
     const searchFilter = searchKeyword

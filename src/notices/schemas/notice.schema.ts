@@ -51,20 +51,10 @@ export type GetNoticesDto = z.infer<typeof getQuerySchema>;
 export type CreateNoticeDto = z.infer<typeof createBodySchema>;
 export type UpdateNoticeDto = z.infer<typeof updateBodySchema>;
 
-export interface LocalResponse extends Response {
-  locals: {
-    validatedQuery: GetNoticesDto;
-    createBody: CreateNoticeDto;
-    updateBody: UpdateNoticeDto;
-    noticeId: number;
-  };
-}
-
 class noticeSchema {
   getNoticesSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = getQuerySchema.safeParse(req.query);
     if (result.success) {
-      res.locals.validatedQuery = result.data;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 입력값입니다.'));
@@ -73,7 +63,6 @@ class noticeSchema {
   createNoticeSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = createBodySchema.safeParse(req.body);
     if (result.success) {
-      res.locals.createBody = result.data;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 입력값입니다.'));
@@ -82,7 +71,6 @@ class noticeSchema {
   updateNoticeSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = updateBodySchema.safeParse(req.body);
     if (result.success) {
-      res.locals.updateBody = result.data;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 입력값입니다.'));
@@ -91,7 +79,6 @@ class noticeSchema {
   paramNoticeSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = noticeParamSchema.safeParse(req.params);
     if (result.success) {
-      res.locals.noticeId = result.data.noticeId;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 공지 ID입니다.'));

@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import noticeService from '../services/notice.service.js';
-import type { LocalResponse } from '../schemas/notice.schema.js';
 import createHttpError from 'http-errors';
+import type { GetNoticesDto } from '../schemas/notice.schema.js';
 
 class NoticeController {
   // 공지 등록 - 관리자 전용
@@ -11,8 +11,7 @@ class NoticeController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const localRes = res as unknown as LocalResponse;
-      const createBody = localRes.locals.createBody;
+      const createBody = req.body;
       const newNotice = await noticeService.createNotice(userId, createBody);
       res.status(201).json(newNotice);
     } catch (error) {
@@ -22,8 +21,7 @@ class NoticeController {
   // 공지 목록 조회
   async getNotices(req: Request, res: Response, next: NextFunction) {
     try {
-      const localRes = res as unknown as LocalResponse;
-      const query = localRes.locals.validatedQuery;
+      const query = req.query as unknown as GetNoticesDto;
       const notices = await noticeService.getNotices(query);
       res.status(200).json(notices);
     } catch (error) {
@@ -33,8 +31,7 @@ class NoticeController {
   // 공지 상세 조회
   async getNoticeById(req: Request, res: Response, next: NextFunction) {
     try {
-      const localRes = res as unknown as LocalResponse;
-      const noticeId = localRes.locals.noticeId;
+      const noticeId = Number(req.params.noticeId);
       const notice = await noticeService.getNoticeById(noticeId);
       res.status(200).json(notice);
     } catch (error) {
@@ -48,9 +45,8 @@ class NoticeController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const localRes = res as unknown as LocalResponse;
-      const noticeId = localRes.locals.noticeId;
-      const updateBody = localRes.locals.updateBody;
+      const noticeId = Number(req.params.noticeId);
+      const updateBody = req.body;
       await noticeService.updateNotice(userId, noticeId, updateBody);
       res.status(204).send();
     } catch (error) {
@@ -64,8 +60,7 @@ class NoticeController {
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
-      const localRes = res as unknown as LocalResponse;
-      const noticeId = localRes.locals.noticeId;
+      const noticeId = Number(req.params.noticeId);
       await noticeService.deleteNotice(userId, noticeId);
       res.status(204).send();
     } catch (error) {

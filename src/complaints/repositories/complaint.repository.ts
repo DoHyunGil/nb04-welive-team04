@@ -27,8 +27,9 @@ class complaintRepository {
 
   // 민원 목록 조회
   async getComplaints(getDto: GetComplaintsDto) {
-    const { page, limit, searchKeyword, status, isPublic, building, unit } =
-      getDto;
+    const { searchKeyword, status, isPublic, building, unit } = getDto;
+    const page = Number(getDto.page) || 1;
+    const limit = Number(getDto.limit) || 20;
     const offset = (page - 1) * limit;
 
     const searchFilter = searchKeyword

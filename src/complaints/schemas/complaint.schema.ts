@@ -53,23 +53,10 @@ export type GetComplaintsDto = z.infer<typeof getQuerySchema>;
 export type CreateComplaintDto = z.infer<typeof createBodySchema>;
 export type UpdateComplaintDto = z.infer<typeof updateBodySchema>;
 
-export interface LocalResponse extends Response {
-  locals: {
-    validatedQuery: GetComplaintsDto;
-    createBody: CreateComplaintDto;
-    updateBody: UpdateComplaintDto;
-    complaint: { complaintId: number };
-    statusBody: {
-      status: complainStatus;
-    };
-  };
-}
-
 class complaintSchema {
   getComplaintsSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = getQuerySchema.safeParse(req.query);
     if (result.success) {
-      res.locals.validatedQuery = result.data;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 입력값입니다.'));
@@ -78,7 +65,6 @@ class complaintSchema {
   createComplaintSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = createBodySchema.safeParse(req.body);
     if (result.success) {
-      res.locals.createBody = result.data;
       return next();
     } else {
       return next(createHttpError(400, `잘못된 입력값입니다.`));
@@ -87,7 +73,6 @@ class complaintSchema {
   updateComplaintSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = updateBodySchema.safeParse(req.body);
     if (result.success) {
-      res.locals.updateBody = result.data;
       return next();
     } else {
       return next(createHttpError(400, `잘못된 입력값입니다.`));
@@ -97,8 +82,6 @@ class complaintSchema {
     const paramResult = statusParamSchema.safeParse(req.params);
     const bodyResult = statusBodySchema.safeParse(req.body);
     if (paramResult.success && bodyResult.success) {
-      res.locals.complaint = paramResult.data;
-      res.locals.statusBody = bodyResult.data;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 입력값입니다.'));
@@ -107,7 +90,6 @@ class complaintSchema {
   paramSchema = (req: Request, res: Response, next: NextFunction) => {
     const result = statusParamSchema.safeParse(req.params);
     if (result.success) {
-      res.locals.complaint = result.data;
       return next();
     } else {
       return next(createHttpError(400, '잘못된 민원 ID입니다.'));
