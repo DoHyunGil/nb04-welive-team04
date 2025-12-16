@@ -2,6 +2,7 @@ import authRouter from './auth.route.js';
 import adminRouter, { superAdminRouter } from './admin.route.js';
 import meRouter from './me.route.js';
 import complaintRouter from './complaint.route.js';
+import apartmentRouter from './apartment.routes.js';
 import residentsRouter from './residents.route.js';
 import residentsAuthRouter from './residents.auth.route.js';
 import noticeRouter from './notice.route.js';
@@ -12,10 +13,11 @@ const routers = {
   adminRouter,
   superAdminRouter,
   meRouter,
-  residentsRouter,
-  residentsAuthRouter,
   complaintRouter,
   noticeRouter,
+  apartmentRouter,
+  residentsRouter,
+  residentsAuthRouter,
 };
 
 Object.freeze(routers);

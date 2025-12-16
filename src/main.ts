@@ -20,12 +20,9 @@ app.use(
   }),
 );
 
-// app.use('/auth', routers.authRouter);
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
-
 app.use('/api/v2/polls', pollsRouter);
 app.use('/api/v2/auth', routers.authRouter);
 app.use('/api/v2/users/super-admins', routers.superAdminRouter);
@@ -35,6 +32,7 @@ app.use('/api/v2/complaints', routers.complaintRouter);
 app.use('/api/v2/notices', routers.noticeRouter);
 app.use('/api/v2/residents', routers.residentsRouter);
 app.use('/api/v2/users/residents', routers.residentsAuthRouter);
+app.use('/api/v2/apartments', routers.apartmentRouter);
 
 app.use(errorHandler);
 
