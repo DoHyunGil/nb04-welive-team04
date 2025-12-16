@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { isHttpError } from 'http-errors';
 
 export default function errorHandler(

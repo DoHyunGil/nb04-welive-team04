@@ -44,5 +44,6 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "exclude": ["node_modules", "dist", "prisma"]
+  "exclude": ["node_modules", "dist", "prisma"],
+  "include": ["src/**/*", "generated/prisma/**/*", "src/lib/type/express/**/*"]
 }

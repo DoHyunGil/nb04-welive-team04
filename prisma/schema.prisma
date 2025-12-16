@@ -21,11 +21,12 @@ model User {
   contact    String
   name       String
   role       Role
-  avatar     String
+  avatar     String?
   joinStatus joinStatus
   isActive   Boolean
   adminOf    adminOf?
-  resident   Resident?
+  residentID   Int @unique
+  resident Resident  @relation (fields: [residentID], references: [id], onDelete: Cascade) 
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
   Complain   Complain[]
@@ -53,13 +54,16 @@ model adminOf {
 
 model Resident {
   id            Int       @id @default(autoincrement())
-  userId        Int       @unique
-  user          User      @relation(fields: [userId], references: [id])
+  userId        User?     
+  email         String
   isHouseholder Boolean
+  contact       String
+  name          String
   building      Int
   unit          Int
   apartmentId   Int
-  apartment     Apartment @relation(fields: [apartmentId], references: [id])
+  isregistered  Boolean  @default(false)
+  apartment     Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 }
@@ -80,7 +84,7 @@ model Apartment {
   Event        Event[]
   adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
   adminOfId    Int?
-  Resident     Resident[]
+  resident     Resident[]
 }
 
 model Complain {

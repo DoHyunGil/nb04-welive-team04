@@ -20,6 +20,8 @@ app.use(
   }),
 );
 
+// app.use('/auth', routers.authRouter);
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
@@ -30,6 +32,8 @@ app.use('/api/v2/users/super-admins', routers.superAdminRouter);
 app.use('/api/v2/users/admins', routers.adminRouter);
 app.use('/api/v2/users', routers.meRouter);
 app.use('/api/v2/complaints', routers.complaintRouter);
+app.use('/api/v2/residents', routers.residentsRouter);
+app.use('/api/v2/users/residents', routers.residentsAuthRouter);
 
 app.use(errorHandler);
 
