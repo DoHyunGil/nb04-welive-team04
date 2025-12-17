@@ -68,7 +68,7 @@ class CommentService {
   }
 
   // 댓글 수정 (권한 체크 포함)
-  async updateComment(userId: number, userRole: string, dto: UpdateCommentDto) {
+  async updateComment(userId: number, dto: UpdateCommentDto) {
     // 댓글 존재 확인
     const comment = await commentRepository.getCommentById(dto.commentId);
     if (!comment) {

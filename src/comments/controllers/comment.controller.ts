@@ -47,8 +47,7 @@ class CommentController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const userRole = req.user?.role;
-      if (!userId || !userRole) {
+      if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
       const dto: UpdateCommentDto = {
@@ -56,7 +55,7 @@ class CommentController {
         content: req.body.content,
       };
 
-      await commentService.updateComment(userId, userRole, dto);
+      await commentService.updateComment(userId, dto);
       res.status(204).json({});
     } catch (error) {
       next(error);

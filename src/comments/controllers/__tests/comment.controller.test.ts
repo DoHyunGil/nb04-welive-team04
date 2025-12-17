@@ -242,14 +242,10 @@ describe('CommentController - 단위 테스트', () => {
         mockNext,
       );
 
-      expect(mockCommentService.updateComment).toHaveBeenCalledWith(
-        1,
-        'RESIDENT',
-        {
-          commentId: 1,
-          content: '수정된 댓글',
-        },
-      );
+      expect(mockCommentService.updateComment).toHaveBeenCalledWith(1, {
+        commentId: 1,
+        content: '수정된 댓글',
+      });
       expect(statusMock).toHaveBeenCalledWith(204);
       expect(jsonMock).toHaveBeenCalledWith({});
     });
