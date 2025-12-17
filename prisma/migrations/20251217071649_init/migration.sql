@@ -11,7 +11,7 @@ CREATE TYPE "complainStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'RESOLVED', 'REJ
 CREATE TYPE "PollStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'CLOSED');
 
 -- CreateEnum
-CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE');
+CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'ETC');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -73,7 +73,11 @@ CREATE TABLE "Apartment" (
     "name" TEXT NOT NULL,
     "address" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "officeNumber" INTEGER NOT NULL,
+    "officeNumber" TEXT NOT NULL,
+    "buildingNumberFrom" INTEGER NOT NULL,
+    "buildingNumberTo" INTEGER NOT NULL,
+    "floorCountPerBuilding" INTEGER NOT NULL,
+    "unitCountPerFloor" INTEGER NOT NULL,
     "buildings" INTEGER[],
     "units" INTEGER[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -147,6 +151,7 @@ CREATE TABLE "Comment" (
     "complainId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "noticeId" INTEGER,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
@@ -158,8 +163,10 @@ CREATE TABLE "Notice" (
     "content" TEXT NOT NULL,
     "category" "NoticeCategory" NOT NULL,
     "isPinned" BOOLEAN NOT NULL,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "authorId" INTEGER NOT NULL,
     "apartmentId" INTEGER NOT NULL,
-    "eventId" INTEGER NOT NULL,
+    "eventId" INTEGER,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -185,6 +192,9 @@ CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Resident_userId_key" ON "Resident"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Apartment_adminOfId_key" ON "Apartment"("adminOfId");
 
 -- CreateIndex
 CREATE INDEX "Poll_status_idx" ON "Poll"("status");
@@ -259,10 +269,16 @@ ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("autho
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_complainId_fkey" FOREIGN KEY ("complainId") REFERENCES "Complain"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_noticeId_fkey" FOREIGN KEY ("noticeId") REFERENCES "Notice"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notice" ADD CONSTRAINT "Notice_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Notice" ADD CONSTRAINT "Notice_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notice" ADD CONSTRAINT "Notice_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Notice" ADD CONSTRAINT "Notice_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
