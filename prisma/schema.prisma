@@ -87,11 +87,7 @@ model Apartment {
   Notice       Notice[]
   Event        Event[]
   adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
-<<<<<<< HEAD
   adminOfId    Int? @unique
-=======
-  adminOfId    Int?
->>>>>>> 9e11e4c1c4b44817f17d4a3e3dacb9ecf1881ba7
   resident     Resident[]
 }
 
