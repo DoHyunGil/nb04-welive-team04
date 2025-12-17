@@ -10,11 +10,11 @@ class ResidentsRepository {
   ) {
     const admin = await prisma.adminOf.findUnique({
       where: { id: userId },
-      include: { ownedApartments: true },
+      include: { apartment: true },
     });
     return prisma.resident.findMany({
       where: {
-        apartmentId: Number(admin?.ownedApartments?.[0]?.id),
+        apartmentId: Number(admin?.apartment?.id),
         ...filters,
       },
       take: Number(limit),
@@ -64,7 +64,7 @@ class ResidentsRepository {
         resident: true,
         adminOf: {
           include: {
-            ownedApartments: true,
+            apartment: true,
           },
         },
       },
