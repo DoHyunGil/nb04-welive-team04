@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import createHttpError from 'http-errors';
+import { startEndDateSchema } from '../../events/schemas/event.schema.js';
 import type { Request, Response, NextFunction } from 'express';
-import type { NoticeCategory } from 'generated/prisma/enums.js';
+import type { NoticeCategory } from '../../../generated/prisma/enums.js';
 
 const NOTICE_CATEGORY = {
   MAINTENANCE: 'MAINTENANCE',
@@ -32,6 +33,7 @@ const createBodySchema = z.object({
     message: '유효하지 않은 상태 값입니다.',
   }),
   isPinned: z.boolean().default(false),
+  event: startEndDateSchema.optional(),
 });
 const updateBodySchema = z.object({
   title: z.string().optional(),
@@ -42,6 +44,7 @@ const updateBodySchema = z.object({
     })
     .optional(),
   isPinned: z.boolean().optional(),
+  event: startEndDateSchema.partial().optional(),
 });
 const noticeParamSchema = z.object({
   noticeId: z.coerce.number().int().positive(),

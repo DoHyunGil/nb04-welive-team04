@@ -125,6 +125,13 @@ class noticeRepository {
         _count: {
           select: { comments: true },
         },
+        event: {
+          select: {
+            id: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
       },
     });
   }
@@ -141,9 +148,21 @@ class noticeRepository {
   }
   // 공지 수정 - 관리자 전용
   async updateNotice(noticeId: number, updateDto: UpdateNoticeDto) {
+    const { title, content, category, isPinned } = updateDto;
     return await prisma.notice.update({
       where: { id: noticeId },
-      data: updateDto,
+      data: { title, content, category, isPinned },
+    });
+  }
+  // 공지에 이벤트 연결
+  async updateNoticeEvent(noticeId: number, eventId: number) {
+    return await prisma.notice.update({
+      where: { id: noticeId },
+      data: {
+        event: {
+          connect: { id: eventId },
+        },
+      },
     });
   }
   // 공지 삭제 - 관리자 전용
