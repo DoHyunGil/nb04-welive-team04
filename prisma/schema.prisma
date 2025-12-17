@@ -25,8 +25,7 @@ model User {
   joinStatus joinStatus
   isActive   Boolean
   adminOf    adminOf?
-  residentID   Int @unique
-  resident Resident  @relation (fields: [residentID], references: [id], onDelete: Cascade) 
+  resident   Resident?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
   Complain   Complain[]
@@ -52,10 +51,10 @@ model adminOf {
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @default(now()) @updatedAt
 }
-
 model Resident {
   id            Int       @id @default(autoincrement())
-  userId        User?     
+  userId        Int?      @unique
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   email         String
   isHouseholder Boolean
   contact       String
@@ -88,8 +87,8 @@ model Apartment {
   Notice       Notice[]
   Event        Event[]
   adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
-  adminOfId    Int?       @unique
-  Resident     Resident[]
+  adminOfId    Int? @unique
+  resident     Resident[]
 }
 
 model Complain {
