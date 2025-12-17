@@ -51,7 +51,6 @@ model adminOf {
   createdAt             DateTime   @default(now())
   updatedAt             DateTime   @default(now()) @updatedAt
 }
-
 model Resident {
   id            Int       @id @default(autoincrement())
   userId        Int?      @unique
@@ -88,7 +87,7 @@ model Apartment {
   Notice       Notice[]
   Event        Event[]
   adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
-  adminOfId    Int?
+  adminOfId    Int? @unique
   resident     Resident[]
 }
 

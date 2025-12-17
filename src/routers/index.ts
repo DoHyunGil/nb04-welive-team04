@@ -18,8 +18,6 @@ const routers = {
   complaintRouter,
   noticeRouter,
   apartmentRouter,
-  residentsRouter,
-  residentsAuthRouter,
 };
 
 Object.freeze(routers);
