@@ -10,11 +10,11 @@ class ResidentsRepository {
   ) {
     const admin = await prisma.adminOf.findUnique({
       where: { id: userId },
-      include: { Apartment: true },
+      include: { ownedApartments: true },
     });
     return prisma.resident.findMany({
       where: {
-        apartmentId: Number(admin?.Apartment?.id),
+        apartmentId: Number(admin?.ownedApartments?.[0]?.id),
         ...filters,
       },
       take: Number(limit),
@@ -35,7 +35,7 @@ class ResidentsRepository {
       unit: residentData.unit,
       isHouseholder: residentData.isHouseholder,
       apartmentId,
-      userId: null,
+      userId: residentData.userId ?? undefined,
     };
 
     return prisma.resident.create({ data });
@@ -64,7 +64,7 @@ class ResidentsRepository {
         resident: true,
         adminOf: {
           include: {
-            Apartment: true,
+            ownedApartments: true,
           },
         },
       },
