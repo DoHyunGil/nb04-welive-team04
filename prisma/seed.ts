@@ -4,7 +4,36 @@ import { hashPassword } from '../src/lib/password.js';
 import { Role, joinStatus } from '../generated/prisma/client.js';
 
 async function main() {
-  console.log('시드 데이터 생성 시작...');
+  console.log("Seeding Apartment...");
+
+  const buildingNumberFrom = 1;
+  const buildingNumberTo = 10;
+  const floorCountPerBuilding = 15;
+  const unitCountPerFloor = 4;
+  // 슈퍼 관리자 계정 생성
+  const existingAdmin = await prisma.user.findFirst({
+    where: { username: 'superadmin' },
+  });
+
+  if (existingAdmin) {
+    console.log('✅ 슈퍼 관리자 계정이 이미 존재합니다:', existingAdmin.email);
+  } else {
+    const superAdmin = await prisma.user.create({
+      data: {
+        username: 'superadmin',
+        password: await hashPassword('superadmin123!'),
+        email: 'superadmin@welive.com',
+        contact: '010-0000-0000',
+        name: '슈퍼관리자',
+        role: Role.SUPER_ADMIN,
+        avatar: '',
+        joinStatus: joinStatus.APPROVED,
+        isActive: true,
+      },
+    });
+
+    console.log('✅ 슈퍼 관리자 계정 생성 완료:', superAdmin.email);
+  }
 
   // 슈퍼 관리자 계정 생성
   const existingAdmin = await prisma.user.findFirst({
@@ -33,92 +62,89 @@ async function main() {
 
   //#region DUMMY(참고용으로 쓰시라고 남겨둘게요)
 
-  // 1. 테스트 아파트 생성
-  // const apartment = await prisma.apartment.upsert({
-  //   where: { id: 1 },
-  //   update: {},
-  //   create: {
-  //     id: 1,
-  //     name: '테스트 아파트',
-  //     address: '서울시 강남구 테헤란로 123',
-  //     description: '테스트용 아파트입니다',
-  //     officeNumber: 1234567890,
-  //     buildings: [101, 102, 103],
-  //     units: [1001, 1002, 1003, 2001, 2002, 2003],
-  //   },
-  // });
-  // console.log('✅ 아파트 생성 완료:', apartment.name);
+  const buildings = Array.from(
+    { length: buildingNumberTo - buildingNumberFrom + 1 },
+    (_, i) => buildingNumberFrom + i
+  );
 
-  // // 2. 테스트 관리자 유저 생성
-  // const adminUser = await prisma.user.upsert({
-  //   where: { id: 1 },
-  //   update: {},
-  //   create: {
-  //     id: 1,
-  //     password: 'test1234',
-  //     username: 'admin',
-  //     email: 'admin@test.com',
-  //     contact: '010-1234-5678',
-  //     name: '테스트관리자',
-  //     role: 'ADMIN',
-  //     avatar: '',
-  //     joinStatus: 'PENDING', // ← 수정!
-  //     isActive: true,
-  //   },
-  // });
-  // console.log('✅ 관리자 유저 생성 완료:', adminUser.email);
+  const units: number[] = [];
+  for (let floor = 1; floor <= floorCountPerBuilding; floor++) {
+    for (let num = 1; num <= unitCountPerFloor; num++) {
+      const unit = floor * 100 + num;
+      units.push(unit);
+    }
+  }
 
-  // // 3. 테스트 입주민 정보 생성
-  // const resident = await prisma.resident.upsert({
-  //   where: { userId: 1 },
-  //   update: {},
-  //   create: {
-  //     userId: 1,
-  //     apartmentId: 1,
-  //     building: 101,
-  //     unit: 1001,
-  //     isHouseholder: true,
-  //   },
-  // });
-  // console.log(
-  //   '✅ 입주민 정보 생성 완료:',
-  //   `${resident.building}동 ${resident.unit}호`,
-  // );
+  // --- 첫 번째 아파트 ---
+  await prisma.apartment.create({
+    data: {
+      name: "래미안 퍼스티지",
+      address: "서울시 강남구 테헤란로 100",
+      description: "래미안 퍼스티지 아파트 단지입니다.",
+      officeNumber: "02-3000-0000",
+      buildingNumberFrom,
+      buildingNumberTo,
+      floorCountPerBuilding,
+      unitCountPerFloor,
+      buildings: buildings,
+      units: units,
+      adminOf: {
+        create: {
+          user: {
+            create: {
+              username: "admin",
+              password: "1234",
+              email: "admin@test.com",
+              contact: "010-1111-2222",
+              name: "관리자",
+              role: "ADMIN",
+              avatar: "",
+              joinStatus: "PENDING",
+              isActive: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
-  // // 4. 추가 테스트 유저 (일반 입주민)
-  // const residentUser = await prisma.user.upsert({
-  //   where: { id: 2 },
-  //   update: {},
-  //   create: {
-  //     id: 2,
-  //     password: 'test1234',
-  //     username: 'resident1',
-  //     email: 'resident@test.com',
-  //     contact: '010-9876-5432',
-  //     name: '테스트입주민',
-  //     role: 'RESIDENT',
-  //     avatar: '',
-  //     joinStatus: 'PENDING', // ← 수정!
-  //     isActive: true,
-  //   },
-  // });
-  // console.log('✅ 입주민 유저 생성 완료:', residentUser.email);
+  // --- 두 번째 아파트 추가 ---
+  await prisma.apartment.create({
+    data: {
+      name: "자이 아파트",
+      address: "서울시 송파구 올림픽로 200",
+      description: "자이 아파트 단지입니다.",
+      officeNumber: "02-4000-0000",
+      buildingNumberFrom,
+      buildingNumberTo,
+      floorCountPerBuilding,
+      unitCountPerFloor,
+      buildings: buildings,
+      units: units,
+      adminOf: {
+        create: {
+          user: {
+            create: {
+              username: "admin2",
+              password: "1234",
+              email: "admin2@test.com",
+              contact: "010-2222-3333",
+              name: "서브 관리자",
+              role: "ADMIN",
+              avatar: "",
+              joinStatus: "PENDING",
+              isActive: true,
+            },
+          },
+        },
+      },
+    },
+  });
 
-  // await prisma.resident.upsert({
-  //   where: { userId: 2 },
-  //   update: {},
-  //   create: {
-  //     userId: 2,
-  //     apartmentId: 1,
-  //     building: 102,
-  //     unit: 1002,
-  //     isHouseholder: false,
-  //   },
-  // });
-  // console.log('✅ 추가 입주민 정보 생성 완료');
-  //#endregion
-  console.log('🎉 시드 데이터 생성 완료!');
-}
+  console.log("🌱 Seed completed!");
+  
+  //seed의 db값 테스트
+  //console.log(await prisma.apartment.findMany());
 
 main()
   .catch((e) => {
@@ -129,3 +155,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+}

@@ -31,6 +31,10 @@ app.use('/api/v2/users/admins', routers.adminRouter);
 app.use('/api/v2/users', routers.meRouter);
 app.use('/api/v2/complaints', routers.complaintRouter);
 app.use('/api/v2/comments', routers.commentRouter);
+app.use('/api/v2/notices', routers.noticeRouter);
+app.use('/api/v2/residents', routers.residentsRouter);
+app.use('/api/v2/users/residents', routers.residentsAuthRouter);
+app.use('/api/v2/apartments', routers.apartmentRouter);
 
 app.use(errorHandler);
 

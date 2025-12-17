@@ -21,21 +21,23 @@ model User {
   contact    String
   name       String
   role       Role
-  avatar     String
+  avatar     String?
   joinStatus joinStatus
   isActive   Boolean
   adminOf    adminOf?
-  resident   Resident?
+  residentID   Int @unique
+  resident Resident  @relation (fields: [residentID], references: [id], onDelete: Cascade) 
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now()) @updatedAt
   Complain   Complain[]
   Poll       Poll[]
   Comment    Comment[]
+  Notice     Notice[]
   PollVote   PollVote[]
 }
 
 model adminOf {
-  id                    Int         @id @default(autoincrement())
+  id                    Int        @id @default(autoincrement())
   name                  String
   address               String
   description           String
@@ -44,22 +46,25 @@ model adminOf {
   buildingNumberTo      Int
   floorCountPerBuilding Int
   unitCountPerFloor     Int
-  userId                Int         @unique
-  user                  User        @relation(fields: [userId], references: [id])
-  ownedApartments       Apartment[]
-  createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @default(now()) @updatedAt
+  userId                Int        @unique
+  user                  User       @relation(fields: [userId], references: [id])
+  apartment             Apartment?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @default(now()) @updatedAt
 }
 
 model Resident {
   id            Int       @id @default(autoincrement())
-  userId        Int       @unique
-  user          User      @relation(fields: [userId], references: [id])
+  userId        User?     
+  email         String
   isHouseholder Boolean
+  contact       String
+  name          String
   building      Int
   unit          Int
   apartmentId   Int
-  apartment     Apartment @relation(fields: [apartmentId], references: [id])
+  isregistered  Boolean  @default(false)
+  apartment     Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 }
@@ -69,7 +74,11 @@ model Apartment {
   name         String
   address      String
   description  String
-  officeNumber Int
+  officeNumber String
+  buildingNumberFrom     Int
+  buildingNumberTo       Int
+  floorCountPerBuilding  Int
+  unitCountPerFloor      Int
   buildings    Int[]
   units        Int[]
   createdAt    DateTime   @default(now())
@@ -79,7 +88,7 @@ model Apartment {
   Notice       Notice[]
   Event        Event[]
   adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
-  adminOfId    Int?
+  adminOfId    Int?       @unique
   Resident     Resident[]
 }
 
@@ -193,10 +202,13 @@ model Notice {
   content     String
   category    NoticeCategory
   isPinned    Boolean
+  viewCount   Int            @default(0)
+  authorId    Int
+  author      User           @relation(fields: [authorId], references: [id])
   apartmentId Int
   apartment   Apartment      @relation(fields: [apartmentId], references: [id])
-  event       Event          @relation(fields: [eventId], references: [id])
-  eventId     Int
+  event       Event?         @relation(fields: [eventId], references: [id])
+  eventId     Int?
   comments    Comment[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @default(now()) @updatedAt
@@ -244,4 +256,9 @@ enum PollStatus {
 
 enum NoticeCategory {
   MAINTENANCE
+  EMERGENCY
+  COMMUNITY
+  RESIDENT_VOTE
+  RESIDENT_COUNCIL
+  ETC
 }
