@@ -13,6 +13,8 @@ const routers = {
   adminRouter,
   superAdminRouter,
   meRouter,
+  residentsRouter,
+  residentsAuthRouter,
   complaintRouter,
   noticeRouter,
   apartmentRouter,

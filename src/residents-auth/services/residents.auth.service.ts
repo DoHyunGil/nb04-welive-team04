@@ -2,8 +2,8 @@ import type { CreateResidentAuthBody } from 'src/lib/type/express/resident.index
 import residentsAuthRepository from '../repositories/residents.auth.repository.js';
 import residentsRepository from '../../residents/repositories/residents.repository.js';
 import createError from 'http-errors';
-import { joinStatus } from 'generated/prisma/enums.js';
-import type { User } from 'generated/prisma/browser.js';
+import { joinStatus } from '../../../generated/prisma/enums.js';
+import type { User } from '../../../generated/prisma/browser.js';
 import type { GetResidentsAuthDto } from '../../lib/type/express/resident.index.js';
 
 class ResidentsAuthService {
@@ -115,7 +115,7 @@ class ResidentsAuthService {
     if (!admin || !admin.adminOf) {
       throw createError(400, '관리자 권한이 없습니다.');
     }
-    const apartmentId: number = admin.adminOf.Apartment!.id;
+    const apartmentId: number = admin.adminOf.ownedApartments[0]!.id;
     const residents = await residentsAuthRepository.findByapartmentId(
       apartmentId,
       residentId,
