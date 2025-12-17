@@ -22,7 +22,7 @@ CREATE TABLE "User" (
     "contact" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "role" "Role" NOT NULL,
-    "avatar" TEXT,
+    "avatar" TEXT NOT NULL,
     "joinStatus" "joinStatus" NOT NULL,
     "isActive" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -52,15 +52,11 @@ CREATE TABLE "adminOf" (
 -- CreateTable
 CREATE TABLE "Resident" (
     "id" SERIAL NOT NULL,
-    "userId" INTEGER,
-    "email" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
     "isHouseholder" BOOLEAN NOT NULL,
-    "contact" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
     "building" INTEGER NOT NULL,
     "unit" INTEGER NOT NULL,
     "apartmentId" INTEGER NOT NULL,
-    "isregistered" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -230,10 +226,10 @@ CREATE UNIQUE INDEX "PollVote_userId_pollId_key" ON "PollVote"("userId", "pollId
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Resident" ADD CONSTRAINT "Resident_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Resident" ADD CONSTRAINT "Resident_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Resident" ADD CONSTRAINT "Resident_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Apartment" ADD CONSTRAINT "Apartment_adminOfId_fkey" FOREIGN KEY ("adminOfId") REFERENCES "adminOf"("id") ON DELETE SET NULL ON UPDATE CASCADE;
