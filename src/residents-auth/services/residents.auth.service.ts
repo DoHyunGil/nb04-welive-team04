@@ -5,6 +5,7 @@ import createError from 'http-errors';
 import { joinStatus } from '../../../generated/prisma/enums.js';
 import type { User } from '../../../generated/prisma/browser.js';
 import type { GetResidentsAuthDto } from '../../lib/type/express/resident.index.js';
+import { hashPassword } from '../../lib/password.js';
 
 class ResidentsAuthService {
   async getResidentsAuth(userId: number, dto: GetResidentsAuthDto) {
@@ -66,12 +67,11 @@ class ResidentsAuthService {
       throw createError(400, '이미 존재하는 이메일입니다.');
     } else if (!userEmail && existingResident) {
       isActive = true;
-      return isActive;
     } else if (!userEmail && !existingResident) {
       isActive = false;
     }
     const apartmentId = apartment.id;
-
+    residentData.password = await hashPassword(residentData.password);
     // 등록된 입주민이 있을 때
     if (existingResident) {
       const residentId: number = existingResident.id;
