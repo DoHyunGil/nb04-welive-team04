@@ -34,7 +34,7 @@ export interface GetResidentsAuthDto {
 }
 
 export interface CreateResidentBody {
-  userId?: number | null;
+  userId?: number;
   name: string;
   contact: string;
   email: string;
