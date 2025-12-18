@@ -32,7 +32,7 @@ class AuthController {
 
   async refresh(req: Request, res: Response, next: NextFunction) {
     try {
-      const refreshToken = req.cookies['refresh-token'];
+      const refreshToken = req.cookies['refresh_token'];
       if (!refreshToken) {
         return next(
           createError(
