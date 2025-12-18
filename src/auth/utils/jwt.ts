@@ -50,11 +50,11 @@ class Jwt {
     const payload = this.verifyRefreshToken(refreshToken);
 
     const newAccessToken = this.signAccessToken({
-      id: payload.id,
+      userId: payload.userId,
     });
 
     const newRefreshToken = this.signRefreshToken({
-      id: payload.id,
+      userId: payload.userId,
     });
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
