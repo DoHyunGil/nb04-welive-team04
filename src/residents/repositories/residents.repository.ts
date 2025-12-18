@@ -31,9 +31,9 @@ class ResidentsRepository {
       name: residentData.name,
       contact: residentData.contact,
       email: residentData.email,
-      building: residentData.building,
-      unit: residentData.unit,
-      isHouseholder: residentData.isHouseholder,
+      building: Number(residentData.building),
+      unit: Number(residentData.unit),
+      isHouseholder: residentData.isHouseholder ?? false,
       apartmentId,
       userId: residentData.userId ?? undefined,
     };
@@ -47,8 +47,8 @@ class ResidentsRepository {
     const data: Partial<CreateResidentBody> = {
       name: residentData.name,
       contact: residentData.contact,
-      building: residentData.building,
-      unit: residentData.unit,
+      building: Number(residentData.building),
+      unit: Number(residentData.unit),
       isHouseholder: residentData.isHouseholder,
     };
 
