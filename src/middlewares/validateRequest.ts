@@ -21,8 +21,14 @@ export function validateBody(schema: z.ZodType) {
 export function validateQuery(schema: z.ZodType) {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
+      const parsed = schema.parse(req.query);
+      // Express 5에서는 req.query가 읽기 전용이므로 Object.defineProperty 사용
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      req.query = schema.parse(req.query) as any;
+      Object.defineProperty(req, 'query', {
+        value: parsed,
+        writable: false,
+        configurable: true,
+      });
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -38,8 +44,14 @@ export function validateQuery(schema: z.ZodType) {
 export function validateParams(schema: z.ZodType) {
   return (req: Request, _res: Response, next: NextFunction) => {
     try {
+      const parsed = schema.parse(req.params);
+      // Express 5에서는 req.params가 읽기 전용이므로 Object.defineProperty 사용
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      req.params = schema.parse(req.params) as any;
+      Object.defineProperty(req, 'params', {
+        value: parsed,
+        writable: false,
+        configurable: true,
+      });
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {

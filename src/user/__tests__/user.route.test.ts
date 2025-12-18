@@ -22,7 +22,7 @@ const mockJwtAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: '인증이 필요합니다.' });
   }
-  req.user = { id: 1, email: 'user@test.com', role: 'RESIDENT' };
+  req.user = { id: 1, role: 'RESIDENT' };
   next();
 };
 
