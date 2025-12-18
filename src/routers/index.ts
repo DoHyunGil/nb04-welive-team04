@@ -13,11 +13,11 @@ const routers = {
   adminRouter,
   superAdminRouter,
   meRouter,
-  residentsRouter,
-  residentsAuthRouter,
   complaintRouter,
   noticeRouter,
   apartmentRouter,
+  residentsRouter,
+  residentsAuthRouter,
 };
 
 Object.freeze(routers);

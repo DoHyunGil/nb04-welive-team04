@@ -61,20 +61,28 @@ async function main() {
       buildingNumberTo,
       floorCountPerBuilding,
       unitCountPerFloor,
-      buildings: buildings,
-      units: units,
+      buildings,
+      units,
       adminOf: {
         create: {
+          name: "래미안 퍼스티지 관리사무소",
+          address: "서울시 강남구 테헤란로 100",
+          description: "래미안 퍼스티지 관리사무소",
+          officeNumber: "02-3000-0000",
+          buildingNumberFrom,
+          buildingNumberTo,
+          floorCountPerBuilding,
+          unitCountPerFloor,
           user: {
             create: {
               username: "admin",
-              password: "1234",
+              password: await hashPassword("admin1234!"),
               email: "admin@test.com",
               contact: "010-1111-2222",
               name: "관리자",
-              role: "ADMIN",
+              role: Role.ADMIN,
               avatar: "",
-              joinStatus: "PENDING",
+              joinStatus: joinStatus.PENDING,
               isActive: true,
             },
           },
@@ -94,20 +102,28 @@ async function main() {
       buildingNumberTo,
       floorCountPerBuilding,
       unitCountPerFloor,
-      buildings: buildings,
-      units: units,
+      buildings,
+      units,
       adminOf: {
         create: {
+          name: "자이 아파트 관리사무소",
+          address: "서울시 송파구 올림픽로 200",
+          description: "자이 아파트 관리사무소",
+          officeNumber: "02-4000-0000",
+          buildingNumberFrom,
+          buildingNumberTo,
+          floorCountPerBuilding,
+          unitCountPerFloor,
           user: {
             create: {
               username: "admin2",
-              password: "1234",
+              password: await hashPassword("admin1234!"),
               email: "admin2@test.com",
               contact: "010-2222-3333",
               name: "서브 관리자",
-              role: "ADMIN",
+              role: Role.ADMIN,
               avatar: "",
-              joinStatus: "PENDING",
+              joinStatus: joinStatus.PENDING,
               isActive: true,
             },
           },
@@ -120,6 +136,7 @@ async function main() {
   
   //seed의 db값 테스트
   //console.log(await prisma.apartment.findMany());
+}
 
 main()
   .catch((e) => {
@@ -130,4 +147,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-}

@@ -20,8 +20,6 @@ app.use(
   }),
 );
 
-// app.use('/auth', routers.authRouter);
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
