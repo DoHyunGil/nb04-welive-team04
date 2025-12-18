@@ -7,6 +7,8 @@ import routers from './routers/index.js';
 import dotenv from 'dotenv';
 import pollsRouter from './routers/polls.route.js';
 import { initPollsScheduler } from './polls/utils/polls.scheduler.js';
+import { requestLogger } from './middlewares/request-logger.js';
+import './lib/passports/index.js'; // Passport 전략 등록
 
 dotenv.config(); // .env 파일 환경변수 적재
 const app = express();
