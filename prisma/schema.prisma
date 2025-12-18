@@ -56,7 +56,7 @@ model Resident {
   userId        Int?      @unique
   user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   email         String
-  isHouseholder Boolean
+  isHouseholder Boolean  @default(false)
   contact       String
   name          String
   building      Int

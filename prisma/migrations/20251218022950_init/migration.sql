@@ -54,7 +54,7 @@ CREATE TABLE "Resident" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER,
     "email" TEXT NOT NULL,
-    "isHouseholder" BOOLEAN NOT NULL,
+    "isHouseholder" BOOLEAN NOT NULL DEFAULT false,
     "contact" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "building" INTEGER NOT NULL,
