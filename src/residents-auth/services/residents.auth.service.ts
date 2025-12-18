@@ -5,6 +5,7 @@ import createError from 'http-errors';
 import { joinStatus } from '../../../generated/prisma/enums.js';
 import type { User } from '../../../generated/prisma/browser.js';
 import type { GetResidentsAuthDto } from '../../lib/type/express/resident.index.js';
+import { hashPassword } from 'src/lib/password.js';
 
 class ResidentsAuthService {
   async getResidentsAuth(userId: number, dto: GetResidentsAuthDto) {
@@ -71,7 +72,7 @@ class ResidentsAuthService {
       isActive = false;
     }
     const apartmentId = apartment.id;
-
+    residentData.password = await hashPassword(residentData.password);
     // 등록된 입주민이 있을 때
     if (existingResident) {
       const residentId: number = existingResident.id;
