@@ -28,6 +28,10 @@ class ApartmentService {
 
     const apartments = await apartmentRepository.findMany(skip, limit, where);
 
+    apartments.forEach((item) => {
+      (item as any).id = String(item.id);
+    });
+
     return {
       data: apartments,
       totalCount: apartments.length,
