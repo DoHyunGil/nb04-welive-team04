@@ -52,7 +52,12 @@ class ResidentsAuthRepository {
   ) {
     return prisma.user.create({
       data: {
-        ...residentData,
+        username: residentData.username,
+        password: residentData.password,
+        email: residentData.email,
+        contact: residentData.contact,
+        name: residentData.name,
+        role: 'RESIDENT',
         joinStatus: joinStatus,
         isActive: isActive,
         resident: {
