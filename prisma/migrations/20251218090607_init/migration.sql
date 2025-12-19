@@ -182,7 +182,7 @@ CREATE TABLE "Event" (
     "category" "NoticeCategory" NOT NULL,
     "title" TEXT NOT NULL,
     "apartmentId" INTEGER NOT NULL,
-    "resourceId" INTEGER NOT NULL,
+    "resourceId" TEXT NOT NULL,
     "resourceType" "EventResourceType" NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,

@@ -28,14 +28,6 @@ class eventSchema {
       return next(createHttpError(400, '잘못된 입력값입니다.'));
     }
   };
-  eventDateSchema = (req: Request, res: Response, next: NextFunction) => {
-    const result = startEndDateSchema.safeParse(req.body);
-    if (result.success) {
-      return next();
-    } else {
-      return next(createHttpError(400, '잘못된 입력값입니다.'));
-    }
-  };
 }
 
 export const eventValidator = new eventSchema();

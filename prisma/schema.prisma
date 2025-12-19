@@ -210,7 +210,7 @@ model Event {
   title        String
   apartmentId  Int
   apartment    Apartment         @relation(fields: [apartmentId], references: [id])
-  resourceId   Int
+  resourceId   String
   resourceType EventResourceType
   startDate    DateTime
   endDate      DateTime

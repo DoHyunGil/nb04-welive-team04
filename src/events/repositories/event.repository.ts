@@ -1,6 +1,7 @@
 import { prisma } from '../../lib/prisma.js';
 import type { GetEventsDto } from '../schemas/event.schema.js';
 import type { CreateEventDto, UpdateEventDto } from '../types/event.types.js';
+import type { EventResourceType } from '../../../generated/prisma/enums.js';
 
 class EventRepository {
   // 이벤트 목록 조회
@@ -36,39 +37,16 @@ class EventRepository {
 
   // 이벤트 생성
   async createEvent(createDto: CreateEventDto) {
-    const {
-      startDate,
-      endDate,
-      category,
-      title,
-      apartmentId,
-      resourceId,
-      resourceType,
-    } = createDto;
     return await prisma.event.create({
-      data: {
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        category,
-        title,
-        apartmentId,
-        resourceId,
-        resourceType,
-      },
+      data: createDto,
     });
   }
 
   // 이벤트 수정
   async updateEvent(eventId: number, updateDto: UpdateEventDto) {
-    const { startDate, endDate, category, title } = updateDto;
     return await prisma.event.update({
       where: { id: eventId },
-      data: {
-        startDate: startDate ? new Date(startDate) : undefined,
-        endDate: endDate ? new Date(endDate) : undefined,
-        category,
-        title,
-      },
+      data: updateDto,
     });
   }
 
@@ -90,6 +68,26 @@ class EventRepository {
           },
         },
       },
+    });
+  }
+
+  // resourceType과 resourceId로 이벤트 찾기
+  async findEventByResource(
+    resourceType: EventResourceType,
+    resourceId: string,
+  ) {
+    return await prisma.event.findFirst({
+      where: {
+        resourceType,
+        resourceId,
+      },
+    });
+  }
+
+  // 이벤트 삭제
+  async deleteEvent(eventId: number) {
+    return await prisma.event.delete({
+      where: { id: eventId },
     });
   }
 }

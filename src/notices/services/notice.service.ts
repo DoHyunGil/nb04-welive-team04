@@ -29,10 +29,10 @@ class NoticeService {
       const newEvent = await eventRepository.createEvent({
         title,
         category,
-        startDate,
-        endDate,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
         apartmentId: newNotice.apartmentId,
-        resourceId: newNotice.id,
+        resourceId: newNotice.id.toString(),
         resourceType: 'NOTICE',
       });
       // 공지에 이벤트 연결
@@ -95,30 +95,46 @@ class NoticeService {
     if (!notice) {
       throw createHttpError(404, '해당 공지가 존재하지 않습니다.');
     }
-    if (updateDto.event) {
-      // 날짜 있는 경우
-      const eventId = notice.event!.id;
-      const updatedNotice = await noticeRepository.updateNotice(
-        noticeId,
-        updateDto,
-      );
-      const { title, category } = updateDto;
-      const { startDate, endDate } = updateDto.event;
+    let updatedNotice = await noticeRepository.updateNotice(
+      noticeId,
+      updateDto,
+    );
+    const eventId = notice.event?.id;
+
+    const { title, category } = updateDto;
+    const startDate = updateDto.event?.startDate;
+    const endDate = updateDto.event?.endDate;
+    if (eventId) {
+      // 기존 이벤트 수정
       await eventRepository.updateEvent(eventId, {
-        startDate,
-        endDate,
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
         category,
         title,
       });
-      return updatedNotice;
     } else {
-      // 날짜 없는 경우
-      const updatedNotice = await noticeRepository.updateNotice(
-        noticeId,
-        updateDto,
+      // 새로운 이벤트 생성
+      if (!startDate || !endDate) {
+        throw createHttpError(
+          400,
+          '이벤트 시작일과 종료일을 모두 입력해주세요.',
+        );
+      }
+      const newEvent = await eventRepository.createEvent({
+        title: updatedNotice.title,
+        category: updatedNotice.category,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        apartmentId: updatedNotice.apartmentId,
+        resourceId: updatedNotice.id.toString(),
+        resourceType: 'NOTICE',
+      });
+      updatedNotice = await noticeRepository.updateNoticeEvent(
+        updatedNotice.id,
+        newEvent.id,
       );
-      return updatedNotice;
     }
+    return updatedNotice;
   }
   // 공지 삭제 - 관리자 전용
   async deleteNotice(userId: number, noticeId: number) {
@@ -131,6 +147,7 @@ class NoticeService {
       throw createHttpError(404, '해당 공지가 존재하지 않습니다.');
     }
     await noticeRepository.deleteNotice(noticeId);
+    if (notice.event) await eventRepository.deleteEvent(notice.event.id);
   }
 }
 

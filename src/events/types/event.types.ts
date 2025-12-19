@@ -10,7 +10,7 @@ export interface CreateEventDto {
   category: NoticeCategory;
   title: string;
   apartmentId: number;
-  resourceId: number;
+  resourceId: string;
   resourceType: EventResourceType;
 }
 
