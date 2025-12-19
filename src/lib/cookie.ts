@@ -13,7 +13,7 @@ const baseCookieOptions: CookieOptions = {
 export function setAccessTokenCookie(res: Response, accessToken: string): void {
   res.cookie('access_token', accessToken, {
     ...baseCookieOptions,
-    maxAge: token.access_token.expireAt,
+    maxAge: token.access_token.maxAge,
   });
 }
 
@@ -23,7 +23,7 @@ export function setRefreshTokenCookie(
 ): void {
   res.cookie('refresh_token', refreshToken, {
     ...baseCookieOptions,
-    maxAge: token.refresh_token.expireAt,
+    maxAge: token.refresh_token.maxAge,
   });
 }
 
