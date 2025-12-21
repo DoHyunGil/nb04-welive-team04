@@ -60,6 +60,13 @@ class ApartmentRepository {
   async count(where?: Prisma.ApartmentWhereInput) {
     return prisma.apartment.count({ where });
   }
+
+  async create(data: Prisma.ApartmentCreateInput) {
+    return prisma.apartment.create({
+      data,
+      select: apartment_select,
+    });
+  }
 }
 
 export default new ApartmentRepository();
