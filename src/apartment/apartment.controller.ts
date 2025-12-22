@@ -8,7 +8,7 @@ class ApartmentController {
   async getApartmentById(req: Request, res: Response, next: NextFunction) {
     try {
       const dto: ApartmentIdDto = {
-        id: NumberIdSchema.parse(req.params.id),
+        id: Number(req.params.id),
       };
 
       const apartment = await apartmentService.getApartmentById(dto);
@@ -18,7 +18,7 @@ class ApartmentController {
       }
 
       return res.status(200).json({
-        data: [apartment],
+        data: apartment,
       });
     } catch (error) {
       next(error);

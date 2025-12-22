@@ -1,5 +1,9 @@
 import TOKEN from '../constants/jwt.tokens.js';
-import { Strategy as JwtStrategy, type VerifiedCallback, ExtractJwt } from 'passport-jwt';
+import {
+  Strategy as JwtStrategy,
+  type VerifiedCallback,
+  ExtractJwt,
+} from 'passport-jwt';
 import { prisma } from '../prisma.js';
 import type { Request } from 'express';
 

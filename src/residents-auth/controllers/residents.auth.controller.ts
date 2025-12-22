@@ -27,9 +27,11 @@ class ResidentsAuthController {
     try {
       const userId = Number(req.user!.id);
       const residentId = Number(req.params.id);
+      const residentData: Partial<CreateResidentAuthBody> = { ...req.body };
       const data = await ResidentsAuthService.approveResidentsAuth(
         userId,
         residentId,
+        residentData,
       );
       res.status(201).send(data);
     } catch (error) {

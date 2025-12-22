@@ -12,14 +12,14 @@ class ResidentsService {
         { name: { contains: dto.searchKeyword } },
       ];
     }
-    if (dto.building) filters.building = dto.building;
-    if (dto.unit) filters.unit = dto.unit;
-    if (dto.isHouseholder !== undefined)
-      filters.isHouseholder = dto.isHouseholder === true;
-    // || dto.isHouseholder === 'true'; boolean이아니라 string로 들어올수도 있어서 체크후 삭제 예정
-    if (dto.isRegistered !== undefined)
-      filters.isRegistered = dto.isRegistered === true;
-    // || dto.isRegistered === 'true'; boolean이아니라 string로 들어올수도 있어서 체크후 삭제 예정
+    if (dto.building) filters.building = Number(dto.building);
+    if (dto.unit) filters.unit = Number(dto.unit);
+    if (dto.isHouseholder !== undefined) {
+      filters.isHouseholder = dto.isHouseholder === 'true';
+    }
+    if (dto.isRegistered !== undefined) {
+      filters.isRegistered = dto.isRegistered === 'true';
+    }
     const residents = await residentsRepository.getResidents(
       userId,
       dto.page,
@@ -32,8 +32,8 @@ class ResidentsService {
       email: resident.email,
       contact: resident.contact,
       name: resident.name,
-      building: resident.building,
-      unit: resident.unit,
+      building: Number(resident.building),
+      unit: Number(resident.unit),
       isHouseholder: resident.isHouseholder,
       userId: resident.userId
         ? { connect: { id: resident.userId } }
@@ -61,9 +61,9 @@ class ResidentsService {
       email: residents?.email,
       contact: residents?.contact,
       name: residents?.name,
-      building: residents?.building,
-      unit: residents?.unit,
-      isHouseholder: residents?.isHouseholder, // string으로 나가는지 boolean 값으로 나가는지 확인 필요
+      building: Number(residents?.building),
+      unit: Number(residents?.unit),
+      isHouseholder: residents?.isHouseholder,
       userId: residents?.userId ?? null,
     };
     return data;
@@ -85,14 +85,16 @@ class ResidentsService {
       residentData,
       apartmentId,
     );
+    if (residents.isHouseholder !== undefined) {
+      residents.isHouseholder = residentData.isHouseholder === true;
+    }
     const data = {
       id: residents.id,
-      createdAt: new Date(),
       email: residents.email,
       contact: residents.contact,
       name: residents.name,
-      building: residents.building,
-      unit: residents.unit,
+      building: Number(residents.building),
+      unit: Number(residents.unit),
       isHouseholder: residents.isHouseholder,
       userId: residents.userId,
     };

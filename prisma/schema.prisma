@@ -62,7 +62,7 @@ model Resident {
   building      Int
   unit          Int
   apartmentId   Int
-  isregistered  Boolean  @default(false)
+  isRegistered  Boolean  @default(false)
   apartment     Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt

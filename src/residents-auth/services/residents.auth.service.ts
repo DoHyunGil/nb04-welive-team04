@@ -32,7 +32,7 @@ class ResidentsAuthService {
       email: resident.email,
       name: resident.name,
       contact: resident.contact,
-      joinStatus: resident.user!.joinStatus,
+      joinStatus: resident.user?.joinStatus ?? joinStatus.PENDING,
       resident: {
         id: resident.id,
         building: resident.building,
@@ -110,16 +110,23 @@ class ResidentsAuthService {
     }
   }
 
-  async approveResidentsAuth(userId: number, residentId: number) {
+  async approveResidentsAuth(
+    userId: number,
+    residentId: number,
+    residentData: Partial<CreateResidentAuthBody>,
+  ) {
     const admin = await residentsRepository.findById(userId);
     if (!admin || !admin.adminOf) {
       throw createError(400, '관리자 권한이 없습니다.');
     }
+    console.log(residentData);
     const apartmentId: number = admin.adminOf.apartment!.id;
     const residents = await residentsAuthRepository.findByapartmentId(
       apartmentId,
       residentId,
     );
+    console.log(residents);
+    console.log('residentId:', residentId);
     // resident는 배열 : 로그인한 관리자 아파트에 속한 user의 Id
     const userIds = residents.map((r) => r.userId);
     const validUserIds = userIds.filter((id): id is number => id !== null);
