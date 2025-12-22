@@ -8,6 +8,7 @@ import type {
 } from '../controllers/polls.types.js';
 import pollsRepository from '../repositories/polls.repository.js';
 import eventRepository from '../../events/repositories/event.repository.js';
+import noticeRepository from '../../notices/repositories/notice.repository.js';
 
 const allowedRoles = ['ADMIN', 'SUPER_ADMIN'];
 
@@ -280,7 +281,17 @@ class PollsService {
     for (const poll of closingPolls) {
       await pollsRepository.closePoll(poll.id);
 
-      // TODO: 공지사항 자동 생성
+      const content = `투표 "${poll.title}"가 종료되었습니다. 결과를 확인해주세요.`;
+      const adminOfId = await noticeRepository.getAdminOfIdByUserId(
+        poll.authorId,
+      );
+      await noticeRepository.createNotice(adminOfId!.id, poll.authorId, {
+        title: poll.title,
+        content,
+        category: 'RESIDENT_VOTE',
+        isPinned: false,
+      });
+
       closedCount++;
     }
 
