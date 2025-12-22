@@ -10,11 +10,11 @@ class ResidentsAuthRepository {
   ) {
     const admin = await prisma.adminOf.findUnique({
       where: { id: userId },
-      select: { Apartment: true },
+      select: { apartment: true },
     });
     return prisma.resident.findMany({
       where: {
-        apartmentId: admin?.Apartment?.id,
+        apartmentId: admin?.apartment?.id,
         ...filters,
       },
       include: {
@@ -52,7 +52,12 @@ class ResidentsAuthRepository {
   ) {
     return prisma.user.create({
       data: {
-        ...residentData,
+        username: residentData.username,
+        password: residentData.password,
+        email: residentData.email,
+        contact: residentData.contact,
+        name: residentData.name,
+        role: 'RESIDENT',
         joinStatus: joinStatus,
         isActive: isActive,
         resident: {

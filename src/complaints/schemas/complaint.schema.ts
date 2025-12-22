@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import createHttpError from 'http-errors';
 import type { Request, Response, NextFunction } from 'express';
-import type { complainStatus } from 'generated/prisma/enums.js';
+import type { complainStatus } from '../../../generated/prisma/enums.js';
 
 const COMPLAINT_STATUS = {
   PENDING: 'PENDING',

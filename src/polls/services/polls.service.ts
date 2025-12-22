@@ -20,6 +20,10 @@ class PollsService {
 
     if (!user) throw createError(404, '사용자를 찾을 수 없습니다.');
 
+    if (allowedRoles.includes(user.role)) {
+      return { user, resident: user.resident || null };
+    }
+
     if (!user.resident) {
       throw createError(
         403,

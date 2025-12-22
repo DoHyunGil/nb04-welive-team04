@@ -35,7 +35,9 @@ class ResidentsService {
       building: resident.building,
       unit: resident.unit,
       isHouseholder: resident.isHouseholder,
-      userId: resident.userId, // isRegistered 확인용 인듯 (프론트와 연결시 확인 필요)
+      userId: resident.userId
+        ? { connect: { id: resident.userId } }
+        : undefined, // isRegistered 확인용 인듯 (프론트와 연결시 확인 필요)
     }));
     return {
       data,
@@ -62,13 +64,13 @@ class ResidentsService {
       building: residents?.building,
       unit: residents?.unit,
       isHouseholder: residents?.isHouseholder, // string으로 나가는지 boolean 값으로 나가는지 확인 필요
-      userId: residents?.userId,
+      userId: residents?.userId ?? null,
     };
     return data;
   }
   async createResidents(userId: number, residentData: CreateResidentBody) {
     const admin = await residentsRepository.findById(userId);
-    const apartmentId = admin?.adminOf?.Apartment?.id;
+    const apartmentId = admin?.adminOf?.apartment?.id;
     if (!admin || !admin.adminOf) {
       throw createError(400, '관리자 권한이 없습니다.');
     }

@@ -11,9 +11,9 @@ const baseCookieOptions: CookieOptions = {
 };
 
 export function setAccessTokenCookie(res: Response, accessToken: string): void {
-  res.cookie('access-token', accessToken, {
+  res.cookie('access_token', accessToken, {
     ...baseCookieOptions,
-    maxAge: token.access_token.expireAt,
+    maxAge: token.access_token.maxAge,
   });
 }
 
@@ -21,13 +21,13 @@ export function setRefreshTokenCookie(
   res: Response,
   refreshToken: string,
 ): void {
-  res.cookie('refresh-token', refreshToken, {
+  res.cookie('refresh_token', refreshToken, {
     ...baseCookieOptions,
-    maxAge: token.refresh_token.expireAt,
+    maxAge: token.refresh_token.maxAge,
   });
 }
 
 export function clearAuthCookies(res: Response): void {
-  res.clearCookie('access-token', baseCookieOptions);
-  res.clearCookie('refresh-token', baseCookieOptions);
+  res.clearCookie('access_token', baseCookieOptions);
+  res.clearCookie('refresh_token', baseCookieOptions);
 }
