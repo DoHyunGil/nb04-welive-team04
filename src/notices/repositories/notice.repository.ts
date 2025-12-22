@@ -27,12 +27,16 @@ class noticeRepository {
         content,
         category,
         isPinned,
+        viewsCount: 0,
         apartment: {
           connect: { adminOfId },
         },
         author: {
           connect: { id: userId },
         },
+      },
+      include: {
+        author: { select: { id: true, name: true } },
       },
     });
   }
@@ -70,7 +74,7 @@ class noticeRepository {
         content: true,
         category: true,
         isPinned: true,
-        viewCount: true,
+        viewsCount: true,
         apartmentId: true,
         author: {
           select: {
@@ -114,7 +118,7 @@ class noticeRepository {
         content: true,
         category: true,
         isPinned: true,
-        viewCount: true,
+        viewsCount: true,
         apartmentId: true,
         author: {
           select: {
@@ -140,7 +144,7 @@ class noticeRepository {
     await prisma.notice.update({
       where: { id: noticeId },
       data: {
-        viewCount: {
+        viewsCount: {
           increment: 1,
         },
       },
@@ -152,6 +156,9 @@ class noticeRepository {
     return await prisma.notice.update({
       where: { id: noticeId },
       data: { title, content, category, isPinned },
+      include: {
+        author: { select: { id: true, name: true } },
+      },
     });
   }
   // 공지에 이벤트 연결
@@ -162,6 +169,9 @@ class noticeRepository {
         event: {
           connect: { id: eventId },
         },
+      },
+      include: {
+        author: { select: { id: true, name: true } },
       },
     });
   }

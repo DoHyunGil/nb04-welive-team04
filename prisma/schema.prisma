@@ -97,7 +97,7 @@ model Complain {
   title         String
   content       String
   isPublic      Boolean        @default(false)
-  viewCount     Int            @default(0)
+  viewsCount    Int            @default(0)
   status        complainStatus @default(PENDING)
   comments      Comment[]
   apartmentId   Int
@@ -192,7 +192,7 @@ model Notice {
   content     String
   category    NoticeCategory
   isPinned    Boolean
-  viewCount   Int            @default(0)
+  viewsCount  Int            @default(0)
   authorId    Int
   author      User           @relation(fields: [authorId], references: [id])
   apartmentId Int
