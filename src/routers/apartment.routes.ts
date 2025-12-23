@@ -5,7 +5,7 @@ import passports from '../lib/passports/index.js';
 
 const router = Router();
 
-router.get('/', passports.jwtAuth, apartmentController.getApartments);
+router.get('/', apartmentController.getApartments);
 router.get(
   '/:id',
   passports.jwtAuth,

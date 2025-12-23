@@ -12,22 +12,25 @@ router.get(
   ResidentsAuthController.getResidentsAuth,
 );
 router.post(
-  '/',
-  passports.jwtAuth,
+  '/', // 입주민 회원 가입, 인증 불필요
   residentsAuthSchema.createResidentsAuthSchema,
   ResidentsAuthController.createResidents,
 );
-router.post(
+router.patch(
   '/join-status',
   passports.jwtAuth,
-  residentsAuthSchema.checkResidentIdAuthSchema,
   ResidentsAuthController.updateResidents,
 );
-router.post(
+router.patch(
   '/:id/join-status',
   passports.jwtAuth,
   residentsAuthSchema.checkResidentIdAuthSchema,
   ResidentsAuthController.updateResidents,
+);
+router.delete(
+  '/rejected',
+  passports.jwtAuth,
+  ResidentsAuthController.deleteRejectedResidents,
 );
 
 export default router;

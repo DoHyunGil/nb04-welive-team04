@@ -29,10 +29,9 @@ class ResidentsController {
     try {
       const userId = Number(req.user?.id);
       const residentData: CreateResidentBody = req.body;
-      console.log(residentData);
       const data = await residentService.createResidents(userId, residentData);
-      console.log(data);
       res.status(201).send({ data: data });
+      console.log(data);
     } catch (error) {
       next(error);
     }

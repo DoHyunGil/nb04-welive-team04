@@ -27,8 +27,7 @@ class ResidentsService {
       filters,
     );
     const data = residents.map((resident) => ({
-      id: resident.id,
-      createdAt: resident.createdAt,
+      id: resident.id.toString(),
       email: resident.email,
       contact: resident.contact,
       name: resident.name,
@@ -89,7 +88,8 @@ class ResidentsService {
       residents.isHouseholder = residentData.isHouseholder === true;
     }
     const data = {
-      id: residents.id,
+      id: residents.id.toString(),
+      createdAt: new Date().toString(),
       email: residents.email,
       contact: residents.contact,
       name: residents.name,
