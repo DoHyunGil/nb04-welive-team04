@@ -4,8 +4,17 @@ import userRepository from '../repositories/user.repository.js';
 import type { UserPasswordUpdateRequest } from '../repositories/types/user.types.js';
 
 class UserService {
+  // 사용자 조회
+  async getUserById(userId: number) {
+    const user = await userRepository.findUserById(userId);
+    if (!user) {
+      throw createError(404, '사용자를 찾을 수 없습니다.');
+    }
+    return user;
+  }
+
   // 아바타 업데이트
-  async updateAvatar(userId: number, avatarPath: string) {
+  async updateAvatar(userId: number, avatarPath: string | null) {
     // 1. 사용자 존재 확인
     const user = await userRepository.findUserById(userId);
     if (!user) {

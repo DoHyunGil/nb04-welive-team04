@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import createError from 'http-errors';
 import userService from '../services/user.service.js';
+import { uploadToS3, deleteFromS3 } from '../../lib/aws-s3.js';
 
 // 인증된 사용자의 정보 타입
 interface AuthenticatedUser {
@@ -22,11 +23,49 @@ class UserController {
         throw createError(400, '이미지 파일이 필요합니다.');
       }
 
-      // 3. 파일 경로 생성 (uploads 폴더에 저장된 파일 경로)
-      const avatarPath = `/uploads/${req.file.filename}`;
+      // 3. 현재 사용자 정보 조회 (기존 아바타 URL 확인)
+      const currentUser = await userService.getUserById(user.id);
+      const oldAvatarUrl = currentUser?.avatar;
 
-      // 4. userService의 updateAvatar 함수 호출
-      await userService.updateAvatar(user.id, avatarPath);
+      // 4. S3에 파일 업로드
+      const avatarUrl = await uploadToS3(req.file, 'avatars');
+
+      // 5. 데이터베이스에 새 아바타 URL 저장
+      await userService.updateAvatar(user.id, avatarUrl);
+
+      // 6. 기존 S3 이미지가 있으면 삭제
+      if (oldAvatarUrl && oldAvatarUrl.includes('s3.amazonaws.com')) {
+        await deleteFromS3(oldAvatarUrl);
+      }
+
+      // 7. 성공 응답 (204 No Content)
+      res.status(204).send();
+    } catch (error) {
+      // 에러 발생 시 에러 핸들러로 전달
+      next(error);
+    }
+  }
+
+  // 프로필 이미지 삭제 API
+  async deleteAvatar(req: Request, res: Response, next: NextFunction) {
+    try {
+      // 1. 인증된 사용자 정보 가져오기
+      const user = req.user as AuthenticatedUser;
+      if (!user) {
+        throw createError(401, '인증이 필요합니다.');
+      }
+
+      // 2. 현재 사용자 정보 조회 (기존 아바타 URL 확인)
+      const currentUser = await userService.getUserById(user.id);
+      const avatarUrl = currentUser?.avatar;
+
+      // 3. S3에서 이미지 삭제
+      if (avatarUrl && avatarUrl.includes('s3.amazonaws.com')) {
+        await deleteFromS3(avatarUrl);
+      }
+
+      // 4. 데이터베이스에서 아바타 URL을 null로 설정
+      await userService.updateAvatar(user.id, null);
 
       // 5. 성공 응답 (204 No Content)
       res.status(204).send();
