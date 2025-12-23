@@ -146,15 +146,11 @@ class ResidentsAuthService {
     // resident는 배열 : 로그인한 관리자 아파트에 속한 user의 Id
     const userIds = residents.map((r) => r.userId);
     const validUserIds = userIds.filter((id): id is number => id !== null);
-    try {
-      const residentIds =
-        await residentsAuthRepository.deleteRejectedResidents(validUserIds);
-      const data =
-        await residentsAuthRepository.deleteRejectedResidentsAuth(validUserIds);
-      return { data, residentIds };
-    } catch (error) {
-      throw createError(500, '거절된 입주민 계정 삭제에 실패했습니다.');
-    }
+    const residentIds =
+      await residentsAuthRepository.deleteRejectedResidents(validUserIds);
+    const data =
+      await residentsAuthRepository.deleteRejectedResidentsAuth(validUserIds);
+    return { data, residentIds };
   }
 }
 
