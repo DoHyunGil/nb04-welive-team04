@@ -18,7 +18,6 @@ class ResidentsController {
     try {
       const userId = Number(req.user?.id);
       const residentId = Number(req.params.id);
-      console.log(residentId);
       const data = await residentService.getResidentsById(userId, residentId);
       res.send(data);
     } catch (error) {
@@ -30,7 +29,7 @@ class ResidentsController {
       const userId = Number(req.user?.id);
       const residentData: CreateResidentBody = req.body;
       const data = await residentService.createResidents(userId, residentData);
-      res.status(201).send(data);
+      res.status(201).send({ data: data });
     } catch (error) {
       next(error);
     }

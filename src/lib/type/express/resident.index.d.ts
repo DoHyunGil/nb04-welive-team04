@@ -20,8 +20,8 @@ export interface GetResidentsDto {
   joinStatus?: joinStatus;
   building?: number;
   unit?: number;
-  isHouseholder?: boolean;
-  isRegistered?: boolean;
+  isHouseholder?: string;
+  isRegistered?: string;
 }
 
 export interface GetResidentsAuthDto {

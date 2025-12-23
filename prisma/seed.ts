@@ -1,4 +1,4 @@
-// prisma/seed.ts
+  // prisma/seed.ts
 import { prisma } from '../src/lib/prisma.js';
 import { hashPassword } from '../src/lib/password.js';
 import { Role, joinStatus } from '../generated/prisma/client.js';
@@ -26,7 +26,7 @@ async function main() {
         contact: '010-0000-0000',
         name: '슈퍼관리자',
         role: Role.SUPER_ADMIN,
-        avatar: '',
+        avatar: null,
         joinStatus: joinStatus.APPROVED,
         isActive: true,
       },
@@ -81,7 +81,7 @@ async function main() {
               contact: '010-1111-2222',
               name: '관리자',
               role: Role.ADMIN,
-              avatar: '',
+              avatar: null,
               joinStatus: joinStatus.PENDING,
               isActive: true,
             },
@@ -122,7 +122,7 @@ async function main() {
               contact: '010-2222-3333',
               name: '서브 관리자',
               role: Role.ADMIN,
-              avatar: '',
+              avatar: null,
               joinStatus: joinStatus.PENDING,
               isActive: true,
             },
