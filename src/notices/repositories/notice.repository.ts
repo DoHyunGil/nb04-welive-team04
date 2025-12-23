@@ -27,12 +27,16 @@ class noticeRepository {
         content,
         category,
         isPinned,
+        viewsCount: 0,
         apartment: {
           connect: { adminOfId },
         },
         author: {
           connect: { id: userId },
         },
+      },
+      include: {
+        author: { select: { id: true, name: true } },
       },
     });
   }
@@ -70,7 +74,7 @@ class noticeRepository {
         content: true,
         category: true,
         isPinned: true,
-        viewCount: true,
+        viewsCount: true,
         apartmentId: true,
         author: {
           select: {
@@ -114,7 +118,7 @@ class noticeRepository {
         content: true,
         category: true,
         isPinned: true,
-        viewCount: true,
+        viewsCount: true,
         apartmentId: true,
         author: {
           select: {
@@ -125,6 +129,13 @@ class noticeRepository {
         _count: {
           select: { comments: true },
         },
+        event: {
+          select: {
+            id: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
       },
     });
   }
@@ -133,7 +144,7 @@ class noticeRepository {
     await prisma.notice.update({
       where: { id: noticeId },
       data: {
-        viewCount: {
+        viewsCount: {
           increment: 1,
         },
       },
@@ -141,9 +152,27 @@ class noticeRepository {
   }
   // 공지 수정 - 관리자 전용
   async updateNotice(noticeId: number, updateDto: UpdateNoticeDto) {
+    const { title, content, category, isPinned } = updateDto;
     return await prisma.notice.update({
       where: { id: noticeId },
-      data: updateDto,
+      data: { title, content, category, isPinned },
+      include: {
+        author: { select: { id: true, name: true } },
+      },
+    });
+  }
+  // 공지에 이벤트 연결
+  async updateNoticeEvent(noticeId: number, eventId: number) {
+    return await prisma.notice.update({
+      where: { id: noticeId },
+      data: {
+        event: {
+          connect: { id: eventId },
+        },
+      },
+      include: {
+        author: { select: { id: true, name: true } },
+      },
     });
   }
   // 공지 삭제 - 관리자 전용
