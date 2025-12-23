@@ -35,31 +35,6 @@ async function main() {
     console.log('✅ 슈퍼 관리자 계정 생성 완료:', superAdmin.email);
   }
 
-  // 슈퍼 관리자 계정 생성
-  const existingAdmin = await prisma.user.findFirst({
-    where: { username: 'superadmin' },
-  });
-
-  if (existingAdmin) {
-    console.log('✅ 슈퍼 관리자 계정이 이미 존재합니다:', existingAdmin.email);
-  } else {
-    const superAdmin = await prisma.user.create({
-      data: {
-        username: 'superadmin',
-        password: await hashPassword('superadmin123!'),
-        email: 'superadmin@welive.com',
-        contact: '010-0000-0000',
-        name: '슈퍼관리자',
-        role: Role.SUPER_ADMIN,
-        avatar: '',
-        joinStatus: joinStatus.APPROVED,
-        isActive: true,
-      },
-    });
-
-    console.log('✅ 슈퍼 관리자 계정 생성 완료:', superAdmin.email);
-  }
-
   //#region DUMMY(참고용으로 쓰시라고 남겨둘게요)
 
   const buildings = Array.from(

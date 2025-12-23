@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "CommentResourceType" AS ENUM ('NOTICE', 'COMPLAINT');
+
+-- CreateEnum
 CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'RESIDENT');
 
 -- CreateEnum
@@ -151,10 +154,11 @@ CREATE TABLE "Comment" (
     "id" SERIAL NOT NULL,
     "content" TEXT NOT NULL,
     "authorId" INTEGER NOT NULL,
-    "complainId" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "resourceType" "CommentResourceType" NOT NULL,
+    "complainId" INTEGER,
     "noticeId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
@@ -231,6 +235,15 @@ CREATE INDEX "PollVote_optionId_idx" ON "PollVote"("optionId");
 -- CreateIndex
 CREATE UNIQUE INDEX "PollVote_userId_pollId_key" ON "PollVote"("userId", "pollId");
 
+-- CreateIndex
+CREATE INDEX "Comment_complainId_idx" ON "Comment"("complainId");
+
+-- CreateIndex
+CREATE INDEX "Comment_noticeId_idx" ON "Comment"("noticeId");
+
+-- CreateIndex
+CREATE INDEX "Comment_authorId_idx" ON "Comment"("authorId");
+
 -- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -268,13 +281,13 @@ ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_pollId_fkey" FOREIGN KEY ("pollI
 ALTER TABLE "PollVote" ADD CONSTRAINT "PollVote_optionId_fkey" FOREIGN KEY ("optionId") REFERENCES "PollOption"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_complainId_fkey" FOREIGN KEY ("complainId") REFERENCES "Complain"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_complainId_fkey" FOREIGN KEY ("complainId") REFERENCES "Complain"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_noticeId_fkey" FOREIGN KEY ("noticeId") REFERENCES "Notice"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_noticeId_fkey" FOREIGN KEY ("noticeId") REFERENCES "Notice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Notice" ADD CONSTRAINT "Notice_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
