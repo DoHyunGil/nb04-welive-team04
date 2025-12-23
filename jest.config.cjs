@@ -7,6 +7,12 @@ const config = {
 
   testEnvironment: 'node',
 
+  // 테스트 파일 패턴 지정
+  testMatch: ['**/src/**/*.test.ts', '**/src/**/__tests__/**/*.test.ts'],
+
+  // 테스트에서 제외할 경로
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '\\.d\\.ts$'],
+
   // 이전에 추가했던 설정들은 유지합니다.
   moduleNameMapper: {
     // .js 확장자를 .ts로 매핑하여 모듈 로드 오류 해결
