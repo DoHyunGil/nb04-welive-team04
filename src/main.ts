@@ -38,6 +38,7 @@ app.use('/api/v2/notices', routers.noticeRouter);
 app.use('/api/v2/residents', routers.residentsRouter);
 app.use('/api/v2/users/residents', routers.residentsAuthRouter);
 app.use('/api/v2/apartments', routers.apartmentRouter);
+app.use('/api/v2/events', routers.eventRouter);
 
 app.use(errorHandler);
 

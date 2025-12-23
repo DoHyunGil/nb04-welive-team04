@@ -51,44 +51,45 @@ model adminOf {
   createdAt             DateTime   @default(now())
   updatedAt             DateTime   @default(now()) @updatedAt
 }
+
 model Resident {
   id            Int       @id @default(autoincrement())
   userId        Int?      @unique
   user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   email         String
-  isHouseholder Boolean  @default(false)
+  isHouseholder Boolean   @default(false)
   contact       String
   name          String
   building      Int
   unit          Int
   apartmentId   Int
-  isregistered  Boolean  @default(false)
+  isregistered  Boolean   @default(false)
   apartment     Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
 }
 
 model Apartment {
-  id           Int        @id @default(autoincrement())
-  name         String
-  address      String
-  description  String
-  officeNumber String
-  buildingNumberFrom     Int
-  buildingNumberTo       Int
-  floorCountPerBuilding  Int
-  unitCountPerFloor      Int
-  buildings    Int[]
-  units        Int[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @default(now()) @updatedAt
-  Complain     Complain[]
-  Poll         Poll[]
-  Notice       Notice[]
-  Event        Event[]
-  adminOf      adminOf?   @relation(fields: [adminOfId], references: [id])
-  adminOfId    Int? @unique
-  resident     Resident[]
+  id                    Int        @id @default(autoincrement())
+  name                  String
+  address               String
+  description           String
+  officeNumber          String
+  buildingNumberFrom    Int
+  buildingNumberTo      Int
+  floorCountPerBuilding Int
+  unitCountPerFloor     Int
+  buildings             Int[]
+  units                 Int[]
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @default(now()) @updatedAt
+  Complain              Complain[]
+  Poll                  Poll[]
+  Notice                Notice[]
+  Event                 Event[]
+  adminOf               adminOf?   @relation(fields: [adminOfId], references: [id])
+  adminOfId             Int?       @unique
+  resident              Resident[]
 }
 
 model Complain {
@@ -96,7 +97,7 @@ model Complain {
   title         String
   content       String
   isPublic      Boolean        @default(false)
-  viewCount     Int            @default(0)
+  viewsCount    Int            @default(0)
   status        complainStatus @default(PENDING)
   comments      Comment[]
   apartmentId   Int
@@ -201,7 +202,7 @@ model Notice {
   content     String
   category    NoticeCategory
   isPinned    Boolean
-  viewCount   Int            @default(0)
+  viewsCount  Int            @default(0)
   authorId    Int
   author      User           @relation(fields: [authorId], references: [id])
   apartmentId Int
@@ -214,18 +215,18 @@ model Notice {
 }
 
 model Event {
-  id          Int       @id @default(autoincrement())
-  category    String
-  title       String
-  apartmentId Int
-  apartment   Apartment @relation(fields: [apartmentId], references: [id])
-  // resourceId
-  // ResourceType
-  startDate   DateTime
-  endDate     DateTime
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @default(now()) @updatedAt
-  Notice      Notice[]
+  id           Int               @id @default(autoincrement())
+  category     NoticeCategory
+  title        String
+  apartmentId  Int
+  apartment    Apartment         @relation(fields: [apartmentId], references: [id])
+  resourceId   String
+  resourceType EventResourceType
+  startDate    DateTime
+  endDate      DateTime
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @default(now()) @updatedAt
+  Notice       Notice[]
 }
 
 enum Role {
@@ -260,4 +261,9 @@ enum NoticeCategory {
   RESIDENT_VOTE
   RESIDENT_COUNCIL
   ETC
+}
+
+enum EventResourceType {
+  NOTICE
+  POLL
 }

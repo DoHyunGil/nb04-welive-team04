@@ -13,6 +13,9 @@ CREATE TYPE "PollStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'CLOSED');
 -- CreateEnum
 CREATE TYPE "NoticeCategory" AS ENUM ('MAINTENANCE', 'EMERGENCY', 'COMMUNITY', 'RESIDENT_VOTE', 'RESIDENT_COUNCIL', 'ETC');
 
+-- CreateEnum
+CREATE TYPE "EventResourceType" AS ENUM ('NOTICE', 'POLL');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -93,7 +96,7 @@ CREATE TABLE "Complain" (
     "title" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "isPublic" BOOLEAN NOT NULL DEFAULT false,
-    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "viewsCount" INTEGER NOT NULL DEFAULT 0,
     "status" "complainStatus" NOT NULL DEFAULT 'PENDING',
     "apartmentId" INTEGER NOT NULL,
     "complainantId" INTEGER NOT NULL,
@@ -163,7 +166,7 @@ CREATE TABLE "Notice" (
     "content" TEXT NOT NULL,
     "category" "NoticeCategory" NOT NULL,
     "isPinned" BOOLEAN NOT NULL,
-    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "viewsCount" INTEGER NOT NULL DEFAULT 0,
     "authorId" INTEGER NOT NULL,
     "apartmentId" INTEGER NOT NULL,
     "eventId" INTEGER,
@@ -176,9 +179,11 @@ CREATE TABLE "Notice" (
 -- CreateTable
 CREATE TABLE "Event" (
     "id" SERIAL NOT NULL,
-    "category" TEXT NOT NULL,
+    "category" "NoticeCategory" NOT NULL,
     "title" TEXT NOT NULL,
     "apartmentId" INTEGER NOT NULL,
+    "resourceId" TEXT NOT NULL,
+    "resourceType" "EventResourceType" NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

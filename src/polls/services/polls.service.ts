@@ -7,6 +7,8 @@ import type {
   UpdatePollData,
 } from '../controllers/polls.types.js';
 import pollsRepository from '../repositories/polls.repository.js';
+import eventRepository from '../../events/repositories/event.repository.js';
+import noticeRepository from '../../notices/repositories/notice.repository.js';
 
 const allowedRoles = ['ADMIN', 'SUPER_ADMIN'];
 
@@ -58,13 +60,21 @@ class PollsService {
       content: data.content,
       startDate: start,
       endDate: end,
-      apartmentId: resident.apartmentId,
+      apartmentId: user.adminOf!.apartment!.id,
       building: data.building ?? null,
       authorId: user.id,
       options: data.options.map((opt) => opt.title),
     });
 
-    // TODO: 일정 서비스에 데이터 전달
+    await eventRepository.createEvent({
+      title: data.title,
+      category: 'RESIDENT_VOTE',
+      startDate: start,
+      endDate: end,
+      apartmentId: user.adminOf!.apartment!.id,
+      resourceId: poll.id,
+      resourceType: 'POLL',
+    });
     return this.formatPollResponse(poll);
   }
 
@@ -75,7 +85,7 @@ class PollsService {
     const { user, resident } = await this.getUserWithResident(userId);
 
     const where: Prisma.PollWhereInput = {
-      apartmentId: resident.apartmentId,
+      apartmentId: resident?.apartmentId || user.adminOf?.apartment?.id,
     };
 
     if (searchKeyword) {
@@ -90,7 +100,7 @@ class PollsService {
     }
 
     if (user.role === 'RESIDENT') {
-      where.OR = [{ building: null }, { building: resident.building }];
+      where.OR = [{ building: null }, { building: resident!.building }];
     }
 
     if (building !== undefined && building !== null) {
@@ -118,15 +128,15 @@ class PollsService {
     const poll = await pollsRepository.findPollById(pollId, user.id);
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
-
-    if (poll.apartmentId !== resident.apartmentId) {
+    const apartmentId = resident?.apartmentId || user.adminOf?.apartment?.id;
+    if (poll.apartmentId !== apartmentId) {
       throw createError(403, '권한이 없습니다.');
     }
 
     if (
       user.role === 'RESIDENT' &&
       poll.building !== null &&
-      poll.building !== resident.building
+      poll.building !== resident!.building
     ) {
       throw createError(403, '해당 동 주민만 조회할 수 있습니다.');
     }
@@ -149,7 +159,7 @@ class PollsService {
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
-    if (poll.apartmentId !== resident.apartmentId) {
+    if (poll.apartmentId !== user.adminOf!.apartment!.id) {
       throw createError(403, '수정 권한이 없습니다.');
     }
 
@@ -166,7 +176,16 @@ class PollsService {
 
     const updatedPoll = await pollsRepository.updatePoll(pollId, data);
 
-    // TODO:투표 변경시에 일정 서비스에 수정 요청
+    const event = await eventRepository.findEventByResource('POLL', poll.id);
+    if (!event) {
+      throw createError(404, '일정이 존재하지 않습니다.');
+    }
+    await eventRepository.updateEvent(event.id, {
+      startDate: start,
+      endDate: end,
+      title: data.title,
+    });
+
     return this.formatPollResponse(updatedPoll);
   }
 
@@ -180,7 +199,7 @@ class PollsService {
     const poll = await pollsRepository.findPollSimple(pollId);
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
-    if (poll.apartmentId !== resident.apartmentId) {
+    if (poll.apartmentId !== user.adminOf!.apartment!.id) {
       throw createError(403, '삭제 권한이 없습니다.');
     }
 
@@ -188,7 +207,11 @@ class PollsService {
       throw createError(400, '투표가 이미 시작되어 삭제할 수 없습니다.');
     }
 
-    // TODO: 투표삭제시에 일정 서비스에 삭제 요청
+    const eventId = await eventRepository.findEventByResource('POLL', poll.id);
+    if (!eventId) {
+      throw createError(404, '일정이 존재하지 않습니다.');
+    }
+    await eventRepository.deleteEvent(eventId.id);
     await pollsRepository.deletePoll(pollId);
     return { message: '투표가 삭제되었습니다.' };
   }
@@ -201,11 +224,11 @@ class PollsService {
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
-    if (poll.apartmentId !== resident.apartmentId) {
+    if (poll.apartmentId !== resident!.apartmentId) {
       throw createError(403, '입주민만 투표할 수 있습니다.');
     }
 
-    if (poll.building !== null && poll.building !== resident.building) {
+    if (poll.building !== null && poll.building !== resident!.building) {
       throw createError(403, '해당 동 주민만 투표할 수 있습니다.');
     }
 
@@ -258,7 +281,17 @@ class PollsService {
     for (const poll of closingPolls) {
       await pollsRepository.closePoll(poll.id);
 
-      // TODO: 공지사항 자동 생성
+      const content = `투표 "${poll.title}"가 종료되었습니다. 결과를 확인해주세요.`;
+      const adminOfId = await noticeRepository.getAdminOfIdByUserId(
+        poll.authorId,
+      );
+      await noticeRepository.createNotice(adminOfId!.id, poll.authorId, {
+        title: poll.title,
+        content,
+        category: 'RESIDENT_VOTE',
+        isPinned: false,
+      });
+
       closedCount++;
     }
 
