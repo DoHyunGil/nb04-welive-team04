@@ -33,7 +33,6 @@ class ResidentsAuthController {
         residentData,
         residentId,
       );
-      console.log(data);
       res.status(201).send(data);
     } catch (error) {
       next(error);
