@@ -9,6 +9,7 @@ const createResidentsSchema = z.object({
     building: z.coerce.number().min(1, '[필수]동은 1 이상의 숫자여야 합니다'),
     unit: z.coerce.number().min(3, '[필수]호수는 1 이상의 숫자여야 합니다'),
     isHouseholder: z.coerce.boolean(),
+    apartmentId: z.coerce.number(),
     userId: z.number().optional(),
   }),
 });
@@ -49,7 +50,6 @@ export const validate =
     if (!result.success) {
       return res.status(400).json(result.error);
     }
-
     next();
   };
 

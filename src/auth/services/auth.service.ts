@@ -17,7 +17,20 @@ class AuthService {
     const accessToken = Jwt.signAccessToken({ userId: user.id });
     const refreshToken = Jwt.signRefreshToken({ userId: user.id });
 
-    return { user, accessToken, refreshToken };
+    // 비밀번호, createdAt, updatedAt 제외하고 id를 string으로 변환
+    const { password: _, createdAt, updatedAt, id, ...rest } = user;
+    const userResponse = {
+      id: id.toString(),
+      ...rest,
+      adminOf: rest.adminOf
+        ? {
+            ...rest.adminOf,
+            id: rest.adminOf.id.toString(), // 숫자 → 문자열 변환
+          }
+        : null,
+    };
+
+    return { user: userResponse, accessToken, refreshToken };
   }
 
   async logout(res: Response) {

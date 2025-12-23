@@ -139,7 +139,7 @@ describe('Auth Routes', () => {
 
       const response = await request(app)
         .post('/api/v2/auth/refresh')
-        .set('Cookie', ['refresh-token=mock-refresh-token']);
+        .set('Cookie', ['refresh_token=mock-refresh-token']);
 
       expect(response.status).toBe(200);
       expect(response.body.message).toBe('토큰이 갱신되었습니다.');

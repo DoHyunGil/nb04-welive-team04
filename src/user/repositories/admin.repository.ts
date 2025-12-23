@@ -146,12 +146,9 @@ class AdminRepository {
     // where 조건 만들기
     const andConditions: Prisma.UserWhereInput[] = [];
 
-    // ADMIN 역할이면서 adminOf가 있는 것만 조회
+    // ADMIN 역할만 조회
     andConditions.push({
       role: Role.ADMIN,
-      adminOf: {
-        isNot: null,
-      },
     });
 
     // 검색 키워드가 있으면 OR 조건 추가
@@ -212,12 +209,9 @@ class AdminRepository {
     // where 조건 만들기 (findAdmins와 동일)
     const andConditions: Prisma.UserWhereInput[] = [];
 
-    // ADMIN 역할이면서 adminOf가 있는 것만 조회
+    // ADMIN 역할만 조회
     andConditions.push({
       role: Role.ADMIN,
-      adminOf: {
-        isNot: null,
-      },
     });
 
     if (searchKeyword) {

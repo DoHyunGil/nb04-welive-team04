@@ -51,10 +51,11 @@ class ApartmentRepository {
   }
 
   async findById(id: number) {
-    return prisma.apartment.findUnique({
+    const apartment = await prisma.apartment.findUnique({
       where: { id },
       select: apartment_select,
     });
+    return { ...apartment, id: apartment ? String(apartment.id) : null };
   }
 
   async count(where?: Prisma.ApartmentWhereInput) {
