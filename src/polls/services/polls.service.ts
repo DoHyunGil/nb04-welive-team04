@@ -99,7 +99,7 @@ class PollsService {
       where.status = status;
     }
 
-    if (user.role === 'RESIDENT') {
+    if (user.role === 'USER') {
       where.OR = [{ building: null }, { building: resident!.building }];
     }
 
@@ -134,7 +134,7 @@ class PollsService {
     }
 
     if (
-      user.role === 'RESIDENT' &&
+      user.role === 'USER' &&
       poll.building !== null &&
       poll.building !== resident!.building
     ) {

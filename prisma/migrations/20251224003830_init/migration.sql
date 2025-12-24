@@ -2,7 +2,7 @@
 CREATE TYPE "CommentResourceType" AS ENUM ('NOTICE', 'COMPLAINT');
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'RESIDENT');
+CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'USER');
 
 -- CreateEnum
 CREATE TYPE "joinStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
@@ -83,7 +83,7 @@ CREATE TABLE "Resident" (
     "building" INTEGER NOT NULL,
     "unit" INTEGER NOT NULL,
     "apartmentId" INTEGER NOT NULL,
-    "isregistered" BOOLEAN NOT NULL DEFAULT false,
+    "isRegistered" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

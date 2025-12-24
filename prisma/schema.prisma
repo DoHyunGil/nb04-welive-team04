@@ -232,7 +232,7 @@ model Event {
 enum Role {
   SUPER_ADMIN
   ADMIN
-  RESIDENT
+  USER
 }
 
 enum joinStatus {

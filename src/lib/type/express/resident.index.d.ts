@@ -49,7 +49,7 @@ export type CreateResidentAuthBody = CreateResidentBody & {
   username: string;
   apartmentName: string;
   password: string;
-  role: 'RESIDENT' | 'ADMIN' | 'SUPER_ADMIN';
+  role: 'USER' | 'ADMIN' | 'SUPER_ADMIN';
   joinStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
   avatar?: string;
   isActive?: boolean;

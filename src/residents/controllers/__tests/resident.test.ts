@@ -48,7 +48,7 @@ describe('Resident Repository & Service Test', () => {
         email: 'resident@test.com',
         contact: '010-2222-3333',
         name: '테스트 입주민',
-        role: 'RESIDENT',
+        role: 'USER',
         avatar: '',
         joinStatus: 'PENDING',
         isActive: true,

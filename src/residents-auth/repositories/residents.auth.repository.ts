@@ -59,7 +59,7 @@ class ResidentsAuthRepository {
         email: residentData.email,
         contact: residentData.contact,
         name: residentData.name,
-        role: 'RESIDENT',
+        role: 'USER',
         joinStatus: joinStatus,
         isActive: isActive,
         resident: {
