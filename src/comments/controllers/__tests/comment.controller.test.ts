@@ -19,7 +19,7 @@ const { default: commentController } = await import('../comment.controller.js');
 const createMockRequest = (
   overrides: Partial<Request> = {},
 ): Partial<Request> => ({
-  user: { id: 1, email: 'test@test.com', role: 'RESIDENT' },
+  user: { id: 1, email: 'test@test.com', role: 'USER' },
   body: {},
   params: {},
   query: {},
@@ -230,7 +230,7 @@ describe('CommentController - 단위 테스트', () => {
       const mockRequest = createMockRequest({
         params: { commentId: '1' },
         body: { content: '수정된 댓글' },
-        user: { id: 1, email: 'test@test.com', role: 'RESIDENT' },
+        user: { id: 1, email: 'test@test.com', role: 'USER' },
       });
 
       const { status, json, statusMock, jsonMock } = createMockResponse();
@@ -277,7 +277,7 @@ describe('CommentController - 단위 테스트', () => {
     it('댓글 삭제에 성공하면 204 상태코드를 반환한다', async () => {
       const mockRequest = createMockRequest({
         params: { commentId: '1' },
-        user: { id: 1, email: 'test@test.com', role: 'RESIDENT' },
+        user: { id: 1, email: 'test@test.com', role: 'USER' },
       });
 
       const { status, json, statusMock, jsonMock } = createMockResponse();
@@ -289,13 +289,9 @@ describe('CommentController - 단위 테스트', () => {
         mockNext,
       );
 
-      expect(mockCommentService.deleteComment).toHaveBeenCalledWith(
-        1,
-        'RESIDENT',
-        {
-          commentId: 1,
-        },
-      );
+      expect(mockCommentService.deleteComment).toHaveBeenCalledWith(1, 'USER', {
+        commentId: 1,
+      });
       expect(statusMock).toHaveBeenCalledWith(204);
       expect(jsonMock).toHaveBeenCalledWith({});
     });

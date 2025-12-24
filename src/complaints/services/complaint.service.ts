@@ -47,7 +47,7 @@ class ComplaintService {
     if (
       complaint.isPublic === false &&
       complaint.complainant.id !== userId &&
-      userRole.role === 'RESIDENT'
+      userRole.role === 'USER'
     ) {
       throw createHttpError(403, '권한이 없습니다.');
     }
