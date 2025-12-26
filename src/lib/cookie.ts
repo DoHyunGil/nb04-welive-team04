@@ -6,9 +6,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
-  sameSite: 'lax',
+  sameSite: isProduction ? 'none' : 'lax',
   path: '/',
-  // domain을 명시하지 않으면 현재 호스트로 자동 설정됨
 };
 
 export function setAccessTokenCookie(res: Response, accessToken: string): void {
