@@ -1,4 +1,4 @@
-import { CommentResourceType } from '../../../generated/prisma/client.js';
+import { CommentResourceType } from '../../../generated/prisma/enums.js';
 
 // 댓글 생성 DTO
 export interface CreateCommentDto {
