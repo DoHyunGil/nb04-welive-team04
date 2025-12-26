@@ -23,6 +23,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.957.0",
+    "@aws-sdk/s3-request-presigner": "^3.957.0",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "bcrypt": "^6.0.0",
@@ -32,6 +34,7 @@
     "http-errors": "^2.0.1",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
+    "multer-s3": "^3.0.1",
     "node-cron": "^4.2.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

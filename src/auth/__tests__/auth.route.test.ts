@@ -63,13 +63,12 @@ describe('Auth Routes', () => {
         isActive: true,
       };
 
-      (
-        authService.login as jest.MockedFunction<typeof authService.login>
-      ).mockResolvedValue({
-        user: mockUser,
-        accessToken: 'mock-access-token',
-        refreshToken: 'mock-refresh-token',
-      } as any);
+      (authService.login as jest.MockedFunction<typeof authService.login>)
+        .mockResolvedValue({
+          user: mockUser,
+          accessToken: 'mock-access-token',
+          refreshToken: 'mock-refresh-token',
+        } as any);
 
       const response = await request(app).post('/api/v2/auth/login').send({
         username: 'testuser',
@@ -80,19 +79,15 @@ describe('Auth Routes', () => {
       expect(response.body).toHaveProperty('id');
       expect(response.body.username).toBe('testuser');
       expect(response.headers['set-cookie']).toBeDefined();
-      expect(authService.login).toHaveBeenCalledWith(
-        'testuser',
-        'testpassword',
-      );
+      expect(authService.login).toHaveBeenCalledWith('testuser', 'testpassword');
       expect(authService.login).toHaveBeenCalledTimes(1);
     });
 
     it('잘못된 비밀번호로 로그인 실패', async () => {
       const error = new Error('비밀번호가 일치하지 않습니다.') as any;
       error.status = 404;
-      (
-        authService.login as jest.MockedFunction<typeof authService.login>
-      ).mockRejectedValue(error);
+      (authService.login as jest.MockedFunction<typeof authService.login>)
+        .mockRejectedValue(error);
 
       const response = await request(app).post('/api/v2/auth/login').send({
         username: 'testuser',
@@ -109,9 +104,8 @@ describe('Auth Routes', () => {
     it('존재하지 않는 사용자로 로그인 실패', async () => {
       const error = new Error('사용자를 찾을 수 없습니다.') as any;
       error.status = 404;
-      (
-        authService.login as jest.MockedFunction<typeof authService.login>
-      ).mockRejectedValue(error);
+      (authService.login as jest.MockedFunction<typeof authService.login>)
+        .mockRejectedValue(error);
 
       const response = await request(app).post('/api/v2/auth/login').send({
         username: 'nonexistent',
@@ -125,9 +119,8 @@ describe('Auth Routes', () => {
 
   describe('POST /api/v2/auth/logout', () => {
     it('로그아웃 성공', async () => {
-      (
-        authService.logout as jest.MockedFunction<typeof authService.logout>
-      ).mockResolvedValue(undefined);
+      (authService.logout as jest.MockedFunction<typeof authService.logout>)
+        .mockResolvedValue(undefined);
 
       const response = await request(app).post('/api/v2/auth/logout');
 
@@ -138,12 +131,11 @@ describe('Auth Routes', () => {
 
   describe('POST /api/v2/auth/refresh', () => {
     it('유효한 refresh token으로 토큰 갱신 성공', async () => {
-      (
-        authService.refresh as jest.MockedFunction<typeof authService.refresh>
-      ).mockResolvedValue({
-        accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token',
-      } as any);
+      (authService.refresh as jest.MockedFunction<typeof authService.refresh>)
+        .mockResolvedValue({
+          accessToken: 'new-access-token',
+          refreshToken: 'new-refresh-token',
+        } as any);
 
       const response = await request(app)
         .post('/api/v2/auth/refresh')

@@ -6,7 +6,7 @@ export interface UserPasswordUpdateRequest {
 
 // 아바타 업데이트 데이터 타입
 export interface UserAvatarUpdateData {
-  avatar: string;
+  avatar: string | null;
 }
 
 // 비밀번호 업데이트 데이터 타입
