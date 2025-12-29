@@ -9,12 +9,12 @@ class ResidentsRepository {
     filters: Record<string, unknown>,
   ) {
     const admin = await prisma.adminOf.findUnique({
-      where: { id: userId },
-      include: { Apartment: true },
+      where: { userId: userId },
+      include: { apartment: true },
     });
     return prisma.resident.findMany({
       where: {
-        apartmentId: Number(admin?.Apartment?.id),
+        apartmentId: Number(admin?.apartment?.id),
         ...filters,
       },
       take: Number(limit),
@@ -31,11 +31,11 @@ class ResidentsRepository {
       name: residentData.name,
       contact: residentData.contact,
       email: residentData.email,
-      building: residentData.building,
-      unit: residentData.unit,
-      isHouseholder: residentData.isHouseholder,
+      building: Number(residentData.building),
+      unit: Number(residentData.unit),
+      isHouseholder: residentData.isHouseholder ?? false,
       apartmentId,
-      userId: null,
+      userId: residentData.userId ?? undefined,
     };
 
     return prisma.resident.create({ data });
@@ -47,14 +47,19 @@ class ResidentsRepository {
     const data: Partial<CreateResidentBody> = {
       name: residentData.name,
       contact: residentData.contact,
-      building: residentData.building,
-      unit: residentData.unit,
+      building: Number(residentData.building),
+      unit: Number(residentData.unit),
       isHouseholder: residentData.isHouseholder,
     };
-
     return prisma.resident.update({
-      where: { id: residentId },
-      data,
+      where: { id: Number(residentId) },
+      data: {
+        name: data.name,
+        contact: data.contact,
+        building: data.building,
+        unit: data.unit,
+        isHouseholder: data.isHouseholder,
+      },
     });
   }
   async findById(userId: number) {
@@ -64,7 +69,7 @@ class ResidentsRepository {
         resident: true,
         adminOf: {
           include: {
-            Apartment: true,
+            apartment: true,
           },
         },
       },

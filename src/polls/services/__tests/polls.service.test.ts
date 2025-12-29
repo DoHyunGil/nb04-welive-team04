@@ -186,7 +186,7 @@ describe('PollsService - 단위 테스트', () => {
     });
 
     it('관리자가 아니면 투표 생성이 불가능하다', async () => {
-      setupTestContext({ role: 'RESIDENT' });
+      setupTestContext({ role: 'USER' });
 
       await expect(
         pollsService.createPoll(1, defaultPollInput),
@@ -240,7 +240,7 @@ describe('PollsService - 단위 테스트', () => {
 
   describe('vote', () => {
     it('투표할 수 있다', async () => {
-      setupTestContext({ role: 'RESIDENT', pollStatus: 'IN_PROGRESS' });
+      setupTestContext({ role: 'USER', pollStatus: 'IN_PROGRESS' });
 
       (prisma.pollVote.findFirst as unknown as MockPrismaFn).mockResolvedValue(
         null,
@@ -261,7 +261,7 @@ describe('PollsService - 단위 테스트', () => {
     });
 
     it('진행 중이 아닌 투표에는 참여할 수 없다', async () => {
-      setupTestContext({ role: 'RESIDENT', pollStatus: 'PENDING' });
+      setupTestContext({ role: 'USER', pollStatus: 'PENDING' });
 
       await expect(pollsService.vote('poll123', 'opt1', 1)).rejects.toThrow(
         '진행 중인 투표가 아닙니다.',

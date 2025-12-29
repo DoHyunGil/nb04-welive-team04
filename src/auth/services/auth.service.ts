@@ -22,6 +22,12 @@ class AuthService {
     const userResponse = {
       id: id.toString(),
       ...rest,
+      adminOf: rest.adminOf
+        ? {
+            ...rest.adminOf,
+            id: rest.adminOf.id.toString(), // 숫자 → 문자열 변환
+          }
+        : null,
     };
 
     return { user: userResponse, accessToken, refreshToken };

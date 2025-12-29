@@ -1,5 +1,5 @@
 import noticeRepository from '../repositories/notice.repository.js';
-import { NoticeCategory } from '../../../generated/prisma/client.js';
+import eventRepository from '../../events/repositories/event.repository.js';
 import type {
   GetNoticesDto,
   CreateNoticeDto,
@@ -14,12 +14,42 @@ class NoticeService {
     if (!adminOfId) {
       throw createHttpError(403, '관리자가 아닙니다.');
     }
-    const notice = await noticeRepository.createNotice(
-      adminOfId.id,
-      userId,
-      createDto,
-    );
-    return notice;
+    if (createDto.event) {
+      // 날짜 있는 경우
+      // 공지 먼저 생성
+      const { title, content, category, isPinned } = createDto;
+      let newNotice = await noticeRepository.createNotice(
+        adminOfId.id,
+        userId,
+        { title, content, category, isPinned },
+      );
+      // 이벤트 생성
+      const { startDate, endDate } = createDto.event;
+
+      const newEvent = await eventRepository.createEvent({
+        title,
+        category,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        apartmentId: newNotice.apartmentId,
+        resourceId: newNotice.id.toString(),
+        resourceType: 'NOTICE',
+      });
+      // 공지에 이벤트 연결
+      newNotice = await noticeRepository.updateNoticeEvent(
+        newNotice.id,
+        newEvent.id,
+      );
+      return newNotice;
+    } else {
+      // 날짜 없는 경우
+      const notice = await noticeRepository.createNotice(
+        adminOfId.id,
+        userId,
+        createDto,
+      );
+      return notice;
+    }
   }
   // 공지 목록 조회
   async getNotices(getDto: GetNoticesDto) {
@@ -65,10 +95,45 @@ class NoticeService {
     if (!notice) {
       throw createHttpError(404, '해당 공지가 존재하지 않습니다.');
     }
-    const updatedNotice = await noticeRepository.updateNotice(
+    let updatedNotice = await noticeRepository.updateNotice(
       noticeId,
       updateDto,
     );
+    const eventId = notice.event?.id;
+
+    const { title, category } = updateDto;
+    const startDate = updateDto.event?.startDate;
+    const endDate = updateDto.event?.endDate;
+    if (eventId) {
+      // 기존 이벤트 수정
+      await eventRepository.updateEvent(eventId, {
+        startDate: startDate ? new Date(startDate) : undefined,
+        endDate: endDate ? new Date(endDate) : undefined,
+        category,
+        title,
+      });
+    } else {
+      // 새로운 이벤트 생성
+      if (!startDate || !endDate) {
+        throw createHttpError(
+          400,
+          '이벤트 시작일과 종료일을 모두 입력해주세요.',
+        );
+      }
+      const newEvent = await eventRepository.createEvent({
+        title: updatedNotice.title,
+        category: updatedNotice.category,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        apartmentId: updatedNotice.apartmentId,
+        resourceId: updatedNotice.id.toString(),
+        resourceType: 'NOTICE',
+      });
+      updatedNotice = await noticeRepository.updateNoticeEvent(
+        updatedNotice.id,
+        newEvent.id,
+      );
+    }
     return updatedNotice;
   }
   // 공지 삭제 - 관리자 전용
@@ -82,6 +147,7 @@ class NoticeService {
       throw createHttpError(404, '해당 공지가 존재하지 않습니다.');
     }
     await noticeRepository.deleteNotice(noticeId);
+    if (notice.event) await eventRepository.deleteEvent(notice.event.id);
   }
 }
 

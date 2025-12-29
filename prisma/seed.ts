@@ -1,10 +1,10 @@
-// prisma/seed.ts
+  // prisma/seed.ts
 import { prisma } from '../src/lib/prisma.js';
 import { hashPassword } from '../src/lib/password.js';
 import { Role, joinStatus } from '../generated/prisma/client.js';
 
 async function main() {
-  console.log("Seeding Apartment...");
+  console.log('Seeding Apartment...');
 
   const buildingNumberFrom = 1;
   const buildingNumberTo = 10;
@@ -26,7 +26,7 @@ async function main() {
         contact: '010-0000-0000',
         name: '슈퍼관리자',
         role: Role.SUPER_ADMIN,
-        avatar: '',
+        avatar: null,
         joinStatus: joinStatus.APPROVED,
         isActive: true,
       },
@@ -39,7 +39,7 @@ async function main() {
 
   const buildings = Array.from(
     { length: buildingNumberTo - buildingNumberFrom + 1 },
-    (_, i) => buildingNumberFrom + i
+    (_, i) => buildingNumberFrom + i,
   );
 
   const units: number[] = [];
@@ -53,28 +53,36 @@ async function main() {
   // --- 첫 번째 아파트 ---
   await prisma.apartment.create({
     data: {
-      name: "래미안 퍼스티지",
-      address: "서울시 강남구 테헤란로 100",
-      description: "래미안 퍼스티지 아파트 단지입니다.",
-      officeNumber: "02-3000-0000",
+      name: '래미안 퍼스티지',
+      address: '서울시 강남구 테헤란로 100',
+      description: '래미안 퍼스티지 아파트 단지입니다.',
+      officeNumber: '02-3000-0000',
       buildingNumberFrom,
       buildingNumberTo,
       floorCountPerBuilding,
       unitCountPerFloor,
-      buildings: buildings,
-      units: units,
+      buildings,
+      units,
       adminOf: {
         create: {
+          name: '래미안 퍼스티지 관리사무소',
+          address: '서울시 강남구 테헤란로 100',
+          description: '래미안 퍼스티지 관리사무소',
+          officeNumber: '02-3000-0000',
+          buildingNumberFrom,
+          buildingNumberTo,
+          floorCountPerBuilding,
+          unitCountPerFloor,
           user: {
             create: {
-              username: "admin",
-              password: "1234",
-              email: "admin@test.com",
-              contact: "010-1111-2222",
-              name: "관리자",
-              role: "ADMIN",
-              avatar: "",
-              joinStatus: "PENDING",
+              username: 'admin',
+              password: await hashPassword('admin1234!'),
+              email: 'admin@test.com',
+              contact: '010-1111-2222',
+              name: '관리자',
+              role: Role.ADMIN,
+              avatar: null,
+              joinStatus: joinStatus.PENDING,
               isActive: true,
             },
           },
@@ -86,28 +94,36 @@ async function main() {
   // --- 두 번째 아파트 추가 ---
   await prisma.apartment.create({
     data: {
-      name: "자이 아파트",
-      address: "서울시 송파구 올림픽로 200",
-      description: "자이 아파트 단지입니다.",
-      officeNumber: "02-4000-0000",
+      name: '자이 아파트',
+      address: '서울시 송파구 올림픽로 200',
+      description: '자이 아파트 단지입니다.',
+      officeNumber: '02-4000-0000',
       buildingNumberFrom,
       buildingNumberTo,
       floorCountPerBuilding,
       unitCountPerFloor,
-      buildings: buildings,
-      units: units,
+      buildings,
+      units,
       adminOf: {
         create: {
+          name: '자이 아파트 관리사무소',
+          address: '서울시 송파구 올림픽로 200',
+          description: '자이 아파트 관리사무소',
+          officeNumber: '02-4000-0000',
+          buildingNumberFrom,
+          buildingNumberTo,
+          floorCountPerBuilding,
+          unitCountPerFloor,
           user: {
             create: {
-              username: "admin2",
-              password: "1234",
-              email: "admin2@test.com",
-              contact: "010-2222-3333",
-              name: "서브 관리자",
-              role: "ADMIN",
-              avatar: "",
-              joinStatus: "PENDING",
+              username: 'admin2',
+              password: await hashPassword('admin1234!'),
+              email: 'admin2@test.com',
+              contact: '010-2222-3333',
+              name: '서브 관리자',
+              role: Role.ADMIN,
+              avatar: null,
+              joinStatus: joinStatus.PENDING,
               isActive: true,
             },
           },
@@ -116,10 +132,11 @@ async function main() {
     },
   });
 
-  console.log("🌱 Seed completed!");
-  
+  console.log('🌱 Seed completed!');
+
   //seed의 db값 테스트
   //console.log(await prisma.apartment.findMany());
+}
 
 main()
   .catch((e) => {
@@ -130,4 +147,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-}

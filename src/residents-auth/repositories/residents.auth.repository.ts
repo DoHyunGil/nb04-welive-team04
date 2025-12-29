@@ -7,15 +7,17 @@ class ResidentsAuthRepository {
     page: number,
     limit: number,
     filters: Record<string, unknown>,
+    joinStatus?: 'PENDING' | 'APPROVED' | 'REJECTED',
   ) {
     const admin = await prisma.adminOf.findUnique({
-      where: { id: userId },
-      select: { Apartment: true },
+      where: { userId: userId },
+      select: { apartment: true },
     });
     return prisma.resident.findMany({
       where: {
-        apartmentId: admin?.Apartment?.id,
+        apartmentId: admin?.apartment?.id,
         ...filters,
+        user: { joinStatus: joinStatus },
       },
       include: {
         user: true,
@@ -52,7 +54,12 @@ class ResidentsAuthRepository {
   ) {
     return prisma.user.create({
       data: {
-        ...residentData,
+        username: residentData.username,
+        password: residentData.password,
+        email: residentData.email,
+        contact: residentData.contact,
+        name: residentData.name,
+        role: 'USER',
         joinStatus: joinStatus,
         isActive: isActive,
         resident: {
@@ -70,19 +77,37 @@ class ResidentsAuthRepository {
     });
   }
 
-  async findByapartmentId(apartmentId: number, residentId?: number) {
+  async findByapartmentId(
+    apartmentId: number,
+    joinStatus: 'PENDING' | 'APPROVED' | 'REJECTED',
+    residentId?: number,
+  ) {
     return prisma.resident.findMany({
       where: {
         apartmentId,
         ...(residentId !== undefined && { id: residentId }),
+        user: { joinStatus: joinStatus },
       },
       select: { userId: true },
     });
   }
-  async updateapproveResidentsAuth(resident: number[]) {
+  async updateapproveResidentsAuth(
+    resident: number[],
+    residentData: Partial<CreateResidentAuthBody>,
+  ) {
     return prisma.user.updateMany({
       where: { id: { in: resident } }, // 배열 사용
-      data: { isActive: true, joinStatus: 'APPROVED' },
+      data: { isActive: true, joinStatus: residentData.joinStatus },
+    });
+  }
+  async deleteRejectedResidentsAuth(resident: number[]) {
+    return prisma.user.deleteMany({
+      where: { id: { in: resident } }, // 배열 사용
+    });
+  }
+  async deleteRejectedResidents(resident: number[]) {
+    return prisma.resident.deleteMany({
+      where: { userId: { in: resident } }, // 배열 사용
     });
   }
 }

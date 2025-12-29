@@ -2,9 +2,10 @@ import type { CreateResidentAuthBody } from 'src/lib/type/express/resident.index
 import residentsAuthRepository from '../repositories/residents.auth.repository.js';
 import residentsRepository from '../../residents/repositories/residents.repository.js';
 import createError from 'http-errors';
-import { joinStatus } from 'generated/prisma/enums.js';
-import type { User } from 'generated/prisma/browser.js';
+import { joinStatus } from '../../../generated/prisma/enums.js';
+import type { User } from '../../../generated/prisma/browser.js';
 import type { GetResidentsAuthDto } from '../../lib/type/express/resident.index.js';
+import { hashPassword } from '../../lib/password.js';
 
 class ResidentsAuthService {
   async getResidentsAuth(userId: number, dto: GetResidentsAuthDto) {
@@ -15,27 +16,26 @@ class ResidentsAuthService {
         { name: { contains: dto.searchKeyword } },
       ];
     }
-    if (dto.building) filters.building = dto.building;
-    if (dto.unit) filters.unit = dto.unit;
-    if (dto.joinStatus) filters.joinStatus = dto.joinStatus;
+    if (dto.building) filters.building = Number(dto.building);
+    if (dto.unit) filters.unit = Number(dto.unit);
 
     const residents = await residentsAuthRepository.getResidentsAuth(
       userId,
       (dto.page = 1),
       (dto.limit = 10),
       filters,
+      dto.joinStatus,
     );
     const data = residents.map((resident) => ({
-      id: resident.id,
-      createdAt: resident.createdAt,
+      id: resident.id.toString(),
       email: resident.email,
       name: resident.name,
       contact: resident.contact,
-      joinStatus: resident.user!.joinStatus,
+      joinStatus: resident.user?.joinStatus,
       resident: {
-        id: resident.id,
-        building: resident.building,
-        unit: resident.unit,
+        id: resident.id.toString(),
+        building: resident.building.toString(),
+        unit: resident.unit.toString(),
       },
     }));
     return { data, total: data.length };
@@ -66,12 +66,11 @@ class ResidentsAuthService {
       throw createError(400, '이미 존재하는 이메일입니다.');
     } else if (!userEmail && existingResident) {
       isActive = true;
-      return isActive;
     } else if (!userEmail && !existingResident) {
       isActive = false;
     }
     const apartmentId = apartment.id;
-
+    residentData.password = await hashPassword(residentData.password);
     // 등록된 입주민이 있을 때
     if (existingResident) {
       const residentId: number = existingResident.id;
@@ -110,22 +109,48 @@ class ResidentsAuthService {
     }
   }
 
-  async approveResidentsAuth(userId: number, residentId: number) {
+  async approveResidentsAuth(
+    userId: number,
+    residentData: Partial<CreateResidentAuthBody>,
+    residentId?: number,
+  ) {
     const admin = await residentsRepository.findById(userId);
     if (!admin || !admin.adminOf) {
       throw createError(400, '관리자 권한이 없습니다.');
     }
-    const apartmentId: number = admin.adminOf.Apartment!.id;
+    const apartmentId: number = admin.adminOf.apartment!.id;
     const residents = await residentsAuthRepository.findByapartmentId(
       apartmentId,
+      joinStatus.PENDING,
       residentId,
     );
     // resident는 배열 : 로그인한 관리자 아파트에 속한 user의 Id
     const userIds = residents.map((r) => r.userId);
     const validUserIds = userIds.filter((id): id is number => id !== null);
-    const data =
-      await residentsAuthRepository.updateapproveResidentsAuth(validUserIds);
+    const data = await residentsAuthRepository.updateapproveResidentsAuth(
+      validUserIds,
+      residentData,
+    );
     return data;
+  }
+  async deleteRejectedResidentsAuth(userId: number) {
+    const admin = await residentsRepository.findById(userId);
+    if (!admin || !admin.adminOf) {
+      throw createError(400, '관리자 권한이 없습니다.');
+    }
+    const apartmentId: number = admin.adminOf.apartment!.id;
+    const residents = await residentsAuthRepository.findByapartmentId(
+      apartmentId,
+      joinStatus.REJECTED,
+    );
+    // resident는 배열 : 로그인한 관리자 아파트에 속한 user의 Id
+    const userIds = residents.map((r) => r.userId);
+    const validUserIds = userIds.filter((id): id is number => id !== null);
+    const residentIds =
+      await residentsAuthRepository.deleteRejectedResidents(validUserIds);
+    const data =
+      await residentsAuthRepository.deleteRejectedResidentsAuth(validUserIds);
+    return { data, residentIds };
   }
 }
 
