@@ -43,6 +43,12 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "exclude": ["node_modules", "dist", "prisma"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "prisma",
+    "**/*.test.ts",
+    "src/__tests__"
+  ],
   "include": ["src/**/*", "generated/prisma/**/*", "src/lib/type/express/**/*"]
 }
