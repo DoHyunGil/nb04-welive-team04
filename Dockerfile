@@ -4,13 +4,15 @@ FROM node:${NODE_VERSION}
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci 
+RUN npm install
 
 COPY prisma ./prisma
-RUN npx prisma generate
+
 
 COPY . .
+RUN npm run build && \
+    npx prisma generate
 
 ENV PORT=4000
 
-ENTRYPOINT ["npm", "run", "dev"]
+ENTRYPOINT ["npm", "run", "start"]
