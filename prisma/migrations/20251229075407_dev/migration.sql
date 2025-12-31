@@ -196,6 +196,18 @@ CREATE TABLE "Event" (
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "notifications" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "content" TEXT NOT NULL,
+    "isChecked" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 
@@ -243,6 +255,12 @@ CREATE INDEX "Comment_noticeId_idx" ON "Comment"("noticeId");
 
 -- CreateIndex
 CREATE INDEX "Comment_authorId_idx" ON "Comment"("authorId");
+
+-- CreateIndex
+CREATE INDEX "notifications_userId_isChecked_idx" ON "notifications"("userId", "isChecked");
+
+-- CreateIndex
+CREATE INDEX "notifications_createdAt_idx" ON "notifications"("createdAt");
 
 -- AddForeignKey
 ALTER TABLE "adminOf" ADD CONSTRAINT "adminOf_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -300,3 +318,6 @@ ALTER TABLE "Notice" ADD CONSTRAINT "Notice_eventId_fkey" FOREIGN KEY ("eventId"
 
 -- AddForeignKey
 ALTER TABLE "Event" ADD CONSTRAINT "Event_apartmentId_fkey" FOREIGN KEY ("apartmentId") REFERENCES "Apartment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -216,6 +216,19 @@ export class PollsRepository {
       data: { status: 'CLOSED', noticeCreated: true },
     });
   }
+
+  async findResidentUserIdsByApartment(apartmentId: number) {
+    return prisma.resident.findMany({
+      where: {
+        apartmentId: apartmentId,
+        isRegistered: true,
+        userId: { not: null },
+      },
+      select: {
+        userId: true,
+      },
+    });
+  }
 }
 
 export default new PollsRepository();

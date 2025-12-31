@@ -9,6 +9,7 @@ import type {
 import pollsRepository from '../repositories/polls.repository.js';
 import eventRepository from '../../events/repositories/event.repository.js';
 import noticeRepository from '../../notices/repositories/notice.repository.js';
+import { getNotificationEventService } from '../../notification/index.js';
 
 const allowedRoles = ['ADMIN', 'SUPER_ADMIN'];
 
@@ -75,6 +76,17 @@ class PollsService {
       resourceId: poll.id,
       resourceType: 'POLL',
     });
+
+    try {
+      const notificationEventService = getNotificationEventService();
+
+      const apartmentId = user.adminOf!.apartment!.id;
+
+      await notificationEventService.onPollCreated(apartmentId, data.title);
+    } catch (e) {
+      console.error('[PollsService] 알림 이벤트 호출 실패:', e);
+    }
+
     return this.formatPollResponse(poll);
   }
 

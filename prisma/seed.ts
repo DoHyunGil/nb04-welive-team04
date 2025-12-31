@@ -1,10 +1,10 @@
-  // prisma/seed.ts
+// prisma/seed.ts
 import { prisma } from '../src/lib/prisma.js';
 import { hashPassword } from '../src/lib/password.js';
 import { Role, joinStatus } from '../generated/prisma/client.js';
 
 async function main() {
-  console.log('Seeding Apartment...');
+  console.log("Seeding Apartment...");
 
   const buildingNumberFrom = 1;
   const buildingNumberTo = 10;
@@ -51,7 +51,7 @@ async function main() {
   }
 
   // --- 첫 번째 아파트 ---
-  await prisma.apartment.create({
+  const apartment1 = await prisma.apartment.create ({
     data: {
       name: '래미안 퍼스티지',
       address: '서울시 강남구 테헤란로 100',
@@ -92,7 +92,7 @@ async function main() {
   });
 
   // --- 두 번째 아파트 추가 ---
-  await prisma.apartment.create({
+  const apartment2 = await prisma.apartment.create ({
     data: {
       name: '자이 아파트',
       address: '서울시 송파구 올림픽로 200',
@@ -132,8 +132,81 @@ async function main() {
     },
   });
 
-  console.log('🌱 Seed completed!');
+  console.log('✅ 일반 주민 계정 생성 시작...');
 
+  // 주민 1 (세대주)
+  const resident1 = await prisma.resident.create({
+    data: {
+      email: 'resident1@test.com',
+      contact: '010-3333-4444',
+      name: '김주민',
+      building: 1,
+      unit: 101,
+      isHouseholder: true,
+      apartmentId: apartment1.id,
+      isRegistered: true,
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      username: 'resident1',
+      password: await hashPassword('resident1234!'),
+      email: 'resident1@test.com',
+      contact: '010-3333-4444',
+      name: '김주민',
+      role: Role.USER,
+      avatar: null,
+      joinStatus: joinStatus.APPROVED,
+      isActive: true,
+      resident: {
+        connect: {
+          id: resident1.id,
+        },
+      },
+    },
+  });
+
+  console.log('✅ 주민1 (resident1) 생성 완료');
+
+  // 주민 2 (세대주)
+  const resident2 = await prisma.resident.create({
+    data: {
+      email: 'resident2@test.com',
+      contact: '010-4444-5555',
+      name: '이주민',
+      building: 2,
+      unit: 201,
+      isHouseholder: true,
+      apartmentId: apartment1.id,
+      isRegistered: true,
+    },
+  });
+
+  await prisma.user.create({
+    data: {
+      username: 'resident2',
+      password: await hashPassword('resident1234!'),
+      email: 'resident2@test.com',
+      contact: '010-4444-5555',
+      name: '이주민',
+      role: Role.USER,
+      avatar: null,
+      joinStatus: joinStatus.APPROVED,
+      isActive: true,
+      resident: {
+        connect: {
+          id: resident2.id,
+        },
+      },
+    },
+  });
+
+  console.log('✅ 주민2 (resident2) 생성 완료');
+
+
+    console.log("🌱 Seed completed!");
+  
   //seed의 db값 테스트
   //console.log(await prisma.apartment.findMany());
 }
