@@ -42,10 +42,20 @@ export class NotificationService {
   }
 
   async markAsRead(id: number, userId: number) {
+    const notification = await this.repository.findSimple(id);
+
+    if (!notification) {
+      throw createError(404, '알림을 찾을 수 없습니다.');
+    }
+
+    if (notification.userId !== userId) {
+      throw createError(403, '알림에 대한 권한이 없습니다.');
+    }
+
     const result = await this.repository.markAsRead(id, userId);
 
     if (result.count === 0) {
-      throw createError(404, '알림을 찾을 수 없거나 권한이 없습니다.');
+      throw createError(500, '알림 상태 업데이트에 실패했습니다.');
     }
 
     return result;

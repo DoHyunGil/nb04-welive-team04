@@ -77,11 +77,6 @@ export class NotificationController {
     if (!userId) {
       throw createError(401, '인증이 필요합니다.');
     }
-    if (!userId) {
-      console.log('[TEST MODE] Using userId=3 for testing');
-      return 3;
-    }
-
     return userId;
   }
 }

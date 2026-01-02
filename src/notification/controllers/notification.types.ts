@@ -47,11 +47,6 @@ export interface AnnouncementCreatedData {
   apartmentId: number;
 }
 
-export interface CreateNotificationData {
-  userId: number;
-  content: string;
-}
-
 export interface NotificationListResult<T> {
   data: T[];
   totalCount: number;

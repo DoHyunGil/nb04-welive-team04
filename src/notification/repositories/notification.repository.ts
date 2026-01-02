@@ -40,8 +40,8 @@ export class NotificationRepository {
     return {
       data,
       totalCount,
-      page,
-      limit,
+      page: pageNumber,
+      limit: take,
       hasNext: skip + data.length < totalCount,
     };
   }

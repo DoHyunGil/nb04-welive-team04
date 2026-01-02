@@ -1,9 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '../generated/prisma/client.js';
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
 import passport from 'passport';
 import { accessTokenStrategy } from './lib/passports/jwtStrategy.js';
 import cookieParser from 'cookie-parser';
@@ -16,15 +13,11 @@ import './lib/passports/index.js'; // Passport 전략 등록
 import { initNotificationService } from './notification/index.js';
 import { getNotificationRouter } from './routers/notification.route.js';
 import { sseManager } from './lib/sse.manager.js';
+import { prisma } from './lib/prisma.js';
 
 dotenv.config(); // .env 파일 환경변수 적재
 const app = express();
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 const PORT = process.env.PORT || 4000;
 
 app.use(
