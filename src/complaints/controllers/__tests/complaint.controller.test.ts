@@ -95,7 +95,7 @@ describe('ComplaintController - 단위 테스트', () => {
     jest.clearAllMocks();
   });
   describe('createComplaint', () => {
-    it('민원 생성에 성공하면 201 상태코드 반환한다', async () => {
+    it('민원 생성에 성공하면 201 상태코드를 반환한다', async () => {
       const mockComplaint = {
         title: '테스트 제목',
         content: '테스트 내용',
@@ -169,7 +169,7 @@ describe('ComplaintController - 단위 테스트', () => {
         ],
         totalCount: 1,
         page: 1,
-        limit: 10,
+        limit: 20,
         hasNext: false,
       };
       const mockRequest = createMockRequest({});
@@ -183,7 +183,7 @@ describe('ComplaintController - 단위 테스트', () => {
 
       expect(mockComplaintsService.getComplaints).toHaveBeenCalledWith({
         page: 1,
-        limit: 10,
+        limit: 20,
       });
       expect(statusMock).toHaveBeenCalledWith(200);
       expect(jsonMock).toHaveBeenCalledWith(mockComplaints);
@@ -206,7 +206,7 @@ describe('ComplaintController - 단위 테스트', () => {
         apartmentId: 1,
       };
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         user: { id: 1, email: 'test@test.com', role: 'USER' },
       });
       const { status, json, statusMock, jsonMock } = createMockResponse();
@@ -223,7 +223,7 @@ describe('ComplaintController - 단위 테스트', () => {
     });
     it('사용자 정보가 없으면 401 에러를 반환한다', async () => {
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         user: undefined,
       });
       noUser(mockRequest, complaintController.getComplaintById);
@@ -232,7 +232,7 @@ describe('ComplaintController - 단위 테스트', () => {
     it('서비스에서 에러가 발생하면 next를 호출한다', async () => {
       const error = new Error('Service Error');
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
       });
       mockComplaintsService.getComplaintById.mockRejectedValue(error);
       serverError(mockRequest, complaintController.getComplaintById, error);
@@ -242,7 +242,7 @@ describe('ComplaintController - 단위 테스트', () => {
   describe('updateComplaint', () => {
     it('민원 수정에 성공하면 204 상태코드를 반환한다', async () => {
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         body: {
           title: '수정된 제목',
           content: '수정된 내용',
@@ -266,7 +266,7 @@ describe('ComplaintController - 단위 테스트', () => {
     });
     it('사용자 정보가 없으면 401 에러를 반환한다', async () => {
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         body: {
           title: '수정된 제목',
           content: '수정된 내용',
@@ -278,7 +278,7 @@ describe('ComplaintController - 단위 테스트', () => {
     it('서비스에서 에러가 발생하면 next를 호출한다', async () => {
       const error = new Error('Service Error');
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         body: {
           title: '수정된 제목',
           content: '수정된 내용',
@@ -292,7 +292,7 @@ describe('ComplaintController - 단위 테스트', () => {
   describe('deleteComplaint', () => {
     it('민원 삭제에 성공하면 204 상태코드를 반환한다', async () => {
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
       });
       const { status, send, statusMock, sendMock } = createMockResponse();
       mockComplaintsService.deleteComplaint.mockResolvedValue({});
@@ -307,7 +307,7 @@ describe('ComplaintController - 단위 테스트', () => {
     });
     it('사용자 정보가 없으면 401 에러를 반환한다', async () => {
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         user: undefined,
       });
       noUser(mockRequest, complaintController.deleteComplaint);
@@ -315,7 +315,7 @@ describe('ComplaintController - 단위 테스트', () => {
     it('서비스에서 에러가 발생하면 next를 호출한다', async () => {
       const error = new Error('Service Error');
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
       });
       mockComplaintsService.deleteComplaint.mockRejectedValue(error);
       serverError(mockRequest, complaintController.deleteComplaint, error);
@@ -325,7 +325,7 @@ describe('ComplaintController - 단위 테스트', () => {
   describe('updateComplaintStatus', () => {
     it('관리자 전용) 민원 상태 수정에 성공하면 204 상태코드를 반환한다', async () => {
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         body: { status: 'IN_PROGRESS' },
       });
       const { status, send, statusMock, sendMock } = createMockResponse();
@@ -345,7 +345,7 @@ describe('ComplaintController - 단위 테스트', () => {
     });
     it('사용자 정보가 없으면 401 에러를 반환한다', async () => {
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         body: { status: 'IN_PROGRESS' },
         user: undefined,
       });
@@ -354,7 +354,7 @@ describe('ComplaintController - 단위 테스트', () => {
     it('서비스에서 에러가 발생하면 next를 호출한다', async () => {
       const error = new Error('Service Error');
       const mockRequest = createMockRequest({
-        params: { id: '1' },
+        params: { complaintId: '1' },
         body: { status: 'IN_PROGRESS' },
       });
       mockComplaintsService.updateComplaintStatus.mockRejectedValue(error);
