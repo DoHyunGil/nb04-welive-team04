@@ -1,0 +1,21 @@
+// 의존성 및 빌드 결과물
+node_modules
+dist
+build
+generated
+
+// 환경 변수 및 설정
+.env
+
+// 소스 코드 관리 및 에디터 설정
+.git
+.gitignore
+.vscode
+.claude
+.prettierrc
+.prettierignore
+eslint.config.js
+jest.config.cjs
+
+// 로컬 테스트용 데이터
+uploads
