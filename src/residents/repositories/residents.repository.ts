@@ -9,7 +9,7 @@ class ResidentsRepository {
     filters: Record<string, unknown>,
   ) {
     const admin = await prisma.adminOf.findUnique({
-      where: { id: userId },
+      where: { userId: userId },
       include: { apartment: true },
     });
     return prisma.resident.findMany({
@@ -51,10 +51,15 @@ class ResidentsRepository {
       unit: Number(residentData.unit),
       isHouseholder: residentData.isHouseholder,
     };
-
     return prisma.resident.update({
-      where: { id: residentId },
-      data,
+      where: { id: Number(residentId) },
+      data: {
+        name: data.name,
+        contact: data.contact,
+        building: data.building,
+        unit: data.unit,
+        isHouseholder: data.isHouseholder,
+      },
     });
   }
   async findById(userId: number) {

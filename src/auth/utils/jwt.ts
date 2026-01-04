@@ -6,7 +6,7 @@ import createError from 'http-errors';
 class Jwt {
   // Access Token 생성
   signAccessToken(payload: object): string {
-    const secret: Secret | undefined = token.access_token.key;
+    const secret = token.access_token.key as Secret;
     const expiresIn = token.access_token.expireAt;
 
     if (!secret) {
@@ -20,7 +20,7 @@ class Jwt {
 
   // Refresh Token 생성
   signRefreshToken(payload: object): string {
-    const secret: Secret | undefined = token.refresh_token.key;
+    const secret = token.refresh_token.key as Secret;
     const expiresIn = token.refresh_token.expireAt;
 
     if (!secret) {

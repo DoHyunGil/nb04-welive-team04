@@ -18,24 +18,6 @@ const apartment_select = {
 };
 
 class ApartmentRepository {
-  //   buildSearchCondition(searchKeyword?: string) {
-  //     if (!searchKeyword) return {};
-
-  //     const contains = {
-  //       contains: searchKeyword,
-  //       mode: 'insensitive' as const,
-  //     };
-
-  //     return {
-  //       OR: [
-  //         { name: contains },
-  //         { address: contains },
-  //         { description: contains },
-  //         { officeNumber: contains },
-  //       ],
-  //     };
-  //   }
-
   async findMany(
     skip: number,
     limit: number,
@@ -51,15 +33,27 @@ class ApartmentRepository {
   }
 
   async findById(id: number) {
-    return prisma.apartment.findUnique({
+    const apartment = await prisma.apartment.findUnique({
       where: { id },
       select: apartment_select,
     });
+    return { ...apartment, id: apartment ? String(apartment.id) : null };
   }
 
   async count(where?: Prisma.ApartmentWhereInput) {
     return prisma.apartment.count({ where });
   }
-}
 
+  async create(
+    data: Prisma.ApartmentCreateInput,
+    tx?: Prisma.TransactionClient,
+  ) {
+    const client = tx ?? prisma;
+
+    return client.apartment.create({
+      data,
+      select: apartment_select,
+    });
+  }
+}
 export default new ApartmentRepository();

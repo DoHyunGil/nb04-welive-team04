@@ -1,4 +1,4 @@
-import type { CommentResourceType } from '../../../../generated/prisma/client.js';
+import type { CommentResourceType } from '../../../../generated/prisma/enums.js';
 
 // Repository에서 사용하는 댓글 생성 입력 타입
 export interface CreateCommentInput {

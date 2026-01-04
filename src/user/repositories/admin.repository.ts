@@ -61,7 +61,7 @@ class AdminRepository {
     const residentCount = await prisma.resident.count({
       where: {
         user: {
-          role: Role.RESIDENT,
+          role: Role.USER,
         },
       },
     });

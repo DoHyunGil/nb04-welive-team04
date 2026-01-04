@@ -6,14 +6,14 @@ import type {
   UpdateCommentDto,
   DeleteCommentDto,
 } from '../types/comment.dto.js';
-import { CommentResourceType } from '../../../generated/prisma/client.js';
+import { CommentResourceType } from '../../../generated/prisma/enums.js';
 import createHttpError from 'http-errors';
 
 class CommentController {
   // 댓글 생성 API
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = Number(req.user?.id);
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
@@ -46,7 +46,7 @@ class CommentController {
   // 댓글 수정 API
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = Number(req.user?.id);
       if (!userId) {
         throw createHttpError(401, '로그인이 필요합니다.');
       }
@@ -65,7 +65,7 @@ class CommentController {
   // 댓글 삭제 API
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user?.id;
+      const userId = Number(req.user?.id);
       const userRole = req.user?.role;
       if (!userId || !userRole) {
         throw createHttpError(401, '로그인이 필요합니다.');

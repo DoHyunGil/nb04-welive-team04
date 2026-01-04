@@ -8,7 +8,7 @@ export class PollsRepository {
   async findUserWithResident(userId: number) {
     return prisma.user.findUnique({
       where: { id: userId },
-      include: { resident: true },
+      include: { resident: true, adminOf: { select: { apartment: true } } },
     });
   }
 

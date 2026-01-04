@@ -70,7 +70,7 @@ class complaintRepository {
         updatedAt: true,
         isPublic: true,
         status: true,
-        viewCount: true,
+        viewsCount: true,
         apartmentId: true,
         complainant: true,
         _count: {
@@ -120,7 +120,7 @@ class complaintRepository {
         updatedAt: true,
         isPublic: true,
         status: true,
-        viewCount: true,
+        viewsCount: true,
         apartmentId: true,
         complainant: true,
         _count: {
@@ -134,7 +134,7 @@ class complaintRepository {
     await prisma.complain.update({
       where: { id: complaintId },
       data: {
-        viewCount: {
+        viewsCount: {
           increment: 1,
         },
       },
