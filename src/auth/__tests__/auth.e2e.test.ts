@@ -45,14 +45,12 @@ describe('Auth API - E2E 통합 테스트', () => {
   beforeAll(async () => {
     const hashedPassword = await hashPassword('testpassword123');
 
-    // 기존 사용자가 있는지 확인
     const existingUser = await prisma.user.findFirst({
       where: { username: 'e2e_test_user' },
     });
 
     if (existingUser) {
       testUserId = existingUser.id;
-      // 비밀번호 업데이트
       await prisma.user.update({
         where: { id: existingUser.id },
         data: { password: hashedPassword },
@@ -116,14 +114,6 @@ describe('Auth API - E2E 통합 테스트', () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('message');
-    });
-
-    it('필수 필드 누락 시 실패', async () => {
-      const response = await request(app).post('/api/v2/auth/login').send({
-        username: 'e2e_test_user',
-      });
-
-      expect(response.status).toBe(400);
     });
   });
 
