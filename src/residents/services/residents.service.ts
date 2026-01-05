@@ -23,8 +23,8 @@ class ResidentsService {
     const residents = await residentsRepository.getResidents(
       userId,
       dto.page,
-      dto.limit,
       filters,
+      dto.limit,
     );
     const data = residents.map((resident) => ({
       id: resident.id.toString(),

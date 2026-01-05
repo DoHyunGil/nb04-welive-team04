@@ -1,5 +1,5 @@
 import { prisma } from '../../lib/prisma.js';
-import { CommentResourceType } from '../../../generated/prisma/client.js';
+import { CommentResourceType } from '../../../generated/prisma/enums.js';
 import type {
   CreateCommentInput,
   FindCommentsParams,

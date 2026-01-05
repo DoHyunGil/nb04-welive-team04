@@ -5,21 +5,24 @@ class ResidentsRepository {
   async getResidents(
     userId: number,
     page: number = 1,
-    limit: number = 10,
     filters: Record<string, unknown>,
+    limit?: number,
   ) {
     const admin = await prisma.adminOf.findUnique({
       where: { userId: userId },
       include: { apartment: true },
     });
-    return prisma.resident.findMany({
+    const query: any = {
       where: {
         apartmentId: Number(admin?.apartment?.id),
         ...filters,
       },
-      take: Number(limit),
-      skip: (Number(page) - 1) * Number(limit),
-    });
+    };
+    if (limit && limit > 0) {
+      query.take = Number(limit);
+      query.skip = (Number(page) - 1) * Number(limit);
+    }
+    return prisma.resident.findMany(query);
   }
   async getResidentsById(userId: number, residentId: number) {
     return prisma.resident.findUnique({
@@ -84,6 +87,15 @@ class ResidentsRepository {
     return prisma.resident.delete({
       where: { id: residentId },
     });
+  }
+
+  private readonly templateFileUrl: string;
+  constructor() {
+    this.templateFileUrl =
+      'https://part4-welive-team4.s3.ap-northeast-2.amazonaws.com/resident_template.csv';
+  }
+  async getResidentTemplate(): Promise<string> {
+    return this.templateFileUrl;
   }
 }
 

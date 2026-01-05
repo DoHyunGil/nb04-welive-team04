@@ -13,6 +13,9 @@ router.patch(
   userController.updateAvatar,
 );
 
+// 프로필 이미지 삭제
+router.delete('/me/avatar', passports.jwtAuth, userController.deleteAvatar);
+
 // 비밀번호 변경
 router.patch('/me/password', passports.jwtAuth, userController.updatePassword);
 
