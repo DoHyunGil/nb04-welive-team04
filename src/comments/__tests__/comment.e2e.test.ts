@@ -240,13 +240,50 @@ describe('Comment API - E2E 통합 테스트', () => {
       expect(response.body).toHaveProperty('message');
     });
 
-    it('필수 필드 누락 시 실패', async () => {
+    it('필수 필드 누락 시 실패 - resourceId 누락', async () => {
       const response = await request(app)
         .post('/api/v2/comments')
         .set('Cookie', authCookies)
         .send({
           resourceType: CommentResourceType.NOTICE,
           content: '내용만 있는 댓글',
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('필수 필드 누락 시 실패 - content 누락', async () => {
+      const response = await request(app)
+        .post('/api/v2/comments')
+        .set('Cookie', authCookies)
+        .send({
+          resourceType: CommentResourceType.NOTICE,
+          resourceId: testNoticeId.toString(),
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('필수 필드 누락 시 실패 - resourceType 누락', async () => {
+      const response = await request(app)
+        .post('/api/v2/comments')
+        .set('Cookie', authCookies)
+        .send({
+          resourceId: testNoticeId.toString(),
+          content: 'resourceType이 없는 댓글',
+        });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('필수 필드 누락 시 실패 - content가 빈 문자열', async () => {
+      const response = await request(app)
+        .post('/api/v2/comments')
+        .set('Cookie', authCookies)
+        .send({
+          resourceType: CommentResourceType.NOTICE,
+          resourceId: testNoticeId.toString(),
+          content: '',
         });
 
       expect(response.status).toBe(400);

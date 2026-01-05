@@ -67,7 +67,7 @@ describe('CommentController Unit Tests', () => {
       const req = createMockRequest({
         user: { id: 1 },
         body: {
-          resourceType: 'POLL',
+          resourceType: 'COMPLAINT',
           resourceId: '1',
           content: 'Test comment',
         },
@@ -78,7 +78,7 @@ describe('CommentController Unit Tests', () => {
       await commentController.create(req as Request, res, mockNext);
 
       expect(mockCommentService.createComment).toHaveBeenCalledWith(1, {
-        resourceType: 'POLL',
+        resourceType: 'COMPLAINT',
         resourceId: '1',
         content: 'Test comment',
       });
@@ -91,7 +91,7 @@ describe('CommentController Unit Tests', () => {
       const req = createMockRequest({
         user: undefined,
         body: {
-          resourceType: 'POLL',
+          resourceType: 'COMPLAINT',
           resourceId: '1',
           content: 'Test comment',
         },
@@ -117,7 +117,7 @@ describe('CommentController Unit Tests', () => {
       const req = createMockRequest({
         user: { id: 1 },
         body: {
-          resourceType: 'POLL',
+          resourceType: 'COMPLAINT',
           resourceId: '1',
           content: 'Test comment',
         },
@@ -156,7 +156,7 @@ describe('CommentController Unit Tests', () => {
 
       const req = createMockRequest({
         query: {
-          resourceType: 'POLL',
+          resourceType: 'COMPLAINT',
           resourceId: '1',
           page: '1',
           limit: '10',
@@ -168,7 +168,7 @@ describe('CommentController Unit Tests', () => {
       await commentController.findAll(req as Request, res, mockNext);
 
       expect(mockCommentService.findComments).toHaveBeenCalledWith({
-        resourceType: 'POLL',
+        resourceType: 'COMPLAINT',
         resourceId: '1',
         page: 1,
         limit: 10,
@@ -191,7 +191,7 @@ describe('CommentController Unit Tests', () => {
 
       const req = createMockRequest({
         query: {
-          resourceType: 'POLL',
+          resourceType: 'COMPLAINT',
           resourceId: '1',
         },
       });
@@ -201,7 +201,7 @@ describe('CommentController Unit Tests', () => {
       await commentController.findAll(req as Request, res, mockNext);
 
       expect(mockCommentService.findComments).toHaveBeenCalledWith({
-        resourceType: 'POLL',
+        resourceType: 'COMPLAINT',
         resourceId: '1',
         page: 1,
         limit: 10,
@@ -347,6 +347,30 @@ describe('CommentController Unit Tests', () => {
       await commentController.remove(req as Request, res, mockNext);
 
       expect(mockNext).toHaveBeenCalledWith(error);
+    });
+
+    it('관리자는 댓글 삭제 시 role이 ADMIN으로 전달된다', async () => {
+      mockCommentService.deleteComment.mockResolvedValue();
+
+      const req = createMockRequest({
+        user: { id: 2, role: 'ADMIN' },
+        params: { commentId: '1' },
+      });
+      const { status, json, statusMock, jsonMock } = createMockResponse();
+      const res = { status, json } as unknown as Response;
+
+      await commentController.remove(req as Request, res, mockNext);
+
+      expect(mockCommentService.deleteComment).toHaveBeenCalledWith(
+        2,
+        'ADMIN',
+        {
+          commentId: 1,
+        },
+      );
+      expect(statusMock).toHaveBeenCalledWith(204);
+      expect(jsonMock).toHaveBeenCalledWith({});
+      expect(mockNext).not.toHaveBeenCalled();
     });
   });
 });
