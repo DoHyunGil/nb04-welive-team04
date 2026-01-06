@@ -1,6 +1,8 @@
+import 'dotenv/config';
+
 const TOKEN = {
-  JWT_ACCESS_TOKEN_SECRET: process.env.JWT_ACCESS_SECRET || 'access-secret',
-  JWT_REFRESH_TOKEN_SECRET: process.env.JWT_REFRESH_SECRET || 'refresh-secret',
+  JWT_ACCESS_TOKEN_SECRET: process.env.JWT_ACCESS_SECRET,
+  JWT_REFRESH_TOKEN_SECRET: process.env.JWT_REFRESH_SECRET,
   ACCESS_TOKEN_COOKIE_NAME: 'access_token',
   REFRESH_TOKEN_COOKIE_NAME: 'refresh_token',
   ACCESS_TOKEN_EXPIRES_IN: 1000 * 60 * 15, // 15분
