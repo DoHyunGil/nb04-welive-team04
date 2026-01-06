@@ -9,13 +9,6 @@ import { parse } from 'csv-parse';
 class ResidentsTemplateController {
   async downloadTemplate(req: Request, res: Response) {
     try {
-      // res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      // res.setHeader(
-      //   'Content-Disposition',
-      //   'attachment; filename=resident_template.csv',
-      // );
-      //res.write('\ufeff');
-
       const stringifier = stringify({
         header: true,
         columns: [
@@ -96,7 +89,7 @@ class ResidentsTemplateController {
       res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
       res.write('\ufeff');
 
-      // 4. CSV 변환 및 스트리밍
+      // CSV 변환 및 스트리밍
       const stringifier = stringify({
         header: true,
         columns: [

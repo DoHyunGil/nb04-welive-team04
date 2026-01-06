@@ -2,7 +2,7 @@
 import { prisma } from '../src/lib/prisma.js';
 import { hashPassword } from '../src/lib/password.js';
 import { Role, joinStatus } from '../generated/prisma/client.js';
-console.log(process.env.DATABASE_URL);
+
 async function main() {
   console.log('Seeding Apartment...');
 
