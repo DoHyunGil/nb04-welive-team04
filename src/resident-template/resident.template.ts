@@ -1,56 +1,20 @@
 import type { NextFunction, Request, Response } from 'express';
 import { Readable } from 'stream';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import type { GetResidentsDto } from '../lib/type/express/resident.index.js';
 import residentsRepository from '../residents/repositories/residents.repository.js';
 import residentsService from '../residents/services/residents.service.js';
 import { stringify } from 'csv-stringify';
 import { parse } from 'csv-parse';
 
-const RESIDENT_TEMPLATE_KEY = 'resident_template.csv';
-
-const REGION = process.env.AWS_REGION || 'ap-northeast-2';
-const ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || '';
-const SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || '';
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || '';
-
-if (!ACCESS_KEY_ID || !SECRET_ACCESS_KEY || !BUCKET_NAME) {
-  console.warn(
-    'AWS credentials or bucket name not set. S3 functionality will not work.',
-  );
-}
-
-const s3Client = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: ACCESS_KEY_ID,
-    secretAccessKey: SECRET_ACCESS_KEY,
-  },
-});
-
 class ResidentsTemplateController {
   async downloadTemplate(req: Request, res: Response) {
     try {
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: RESIDENT_TEMPLATE_KEY,
-      });
-
-      const s3Response = await s3Client.send(command);
-      if (!s3Response.Body) {
-        throw new Error('S3에서 파일을 찾을 수 없습니다.');
-      }
-
-      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename=resident_template.csv',
-      );
-      (s3Response.Body as Readable).pipe(res);
-
-      // ASW 에서 다운로드 받지 않고 자체 cvs 생성 코드
-      /*
-      res.write('\ufeff');
+      // res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      // res.setHeader(
+      //   'Content-Disposition',
+      //   'attachment; filename=resident_template.csv',
+      // );
+      //res.write('\ufeff');
 
       const stringifier = stringify({
         header: true,
@@ -71,12 +35,11 @@ class ResidentsTemplateController {
         unit: '102',
         name: '홍길동',
         email: 'test@test.com',
-        contact: '01011111111',
+        contact: "'01011111111",
         isHouseholder: 'FALSE',
       });
 
       stringifier.end();
-      */
     } catch (error) {
       console.error('템플릿 파일 전송 실패:', error);
       if (!res.headersSent) {

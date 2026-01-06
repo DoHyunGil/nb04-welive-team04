@@ -6,6 +6,7 @@ import type {
   UpdateComplaintDto,
 } from '../schemas/complaint.schema.js';
 import createHttpError from 'http-errors';
+import { getNotificationEventService } from '../../notification/index.js';
 
 class ComplaintService {
   // 민원 등록
@@ -14,6 +15,24 @@ class ComplaintService {
       userId,
       createDto,
     );
+
+    try {
+      const notificationEventService = getNotificationEventService();
+      const user = await complaintRepository.findResidentById(userId);
+      if (!user) throw createHttpError(404, '존재하지 않은 유저입니다.');
+      const resident = user.resident;
+      if (!resident) throw createHttpError(403, '주민이 아닙니다.');
+      const data = {
+        complaintId: complaint.id,
+        residentName: resident.name,
+        building: resident.building,
+        unit: resident.unit,
+        title: complaint.title,
+      };
+      await notificationEventService.onComplaintCreated(data);
+    } catch (e) {
+      console.error('[ComplaintService] 알림 이벤트 호출 실패:', e);
+    }
     return complaint;
   }
   // 민원 목록 조회
@@ -117,6 +136,19 @@ class ComplaintService {
       complaintId,
       status,
     );
+    try {
+      const notificationEventService = getNotificationEventService();
+      const residentUserId = complaint.complainant.id;
+      const data = {
+        complaintId,
+        residentUserId,
+        title: complaint.title,
+        status,
+      };
+      await notificationEventService.onComplaintStatusChanged(data);
+    } catch (e) {
+      console.error('[ComplaintService] 알림 이벤트 호출 실패:', e);
+    }
     return updatedComplaint;
   }
 }
