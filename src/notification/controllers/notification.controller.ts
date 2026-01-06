@@ -61,9 +61,13 @@ export class NotificationController {
     try {
       const userId = this.getUserId(req);
 
-      const { notificationid } = req.params as unknown as NotificationIdParam;
+      const { notificationid } = req.params;
+      const id = Number(notificationid);
+      if (isNaN(id)) {
+        throw createError(400, '잘못된 요청입니다. ID는 숫자여야 합니다.');
+      }
 
-      await this.service.markAsRead(notificationid, userId);
+      await this.service.markAsRead(id, userId);
 
       res.status(204).send();
     } catch (error) {

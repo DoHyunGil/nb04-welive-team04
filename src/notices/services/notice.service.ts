@@ -6,6 +6,7 @@ import type {
   UpdateNoticeDto,
 } from '../schemas/notice.schema.js';
 import createHttpError from 'http-errors';
+import { getNotificationEventService } from '../../notification/index.js';
 
 class NoticeService {
   // 공지 등록 - 관리자 전용
@@ -14,15 +15,17 @@ class NoticeService {
     if (!adminOfId) {
       throw createHttpError(403, '관리자가 아닙니다.');
     }
+    let notice;
     if (createDto.event) {
       // 날짜 있는 경우
       // 공지 먼저 생성
       const { title, content, category, isPinned } = createDto;
-      let newNotice = await noticeRepository.createNotice(
-        adminOfId.id,
-        userId,
-        { title, content, category, isPinned },
-      );
+      notice = await noticeRepository.createNotice(adminOfId.id, userId, {
+        title,
+        content,
+        category,
+        isPinned,
+      });
       // 이벤트 생성
       const { startDate, endDate } = createDto.event;
 
@@ -31,25 +34,32 @@ class NoticeService {
         category,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        apartmentId: newNotice.apartmentId,
-        resourceId: newNotice.id.toString(),
+        apartmentId: notice.apartmentId,
+        resourceId: notice.id.toString(),
         resourceType: 'NOTICE',
       });
       // 공지에 이벤트 연결
-      newNotice = await noticeRepository.updateNoticeEvent(
-        newNotice.id,
-        newEvent.id,
-      );
-      return newNotice;
+      notice = await noticeRepository.updateNoticeEvent(notice.id, newEvent.id);
     } else {
       // 날짜 없는 경우
-      const notice = await noticeRepository.createNotice(
+      notice = await noticeRepository.createNotice(
         adminOfId.id,
         userId,
         createDto,
       );
-      return notice;
     }
+    try {
+      const notificationEventService = getNotificationEventService();
+      const data = {
+        noticeId: notice.id,
+        title: notice.title,
+        apartmentId: notice.apartmentId,
+      };
+      await notificationEventService.onAnnouncementCreated(data);
+    } catch (e) {
+      console.error('[NoticeService] 알림 이벤트 호출 실패:', e);
+    }
+    return notice;
   }
   // 공지 목록 조회
   async getNotices(getDto: GetNoticesDto) {
