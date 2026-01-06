@@ -13,6 +13,8 @@ const fileFilter = (
     'image/png',
     'image/gif',
     'image/webp',
+    'text/csv',
+    'application/vnd.ms-excel',
   ];
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
