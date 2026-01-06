@@ -18,8 +18,10 @@ class ComplaintService {
 
     try {
       const notificationEventService = getNotificationEventService();
-      const resident = await complaintRepository.findResidentById(userId);
-      if (!resident) throw createHttpError(404, '존재하지 않은 유저입니다.');
+      const user = await complaintRepository.findResidentById(userId);
+      if (!user) throw createHttpError(404, '존재하지 않은 유저입니다.');
+      const resident = user.resident;
+      if (!resident) throw createHttpError(403, '주민이 아닙니다.');
       const data = {
         complaintId: complaint.id,
         residentName: resident.name,

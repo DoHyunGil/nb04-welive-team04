@@ -173,9 +173,12 @@ class complaintRepository {
   }
   // userId로 Resident 찾기
   async findResidentById(userId: number) {
-    return await prisma.resident.findUnique({
+    return await prisma.user.findUnique({
       where: {
-        userId,
+        id: userId,
+      },
+      select: {
+        resident: true,
       },
     });
   }
