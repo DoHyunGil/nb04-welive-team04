@@ -63,7 +63,7 @@ export class NotificationController {
 
       const { notificationid } = req.params as unknown as NotificationIdParam;
 
-      await this.service.markAsRead(Number(notificationid), userId);
+      await this.service.markAsRead(notificationid, userId);
 
       res.status(204).send();
     } catch (error) {

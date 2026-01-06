@@ -4,6 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "npm run prisma:reset && npm run prisma:migrate && node --experimental-vm-modules ./node_modules/.bin/jest --config jest.config.cjs",
+    "test:custom": "npm run prisma:reset && npm run prisma:migrate && node --experimental-vm-modules ./node_modules/.bin/jest --config jest.config.cjs --testPathPatterns=\"auth.service.test|auth.repository.test|user.repository.test|admin.repository.test|comment.repository.test|comment.e2e.test\"",
+    "test:repository": "npm run prisma:reset && npm run prisma:migrate && node --experimental-vm-modules ./node_modules/.bin/jest --config jest.config.cjs --testPathPatterns=\"repository.test\"",
     "dev": "tsx watch ./src/main.ts",
     "start": "node ./dist/src/main.js",
     "build": "tsc",
