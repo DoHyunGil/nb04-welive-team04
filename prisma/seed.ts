@@ -4,15 +4,7 @@ import { hashPassword } from '../src/lib/password.js';
 import { Role, joinStatus } from '../generated/prisma/client.js';
 console.log(process.env.DATABASE_URL);
 async function main() {
-  console.log("--- DB 연결 테스트 ---");
-  try {
-    // 쿼리 직접 실행 테스트
-    await prisma.$executeRawUnsafe('SELECT 1');
-    console.log("단순 쿼리 성공!");
-  } catch (e) {
-    console.error("단순 쿼리 실패:", e);
-  }
-  console.log("Seeding Apartment...");
+  console.log('Seeding Apartment...');
 
   const buildingNumberFrom = 1;
   const buildingNumberTo = 10;
@@ -43,8 +35,6 @@ async function main() {
     console.log('✅ 슈퍼 관리자 계정 생성 완료:', superAdmin.email);
   }
 
-  //#region DUMMY(참고용으로 쓰시라고 남겨둘게요)
-
   const buildings = Array.from(
     { length: buildingNumberTo - buildingNumberFrom + 1 },
     (_, i) => buildingNumberFrom + i,
@@ -59,7 +49,7 @@ async function main() {
   }
 
   // --- 첫 번째 아파트 ---
-  const apartment1 = await prisma.apartment.create ({
+  const apartment1 = await prisma.apartment.create({
     data: {
       name: '래미안 퍼스티지',
       address: '서울시 강남구 테헤란로 100',
@@ -100,7 +90,7 @@ async function main() {
   });
 
   // --- 두 번째 아파트 추가 ---
-  const apartment2 = await prisma.apartment.create ({
+  const apartment2 = await prisma.apartment.create({
     data: {
       name: '자이 아파트',
       address: '서울시 송파구 올림픽로 200',
@@ -139,8 +129,8 @@ async function main() {
       },
     },
   });
-    console.log("🌱 Seed completed!");
-  
+  console.log('🌱 Seed completed!');
+
   //seed의 db값 테스트
   //console.log(await prisma.apartment.findMany());
 }

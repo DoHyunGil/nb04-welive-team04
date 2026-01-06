@@ -67,39 +67,50 @@ class ResidentsService {
     };
     return data;
   }
-  async createResidents(userId: number, residentData: CreateResidentBody) {
+  async createResidents(
+    userId: number,
+    residentData: CreateResidentBody | CreateResidentBody[],
+  ) {
     const admin = await residentsRepository.findById(userId);
     const apartmentId = admin?.adminOf?.apartment?.id;
-    if (!admin || !admin.adminOf) {
-      throw createError(400, '관리자 권한이 없습니다.');
+    if (!admin || !admin.adminOf || !apartmentId) {
+      throw createError(400, '관리자 권한 또는 아파트 정보가 없습니다.');
     }
-    if (!apartmentId) {
-      throw createError(400, '아파트 정보가 없습니다.');
+    const dataArray = Array.isArray(residentData)
+      ? residentData
+      : [residentData];
+    const finalResults = [];
+
+    for (const data of dataArray) {
+      // email 중복 체크 (중복시 스킵)
+      const existingUser = await residentsRepository.findByEmail(data.email);
+      if (existingUser) {
+        console.warn(`이미 존재하는 사용자 스킵: ${data.email}`);
+        continue;
+      }
+
+      const residents = await residentsRepository.createResidents(
+        data,
+        apartmentId,
+      );
+      if (residents.isHouseholder !== undefined) {
+        residents.isHouseholder = data.isHouseholder === true;
+      }
+      finalResults.push({
+        id: residents.id.toString(),
+        createdAt: new Date().toString(),
+        email: residents.email,
+        contact: residents.contact,
+        name: residents.name,
+        building: Number(residents.building),
+        unit: Number(residents.unit),
+        isHouseholder: data.isHouseholder === true,
+        userId: residents.userId,
+      });
     }
-    const userEmail = await residentsRepository.findByEmail(residentData.email);
-    if (userEmail) {
-      throw createError(400, '이미 존재하는 사용자입니다.');
-    }
-    const residents = await residentsRepository.createResidents(
-      residentData,
-      apartmentId,
-    );
-    if (residents.isHouseholder !== undefined) {
-      residents.isHouseholder = residentData.isHouseholder === true;
-    }
-    const data = {
-      id: residents.id.toString(),
-      createdAt: new Date().toString(),
-      email: residents.email,
-      contact: residents.contact,
-      name: residents.name,
-      building: Number(residents.building),
-      unit: Number(residents.unit),
-      isHouseholder: residents.isHouseholder,
-      userId: residents.userId,
-    };
-    return data;
+    return finalResults;
   }
+
   async updateResidents(
     userId: number,
     residentId: number,

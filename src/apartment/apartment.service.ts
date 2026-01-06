@@ -1,6 +1,10 @@
 import apartmentRepository from '../apartment/apartment.respository.js';
 import type { Prisma } from 'generated/prisma/client.js';
-import type { ApartmentIdDto, GetApartmentDto } from './dto/apartment.dto.js';
+import type {
+  ApartmentIdDto,
+  GetApartmentDto,
+  CreateApartmentDto,
+} from './dto/apartment.dto.js';
 
 class ApartmentService {
   async getApartments(dto: GetApartmentDto) {
@@ -45,6 +49,24 @@ class ApartmentService {
     const { id } = dto;
 
     return apartmentRepository.findById(id);
+  }
+  async createApartment(tx: Prisma.TransactionClient, dto: CreateApartmentDto) {
+    return apartmentRepository.create(
+      {
+        name: dto.name,
+        address: dto.address,
+        description: dto.description,
+        officeNumber: dto.officeNumber,
+        buildingNumberFrom: dto.buildingNumberFrom,
+        buildingNumberTo: dto.buildingNumberTo,
+        floorCountPerBuilding: dto.floorCountPerBuilding,
+        unitCountPerFloor: dto.unitCountPerFloor,
+        adminOf: {
+          connect: { id: dto.adminOfId },
+        },
+      },
+      tx,
+    );
   }
 }
 

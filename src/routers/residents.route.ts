@@ -3,6 +3,7 @@ import residentsController from '../residents/controllers/residents.controller.j
 import residentSchema from '../residents/residents.schema.js';
 import residentTemplate from '../resident-template/resident.template.js';
 import passports from '../lib/passports/index.js';
+import { upload } from '../lib/multer.js';
 
 const router = express.Router();
 
@@ -42,9 +43,18 @@ router.delete(
 router.get('/file/template', residentTemplate.downloadTemplate);
 
 // 명부 업로드
-router.get('/file/import', passports.jwtAuth);
+router.post(
+  '/file/import',
+  passports.jwtAuth,
+  upload.single('file'),
+  residentTemplate.importResidentList,
+);
 
 // 명부 다운로드
-router.get('/file/export', passports.jwtAuth, residentTemplate.getResidentList);
+router.get(
+  '/file/export',
+  passports.jwtAuth,
+  residentTemplate.exportResidentList,
+);
 
 export default router;

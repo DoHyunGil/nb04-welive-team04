@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import apartmentService from './apartment.service.js';
 import createError from 'http-errors';
-import { NumberIdSchema } from './schemas/apartment.schema.js';
 import type { ApartmentIdDto, GetApartmentDto } from './dto/apartment.dto.js';
 
 class ApartmentController {
