@@ -1,5 +1,6 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import { prisma } from './../../lib/prisma.js';
+import type { Prisma } from '@prisma/client';
 
 class ResidentsRepository {
   async getResidents(
@@ -12,7 +13,7 @@ class ResidentsRepository {
       where: { userId: userId },
       include: { apartment: true },
     });
-    const query: any = {
+    const query: Prisma.ResidentFindManyArgs = {
       where: {
         apartmentId: Number(admin?.apartment?.id),
         ...filters,
