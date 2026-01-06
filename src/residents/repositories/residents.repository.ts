@@ -88,15 +88,6 @@ class ResidentsRepository {
       where: { id: residentId },
     });
   }
-
-  private readonly templateFileUrl: string;
-  constructor() {
-    this.templateFileUrl =
-      'https://part4-welive-team4.s3.ap-northeast-2.amazonaws.com/resident_template.csv';
-  }
-  async getResidentTemplate(): Promise<string> {
-    return this.templateFileUrl;
-  }
 }
 
 export default new ResidentsRepository();
