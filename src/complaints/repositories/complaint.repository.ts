@@ -171,6 +171,14 @@ class complaintRepository {
       },
     });
   }
+  // userId로 Resident 찾기
+  async findResidentById(userId: number) {
+    return await prisma.resident.findUnique({
+      where: {
+        userId,
+      },
+    });
+  }
 }
 
 export default new complaintRepository();
