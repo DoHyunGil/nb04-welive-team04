@@ -387,10 +387,20 @@ describe('Comment API - E2E 통합 테스트', () => {
       expect(response.status).toBe(401);
     });
 
-    // TODO: timeout 발생, 수정 필요
-    it.skip('다른 사용자의 댓글 수정 시 403 에러', async () => {
+    it('다른 사용자의 댓글 수정 시 403 에러', async () => {
+      // 일반 사용자가 작성한 댓글 생성
+      const userComment = await prisma.comment.create({
+        data: {
+          content: '일반 사용자의 댓글',
+          resourceType: CommentResourceType.NOTICE,
+          noticeId: testNoticeId,
+          authorId: testUserId,
+        },
+      });
+
+      // 관리자가 다른 사용자의 댓글 수정 시도
       const response = await request(app)
-        .patch(`/api/v2/comments/${createdCommentId}`)
+        .patch(`/api/v2/comments/${userComment.id}`)
         .set('Cookie', adminAuthCookies)
         .send({
           content: '다른 사용자가 수정 시도',
@@ -398,10 +408,12 @@ describe('Comment API - E2E 통합 테스트', () => {
 
       expect(response.status).toBe(403);
       expect(response.body).toHaveProperty('message');
+
+      // 정리
+      await prisma.comment.delete({ where: { id: userComment.id } });
     });
 
-    // TODO: validateParams 미들웨어와 router 문제로 인해 timeout 발생, 수정 필요
-    it.skip('존재하지 않는 댓글 수정 시 404 에러', async () => {
+    it('존재하지 않는 댓글 수정 시 404 에러', async () => {
       const response = await request(app)
         .patch('/api/v2/comments/999999')
         .set('Cookie', authCookies)
@@ -487,8 +499,7 @@ describe('Comment API - E2E 통합 테스트', () => {
       await prisma.comment.delete({ where: { id: comment.id } });
     });
 
-    // TODO: validateParams 미들웨어와 router 문제로 인해 timeout 발생, 수정 필요
-    it.skip('존재하지 않는 댓글 삭제 시 404 에러', async () => {
+    it('존재하지 않는 댓글 삭제 시 404 에러', async () => {
       const response = await request(app)
         .delete('/api/v2/comments/999999')
         .set('Cookie', authCookies);
