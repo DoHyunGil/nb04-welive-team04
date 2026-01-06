@@ -5,6 +5,7 @@ import residentsRepository from '../residents/repositories/residents.repository.
 import residentsService from '../residents/services/residents.service.js';
 import { stringify } from 'csv-stringify';
 import { parse } from 'csv-parse';
+import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 
 class ResidentsTemplateController {
   async downloadTemplate(req: Request, res: Response) {
@@ -128,7 +129,7 @@ class ResidentsTemplateController {
         return res.status(400).json({ message: '업로드된 파일이 없습니다.' });
       }
       const userId = Number(req.user?.id);
-      const results: any[] = [];
+      const results: CreateResidentBody[] = [];
       const parser = Readable.from(req.file.buffer).pipe(
         parse({
           columns: true,
@@ -139,12 +140,13 @@ class ResidentsTemplateController {
       );
       for await (const record of parser) {
         results.push({
-          building: Number(record['동']),
-          unit: Number(record['호수']),
-          name: record['이름'],
-          contact: record['연락처'],
-          email: record['이메일'],
+          building: Number(record['동']) || 0,
+          unit: Number(record['호수']) || 0,
+          name: record['이름'] || '',
+          contact: record['연락처'] || '',
+          email: record['이메일'] || '',
           isHouseholder: record['세대주여부']?.toUpperCase() === 'TRUE',
+          apartmentId: 0,
         });
       }
       const finalResult = await residentsService.createResidents(
