@@ -196,8 +196,6 @@ CREATE TABLE "Event" (
     CONSTRAINT "Event_pkey" PRIMARY KEY ("id")
 );
 
-<<<<<<<< HEAD:prisma/migrations/20251228173946_init/migration.sql
-========
 -- CreateTable
 CREATE TABLE "notifications" (
     "id" SERIAL NOT NULL,
@@ -210,7 +208,6 @@ CREATE TABLE "notifications" (
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
 
->>>>>>>> origin/develop:prisma/migrations/20260102060627_dev/migration.sql
 -- CreateIndex
 CREATE UNIQUE INDEX "adminOf_userId_key" ON "adminOf"("userId");
 
