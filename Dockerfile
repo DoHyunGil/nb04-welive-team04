@@ -8,10 +8,12 @@ RUN npm install
 
 COPY prisma ./prisma
 
-
 COPY . .
-RUN npm run build && \
-    npx prisma generate
+
+ENV DATABASE_URL="postgres://dummy:dummy@localhost:5432/dummy"
+
+RUN npx prisma generate && \
+    npm run build
 
 ENV PORT=4000
 
