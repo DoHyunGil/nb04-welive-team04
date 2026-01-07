@@ -3,14 +3,15 @@ FROM node:${NODE_VERSION}
 
 WORKDIR /app
 
+# Copy package files and install dependencies
 COPY package.json package-lock.json ./
 RUN npm install
 
-COPY prisma ./prisma
-RUN npx prisma generate
-
+# Copy all source files
 COPY . .
-RUN npm run build
+
+# Generate Prisma client and build
+RUN npx prisma generate && npm run build
 
 ENV PORT=4000
 EXPOSE 4000
