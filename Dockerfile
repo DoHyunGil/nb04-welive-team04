@@ -10,8 +10,15 @@ RUN npm install
 # Copy all source files
 COPY . .
 
-# Generate Prisma client and build
-RUN npx prisma generate && npm run build
+# Generate Prisma client (separate step for better error visibility)
+RUN echo "=== Generating Prisma Client ===" && \
+    npx prisma generate && \
+    echo "=== Prisma Client Generated Successfully ==="
+
+# Build TypeScript (separate step for better error visibility)
+RUN echo "=== Building TypeScript ===" && \
+    npm run build && \
+    echo "=== Build Completed Successfully ==="
 
 ENV PORT=4000
 EXPOSE 4000
