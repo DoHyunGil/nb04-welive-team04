@@ -1,0 +1,13 @@
+node_modules
+generated
+dist
+.env
+.env.test
+.env.production
+.idea
+.DS_Store
+.claude/settings.local.json
+
+# AWS 및 보안 관련 파일
+*.pem
+welive-backend-key.pem
