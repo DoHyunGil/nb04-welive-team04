@@ -128,6 +128,46 @@ class AdminRepository {
     return adminOf;
   }
 
+  // Apartment 테이블에 아파트 생성
+  async createApartment(adminOfId: number, adminOfData: AdminOfInput) {
+    // 동 번호 배열 생성 (buildingNumberFrom ~ buildingNumberTo)
+    const buildings: number[] = [];
+    for (
+      let i = adminOfData.buildingNumberFrom;
+      i <= adminOfData.buildingNumberTo;
+      i++
+    ) {
+      buildings.push(i);
+    }
+
+    // 호수 배열 생성 (층별로 호수 생성)
+    const units: number[] = [];
+    for (let floor = 1; floor <= adminOfData.floorCountPerBuilding; floor++) {
+      for (let num = 1; num <= adminOfData.unitCountPerFloor; num++) {
+        const unit = floor * 100 + num;
+        units.push(unit);
+      }
+    }
+
+    const apartment = await prisma.apartment.create({
+      data: {
+        name: adminOfData.name,
+        address: adminOfData.address,
+        description: adminOfData.description,
+        officeNumber: adminOfData.officeNumber,
+        buildingNumberFrom: adminOfData.buildingNumberFrom,
+        buildingNumberTo: adminOfData.buildingNumberTo,
+        floorCountPerBuilding: adminOfData.floorCountPerBuilding,
+        unitCountPerFloor: adminOfData.unitCountPerFloor,
+        buildings: buildings,
+        units: units,
+        adminOfId: adminOfId,
+      },
+    });
+
+    return apartment;
+  }
+
   // 관리자 목록 조회
   async findAdmins(params: FindAdminsParams) {
     const searchKeyword = params.searchKeyword;
@@ -308,12 +348,24 @@ class AdminRepository {
 
   // 관리자 삭제
   async deleteAdmin(id: number) {
-    // 1. 먼저 adminOf를 삭제
-    await prisma.adminOf.deleteMany({
+    // 1. adminOf 찾기
+    const adminOf = await prisma.adminOf.findFirst({
       where: { userId: id },
     });
 
-    // 2. 그 다음 user를 삭제
+    if (adminOf) {
+      // 2. Apartment 삭제 (adminOfId로)
+      await prisma.apartment.deleteMany({
+        where: { adminOfId: adminOf.id },
+      });
+
+      // 3. adminOf 삭제
+      await prisma.adminOf.deleteMany({
+        where: { userId: id },
+      });
+    }
+
+    // 4. 그 다음 user를 삭제
     const deletedAdmin = await prisma.user.delete({
       where: { id: id },
     });
@@ -335,14 +387,31 @@ class AdminRepository {
     // 2. 거절된 관리자들의 id 배열 만들기
     const adminIds = rejectedAdmins.map((admin) => admin.id);
 
-    // 3. adminOf 먼저 삭제
+    // 3. adminOf 찾기
+    const adminOfs = await prisma.adminOf.findMany({
+      where: {
+        userId: { in: adminIds },
+      },
+      select: { id: true },
+    });
+
+    const adminOfIds = adminOfs.map((adminOf) => adminOf.id);
+
+    // 4. Apartment 먼저 삭제
+    await prisma.apartment.deleteMany({
+      where: {
+        adminOfId: { in: adminOfIds },
+      },
+    });
+
+    // 5. adminOf 삭제
     await prisma.adminOf.deleteMany({
       where: {
         userId: { in: adminIds },
       },
     });
 
-    // 4. user 삭제
+    // 6. user 삭제
     const result = await prisma.user.deleteMany({
       where: {
         id: { in: adminIds },

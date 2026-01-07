@@ -6,6 +6,7 @@ import { joinStatus } from '../../../generated/prisma/enums.js';
 import type { User } from '../../../generated/prisma/browser.js';
 import type { GetResidentsAuthDto } from '../../lib/type/express/resident.index.js';
 import { hashPassword } from '../../lib/password.js';
+import { getNotificationEventService } from '../../notification/index.js';
 
 class ResidentsAuthService {
   async getResidentsAuth(userId: number, dto: GetResidentsAuthDto) {
@@ -49,9 +50,26 @@ class ResidentsAuthService {
     if (userName) {
       throw createError(400, '이미 존재하는 아이디입니다.');
     }
-    const apartment = await residentsAuthRepository.findByApartmentId(
-      residentData.apartmentName,
-    );
+
+    // apartmentId가 있으면 그것을 사용, 없으면 apartmentName으로 조회
+    let apartment;
+    if (residentData.apartmentId) {
+      // apartmentId를 숫자로 변환 (문자열로 올 수 있음)
+      const apartmentIdNum =
+        typeof residentData.apartmentId === 'string'
+          ? parseInt(residentData.apartmentId, 10)
+          : residentData.apartmentId;
+
+      apartment =
+        await residentsAuthRepository.findByApartmentById(apartmentIdNum);
+    } else if (residentData.apartmentName) {
+      apartment = await residentsAuthRepository.findByApartmentId(
+        residentData.apartmentName,
+      );
+    } else {
+      throw createError(400, '아파트 정보가 필요합니다.');
+    }
+
     if (!apartment) {
       throw createError(400, '아파트 정보가 없습니다.');
     }
@@ -104,6 +122,15 @@ class ResidentsAuthService {
         residentId,
         createdUser.id,
       );
+
+      // 관리자에게 알림 전송
+      const notificationEventService = getNotificationEventService();
+      await notificationEventService.onResidentSignupRequest({
+        residentId,
+        name: residents.name,
+        building: residents.building,
+        unit: residents.unit,
+      });
 
       return createdUser;
     }

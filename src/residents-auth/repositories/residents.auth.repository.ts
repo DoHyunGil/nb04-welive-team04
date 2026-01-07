@@ -46,6 +46,11 @@ class ResidentsAuthRepository {
       where: { name: name },
     });
   }
+  async findByApartmentById(id: number) {
+    return prisma.apartment.findUnique({
+      where: { id: id },
+    });
+  }
   async createUser(
     residentData: CreateResidentAuthBody,
     joinStatus: 'PENDING' | 'APPROVED' | 'REJECTED',
