@@ -68,9 +68,11 @@ class AdminService {
       throw createError(409, '이미 존재하는 이메일입니다.');
     }
 
-    const existingApartment = await adminRepository.findApartmentByName(
-      data.adminOf.name,
-    );
+    // Apartment 테이블에서 중복 확인 (실제 아파트 중복 검사)
+    const existingApartment =
+      await adminRepository.findApartmentByNameInApartmentTable(
+        data.adminOf.name,
+      );
     if (existingApartment) {
       throw createError(409, '이미 등록된 아파트입니다.');
     }
@@ -129,6 +131,23 @@ class AdminService {
       dto.id,
       joinStatusEnum,
     );
+
+    // 승인 시 Apartment 테이블에 아파트 생성 (없을 때만)
+    if (joinStatusEnum === joinStatus.APPROVED) {
+      const admin = await adminRepository.findAdminByEmail(updatedAdmin.email);
+      if (admin && admin.adminOf) {
+        // 이미 Apartment가 있는지 확인
+        const existingApartment = await adminRepository.findApartmentByAdminOfId(
+          admin.adminOf.id,
+        );
+
+        // 없을 때만 생성
+        if (!existingApartment) {
+          await adminRepository.createApartment(admin.adminOf.id, admin.adminOf);
+        }
+      }
+    }
+
     return updatedAdmin;
   }
 
