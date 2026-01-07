@@ -3,9 +3,9 @@ FROM node:${NODE_VERSION}
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files and install ALL dependencies (including devDependencies for build)
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
 # Copy all source files
 COPY . .
