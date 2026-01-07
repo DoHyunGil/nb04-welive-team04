@@ -17,8 +17,10 @@ RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
     echo "=== Prisma Client Generated Successfully ==="
 
 # Build TypeScript (separate step for better error visibility)
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
-    npm run build && \
+RUN echo "=== Building TypeScript ===" && \
+    ls -la generated/prisma/ && \
+    DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
+    npm run build 2>&1 | tee build.log && \
     echo "=== Build Completed Successfully ==="
 
 ENV PORT=4000
