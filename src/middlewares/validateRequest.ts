@@ -49,7 +49,7 @@ export function validateParams(schema: z.ZodType) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Object.defineProperty(req, 'params', {
         value: parsed,
-        writable: false,
+        writable: true,
         configurable: true,
       });
       next();
