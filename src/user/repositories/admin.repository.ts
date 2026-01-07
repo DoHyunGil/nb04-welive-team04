@@ -30,14 +30,39 @@ class AdminRepository {
       where: {
         email: email,
       },
+      include: {
+        adminOf: true, // adminOf 정보 포함
+      },
     });
 
     return admin;
   }
 
-  // 아파트 이름으로 아파트 찾기
+  // 아파트 이름으로 아파트 찾기 (AdminOf 테이블)
   async findApartmentByName(name: string) {
     const apartment = await prisma.adminOf.findFirst({
+      where: {
+        name: name,
+      },
+    });
+
+    return apartment;
+  }
+
+  // adminOfId로 Apartment 찾기
+  async findApartmentByAdminOfId(adminOfId: number) {
+    const apartment = await prisma.apartment.findFirst({
+      where: {
+        adminOfId: adminOfId,
+      },
+    });
+
+    return apartment;
+  }
+
+  // 아파트 이름으로 Apartment 테이블에서 찾기
+  async findApartmentByNameInApartmentTable(name: string) {
+    const apartment = await prisma.apartment.findFirst({
       where: {
         name: name,
       },
