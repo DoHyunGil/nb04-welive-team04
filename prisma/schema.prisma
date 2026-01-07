@@ -11,5 +11,274 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  username     String
+  password     String
+  email        String
+  contact      String
+  name         String
+  role         Role
+  avatar       String?
+  joinStatus   joinStatus
+  isActive     Boolean
+  adminOf      adminOf?
+  resident     Resident?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @default(now()) @updatedAt
+  Complain     Complain[]
+  Poll         Poll[]
+  Comment      Comment[]
+  Notice       Notice[]
+  PollVote     PollVote[]
+  Notification Notification[]
+}
+
+model adminOf {
+  id                    Int        @id @default(autoincrement())
+  name                  String
+  address               String
+  description           String
+  officeNumber          String
+  buildingNumberFrom    Int
+  buildingNumberTo      Int
+  floorCountPerBuilding Int
+  unitCountPerFloor     Int
+  userId                Int        @unique
+  user                  User       @relation(fields: [userId], references: [id])
+  apartment             Apartment?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @default(now()) @updatedAt
+}
+
+model Resident {
+  id            Int       @id @default(autoincrement())
+  userId        Int?      @unique
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email         String
+  isHouseholder Boolean   @default(false)
+  contact       String
+  name          String
+  building      Int
+  unit          Int
+  apartmentId   Int
+  isRegistered  Boolean   @default(false)
+  apartment     Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+}
+
+model Apartment {
+  id                    Int        @id @default(autoincrement())
+  name                  String
+  address               String
+  description           String
+  officeNumber          String
+  buildingNumberFrom    Int
+  buildingNumberTo      Int
+  floorCountPerBuilding Int
+  unitCountPerFloor     Int
+  buildings             Int[]
+  units                 Int[]
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @default(now()) @updatedAt
+  Complain              Complain[]
+  Poll                  Poll[]
+  Notice                Notice[]
+  Event                 Event[]
+  adminOf               adminOf?   @relation(fields: [adminOfId], references: [id])
+  adminOfId             Int?       @unique
+  resident              Resident[]
+}
+
+model Complain {
+  id            Int            @id @default(autoincrement())
+  title         String
+  content       String
+  isPublic      Boolean        @default(false)
+  viewsCount    Int            @default(0)
+  status        complainStatus @default(PENDING)
+  comments      Comment[]
+  apartmentId   Int
+  apartment     Apartment      @relation(fields: [apartmentId], references: [id])
+  complainantId Int
+  complainant   User           @relation(fields: [complainantId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+}
+
+model Poll {
+  id      String     @id @default(cuid())
+  title   String
+  content String     @db.Text
+  status  PollStatus @default(PENDING)
+
+  apartmentId Int
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  building    Int?
+
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  authorId Int
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  options PollOption[]
+  votes   PollVote[]
+
+  noticeCreated Boolean @default(false)
+
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([authorId])
+  @@index([apartmentId])
+  @@index([building])
+}
+
+model PollOption {
+  id     String @id @default(cuid())
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  title String
+  order Int    @default(0)
+
+  votes PollVote[]
+
+  createdAt DateTime @default(now())
+
+  @@index([pollId])
+}
+
+model PollVote {
+  id String @id @default(cuid())
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  pollId String
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  optionId String
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  votedAt DateTime @default(now())
+
+  @@unique([userId, pollId])
+  @@index([pollId])
+  @@index([userId])
+  @@index([optionId])
+}
+
+enum CommentResourceType {
+  NOTICE
+  COMPLAINT
+}
+
+model Comment {
+  id           Int                 @id @default(autoincrement())
+  content      String
+  authorId     Int
+  author       User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  resourceType CommentResourceType
+  complainId   Int?
+  complain     Complain?           @relation(fields: [complainId], references: [id], onDelete: Cascade)
+  noticeId     Int?
+  notice       Notice?             @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([complainId])
+  @@index([noticeId])
+  @@index([authorId])
+}
+
+model Notice {
+  id          Int            @id @default(autoincrement())
+  title       String
+  content     String
+  category    NoticeCategory
+  isPinned    Boolean
+  viewsCount  Int            @default(0)
+  authorId    Int
+  author      User           @relation(fields: [authorId], references: [id])
+  apartmentId Int
+  apartment   Apartment      @relation(fields: [apartmentId], references: [id])
+  event       Event?         @relation(fields: [eventId], references: [id])
+  eventId     Int?
+  comments    Comment[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @default(now()) @updatedAt
+}
+
+model Event {
+  id           Int               @id @default(autoincrement())
+  category     NoticeCategory
+  title        String
+  apartmentId  Int
+  apartment    Apartment         @relation(fields: [apartmentId], references: [id])
+  resourceId   String
+  resourceType EventResourceType
+  startDate    DateTime
+  endDate      DateTime
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @default(now()) @updatedAt
+  Notice       Notice[]
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  isChecked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([userId, isChecked])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+enum joinStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum complainStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+enum PollStatus {
+  PENDING
+  IN_PROGRESS
+  CLOSED
+}
+
+enum NoticeCategory {
+  MAINTENANCE
+  EMERGENCY
+  COMMUNITY
+  RESIDENT_VOTE
+  RESIDENT_COUNCIL
+  ETC
+}
+
+enum EventResourceType {
+  NOTICE
+  POLL
 }

@@ -1,0 +1,38 @@
+name: welive
+
+services:
+  app:
+    image: ammgree/welive
+    build:
+      args:
+        - NODE_VERSION=22
+      dockerfile: ./Dockerfile
+      pull: true
+      context: .
+    container_name: app
+    environment:
+      - PORT=4000
+      - DATABASE_URL=${DATABASE_URL_DOCKER}
+    networks:
+      - welive-net
+    ports:
+      - 4000:4000
+    command: 'npx prisma migrate deploy'
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      - POSTGRES_DB=db_welive
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - welive-net
+    volumes:
+      - welive-vol:/var/lib/postgresql/data
+
+networks:
+  welive-net:
+    name: welive-net
+volumes:
+  welive-vol:
+    name: welive-vol
