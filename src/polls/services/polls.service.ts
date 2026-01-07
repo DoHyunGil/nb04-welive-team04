@@ -24,6 +24,9 @@ class PollsService {
     if (!user) throw createError(404, '사용자를 찾을 수 없습니다.');
 
     if (allowedRoles.includes(user.role)) {
+      if (!user.adminOf || !user.adminOf.apartment) {
+        throw createError(403, '관리자 아파트 정보가 없습니다.');
+      }
       return { user, resident: user.resident || null };
     }
 
@@ -38,7 +41,7 @@ class PollsService {
   }
 
   async createPoll(userId: number | undefined, data: CreatePollData) {
-    const { user, resident } = await this.getUserWithResident(userId);
+    const { user } = await this.getUserWithResident(userId);
 
     if (!allowedRoles.includes(user.role)) {
       throw createError(403, '관리자만 투표를 생성할 수 있습니다.');
@@ -161,7 +164,7 @@ class PollsService {
     userId: number | undefined,
     data: UpdatePollData,
   ) {
-    const { user, resident } = await this.getUserWithResident(userId);
+    const { user } = await this.getUserWithResident(userId);
 
     if (!allowedRoles.includes(user.role)) {
       throw createError(403, '관리자만 투표를 수정할 수 있습니다.');
@@ -171,7 +174,8 @@ class PollsService {
 
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
-    if (poll.apartmentId !== user.adminOf!.apartment!.id) {
+    const userApartmentId = user.adminOf?.apartment?.id;
+    if (!userApartmentId || poll.apartmentId !== userApartmentId) {
       throw createError(403, '수정 권한이 없습니다.');
     }
 
@@ -202,7 +206,7 @@ class PollsService {
   }
 
   async deletePoll(pollId: string, userId: number | undefined) {
-    const { user, resident } = await this.getUserWithResident(userId);
+    const { user } = await this.getUserWithResident(userId);
 
     if (!allowedRoles.includes(user.role)) {
       throw createError(403, '관리자만 투표를 삭제할 수 있습니다.');
@@ -211,7 +215,8 @@ class PollsService {
     const poll = await pollsRepository.findPollSimple(pollId);
     if (!poll) throw createError(404, '투표를 찾을 수 없습니다.');
 
-    if (poll.apartmentId !== user.adminOf!.apartment!.id) {
+    const userApartmentId = user.adminOf?.apartment?.id;
+    if (!userApartmentId || poll.apartmentId !== userApartmentId) {
       throw createError(403, '삭제 권한이 없습니다.');
     }
 

@@ -13,6 +13,21 @@ router.post(
   (req, res, next) => pollsController.createPoll(req, res, next),
 );
 
+router.post(
+  '/:pollId/vote',
+  passports.jwtAuth,
+  pollsSchema.pollIdSchema,
+  pollsSchema.voteSchema,
+  (req, res, next) => pollsController.vote(req, res, next),
+);
+
+router.delete(
+  '/:pollId/vote',
+  passports.jwtAuth,
+  pollsSchema.pollIdSchema,
+  (req, res, next) => pollsController.unvote(req, res, next),
+);
+
 router.get(
   '/',
   passports.jwtAuth,
@@ -40,21 +55,6 @@ router.delete(
   passports.jwtAuth,
   pollsSchema.pollIdSchema,
   (req, res, next) => pollsController.deletePoll(req, res, next),
-);
-
-router.post(
-  '/:pollId/vote',
-  passports.jwtAuth,
-  pollsSchema.pollIdSchema,
-  pollsSchema.voteSchema,
-  (req, res, next) => pollsController.vote(req, res, next),
-);
-
-router.delete(
-  '/:pollId/vote',
-  passports.jwtAuth,
-  pollsSchema.pollIdSchema,
-  (req, res, next) => pollsController.unvote(req, res, next),
 );
 
 export default router;
