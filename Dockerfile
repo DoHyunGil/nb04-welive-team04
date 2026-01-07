@@ -1,4 +1,4 @@
-ARG NODE_VERSION
+ARG NODE_VERSION=20
 FROM node:${NODE_VERSION}
 
 WORKDIR /app
@@ -8,11 +8,11 @@ RUN npm install
 
 COPY prisma ./prisma
 
-
 COPY . .
 RUN npm run build && \
     npx prisma generate
 
 ENV PORT=4000
+EXPOSE 4000
 
 ENTRYPOINT ["npm", "run", "start"]
