@@ -1,7 +1,11 @@
 import express from 'express';
 import commentController from '../comments/controllers/comment.controller.js';
 import passports from '../lib/passports/index.js';
-import { validateBody, validateQuery, validateParams } from '../middlewares/validateRequest.js';
+import {
+  validateBody,
+  validateQuery,
+  validateParams,
+} from '../middlewares/validateRequest.js';
 import {
   createCommentBodySchema,
   getCommentsQuerySchema,
@@ -13,7 +17,11 @@ import {
 const commentRouter = express.Router();
 
 // 댓글 목록 조회
-commentRouter.get('/', validateQuery(getCommentsQuerySchema), commentController.findAll);
+commentRouter.get(
+  '/',
+  validateQuery(getCommentsQuerySchema),
+  commentController.findAll,
+);
 
 // 댓글 생성
 commentRouter.post(

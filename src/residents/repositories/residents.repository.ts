@@ -1,25 +1,29 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import { prisma } from './../../lib/prisma.js';
+import type { Prisma } from '@prisma/client';
 
 class ResidentsRepository {
   async getResidents(
     userId: number,
     page: number = 1,
-    limit: number = 10,
     filters: Record<string, unknown>,
+    limit?: number,
   ) {
     const admin = await prisma.adminOf.findUnique({
       where: { userId: userId },
       include: { apartment: true },
     });
-    return prisma.resident.findMany({
+    const query: Prisma.ResidentFindManyArgs = {
       where: {
         apartmentId: Number(admin?.apartment?.id),
         ...filters,
       },
-      take: Number(limit),
-      skip: (Number(page) - 1) * Number(limit),
-    });
+    };
+    if (limit && limit > 0) {
+      query.take = Number(limit);
+      query.skip = (Number(page) - 1) * Number(limit);
+    }
+    return prisma.resident.findMany(query);
   }
   async getResidentsById(userId: number, residentId: number) {
     return prisma.resident.findUnique({

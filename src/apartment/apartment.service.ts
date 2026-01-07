@@ -51,6 +51,21 @@ class ApartmentService {
     return apartmentRepository.findById(id);
   }
   async createApartment(tx: Prisma.TransactionClient, dto: CreateApartmentDto) {
+    // 동 번호 배열 생성
+    const buildings: number[] = [];
+    for (let i = dto.buildingNumberFrom; i <= dto.buildingNumberTo; i++) {
+      buildings.push(i);
+    }
+
+    // 호수 배열 생성 (층별로 호수 생성)
+    const units: number[] = [];
+    for (let floor = 1; floor <= dto.floorCountPerBuilding; floor++) {
+      for (let num = 1; num <= dto.unitCountPerFloor; num++) {
+        const unit = floor * 100 + num;
+        units.push(unit);
+      }
+    }
+
     return apartmentRepository.create(
       {
         name: dto.name,
@@ -61,6 +76,8 @@ class ApartmentService {
         buildingNumberTo: dto.buildingNumberTo,
         floorCountPerBuilding: dto.floorCountPerBuilding,
         unitCountPerFloor: dto.unitCountPerFloor,
+        buildings: buildings,
+        units: units,
         adminOf: {
           connect: { id: dto.adminOfId },
         },
