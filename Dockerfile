@@ -11,7 +11,8 @@ RUN npm install
 COPY . .
 
 # Generate Prisma client (separate step for better error visibility)
-RUN echo "=== Generating Prisma Client ===" && \
+# Note: DATABASE_URL is dummy for build, real URL is in .env.production at runtime
+RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" \
     npx prisma generate && \
     echo "=== Prisma Client Generated Successfully ==="
 
