@@ -85,4 +85,67 @@ describe('ApartmentController Unit Tests', () => {
       expect(mockNext).not.toHaveBeenCalled();
     });
   });
+
+  describe('getApartments', () => {
+    it('아파트 목록 조회 성공 시 200 응답을 반환한다', async () => {
+      const mockResult = {
+        data: [
+          { id: '1', name: '래미안 퍼스티지' },
+          { id: '2', name: '자이 아파트' },
+        ],
+        totalCount: 2,
+        page: 1,
+        limit: 20,
+        hasNext: false,
+      };
+
+      mockApartmentService.getApartments.mockResolvedValue(mockResult);
+
+      const req = createMockRequest({
+        query: {
+          page: '1',
+          limit: '20',
+          searchKeyword: '',
+        },
+      });
+      const { status, json, statusMock, jsonMock } = createMockResponse();
+      const res = { status, json } as unknown as Response;
+
+      await apartmentController.getApartments(req as Request, res, mockNext);
+
+      expect(mockApartmentService.getApartments).toHaveBeenCalledWith({
+        page: 1,
+        limit: 20,
+        searchKeyword: '',
+      });
+      expect(statusMock).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith(mockResult);
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    it('쿼리 없이 호출하면 기본값(page=1, limit=20)을 사용한다', async () => {
+      mockApartmentService.getApartments.mockResolvedValue({
+        data: [],
+        totalCount: 0,
+        page: 1,
+        limit: 20,
+        hasNext: false,
+      });
+
+      const req = createMockRequest();
+      const { status, json, statusMock, jsonMock } = createMockResponse();
+      const res = { status, json } as unknown as Response;
+
+      await apartmentController.getApartments(req as Request, res, mockNext);
+
+      expect(mockApartmentService.getApartments).toHaveBeenCalledWith({
+        page: 1,
+        limit: 20,
+        searchKeyword: '',
+      });
+      expect(statusMock).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalled();
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+  });
 });

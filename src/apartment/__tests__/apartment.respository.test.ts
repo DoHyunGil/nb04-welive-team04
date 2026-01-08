@@ -1,136 +1,118 @@
-import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import {
+  beforeAll,
+  afterAll,
+  beforeEach,
+  describe,
+  it,
+  expect,
+} from '@jest/globals';
 import type { Prisma } from 'generated/prisma/client.js';
 
-// Prisma Mock
+import { prisma } from '../../lib/prisma.js';
+import apartmentRepository from '../apartment.respository.js';
 
-const mockPrisma = {
-  apartment: {
-    findMany: jest.fn(),
-    findUnique: jest.fn(),
-    count: jest.fn(),
-    create: jest.fn(),
-  },
-};
+function apartmentFixture(
+  override: Partial<Prisma.ApartmentCreateInput> = {},
+): Prisma.ApartmentCreateInput {
+  return {
+    name: '래미안 퍼스티지',
+    address: '서울 서초구',
+    description: '테스트 아파트 설명',
+    officeNumber: '02-1234-5678',
+    buildingNumberFrom: 1,
+    buildingNumberTo: 3,
+    floorCountPerBuilding: 15,
+    unitCountPerFloor: 4,
+    buildings: [],
+    units: [],
+    ...override,
+  };
+}
 
-jest.unstable_mockModule('../../lib/prisma.js', () => ({
-  prisma: mockPrisma,
-}));
-
-const { default: apartmentRepository } =
-  await import('../apartment.respository.js');
-
-// test
-
-describe('ApartmentRepository Unit Tests', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+describe('ApartmentRepository Integration Tests', () => {
+  beforeAll(async () => {
+    await prisma.$connect();
   });
 
-  describe('findMany', () => {
-    it('아파트 목록을 조건에 맞게 조회한다', async () => {
-      const mockResult = [{ id: 1 }, { id: 2 }];
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
 
-      mockPrisma.apartment.findMany.mockResolvedValue(mockResult);
+  beforeEach(async () => {
+    await prisma.apartment.deleteMany();
+  });
 
-      const where: Prisma.ApartmentWhereInput = {
-        name: { contains: '래미안' },
-      };
+  describe('create', () => {
+    it('아파트를 실제 DB에 저장한다', async () => {
+      const result = await apartmentRepository.create(apartmentFixture());
 
-      const result = await apartmentRepository.findMany(0, 20, where);
-
-      expect(mockPrisma.apartment.findMany).toHaveBeenCalledWith({
-        where,
-        skip: 0,
-        take: 20,
-        orderBy: { createdAt: 'desc' },
-        select: expect.objectContaining({
-          id: true,
-          name: true,
-        }),
-      });
-      expect(result).toBe(mockResult);
+      expect(result.id).toBeDefined();
+      expect(result.name).toBe('래미안 퍼스티지');
+      expect(result.address).toBe('서울 서초구');
     });
   });
 
   describe('findById', () => {
-    it('ID로 아파트 단건을 조회한다', async () => {
-      const mockApartment = { id: 1, name: '래미안 퍼스티지' };
-
-      mockPrisma.apartment.findUnique.mockResolvedValue(mockApartment);
-
-      const result = await apartmentRepository.findById(1);
-
-      expect(mockPrisma.apartment.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 },
-        select: expect.objectContaining({
-          id: true,
-          name: true,
-        }),
+    it('ID로 아파트를 조회한다', async () => {
+      const created = await prisma.apartment.create({
+        data: apartmentFixture({ name: '힐스테이트' }),
       });
-      expect(result).toBe(mockApartment);
+
+      const result = await apartmentRepository.findById(created.id);
+
+      expect(result).not.toBeNull();
+      expect(result?.id).toBe(created.id);
+      expect(result?.name).toBe('힐스테이트');
+    });
+  });
+
+  describe('findMany', () => {
+    it('조건에 맞는 아파트 목록을 조회한다', async () => {
+      await prisma.apartment.createMany({
+        data: [
+          apartmentFixture({ name: '래미안', address: '서울' }),
+          apartmentFixture({ name: '자이', address: '부산' }),
+        ],
+      });
+
+      const result = await apartmentRepository.findMany(0, 10, {
+        address: { contains: '서울' },
+      });
+
+      expect(result.length).toBe(1);
+      expect(result[0].name).toBe('래미안');
     });
   });
 
   describe('count', () => {
     it('조건에 맞는 아파트 개수를 반환한다', async () => {
-      mockPrisma.apartment.count.mockResolvedValue(5);
-
-      const where: Prisma.ApartmentWhereInput = {
-        address: { contains: '서울' },
-      };
-
-      const result = await apartmentRepository.count(where);
-
-      expect(mockPrisma.apartment.count).toHaveBeenCalledWith({
-        where,
+      await prisma.apartment.createMany({
+        data: [
+          apartmentFixture({ address: '서울' }),
+          apartmentFixture({ address: '서울' }),
+          apartmentFixture({ address: '부산' }),
+        ],
       });
-      expect(result).toBe(5);
+
+      const count = await apartmentRepository.count({
+        address: { contains: '서울' },
+      });
+
+      expect(count).toBe(2);
     });
   });
 
-  describe('create', () => {
-    it('트랜잭션 없이 아파트를 생성한다', async () => {
-      const data = {
-        name: '신규 아파트',
-        address: '서울시 강남구',
-      } as Prisma.ApartmentCreateInput;
-
-      const mockCreated = { id: 1, ...data };
-
-      mockPrisma.apartment.create.mockResolvedValue(mockCreated);
-
-      const result = await apartmentRepository.create(data);
-
-      expect(mockPrisma.apartment.create).toHaveBeenCalledWith({
-        data,
-        select: expect.objectContaining({
-          id: true,
-          name: true,
-        }),
+  describe('create with transaction', () => {
+    it('트랜잭션 client를 사용해 아파트를 생성한다', async () => {
+      const result = await prisma.$transaction((tx) => {
+        return apartmentRepository.create(
+          apartmentFixture({ name: '트랜잭션 아파트' }),
+          tx,
+        );
       });
-      expect(result).toBe(mockCreated);
-    });
 
-    it('트랜잭션 client가 주어지면 해당 client를 사용한다', async () => {
-      const tx = {
-        apartment: {
-          create: jest.fn().mockResolvedValue({ id: 2 }),
-        },
-      } as unknown as Prisma.TransactionClient;
-
-      const data = {
-        name: '트랜잭션 아파트',
-      } as Prisma.ApartmentCreateInput;
-
-      const result = await apartmentRepository.create(data, tx);
-
-      expect(tx.apartment.create).toHaveBeenCalledWith({
-        data,
-        select: expect.objectContaining({
-          id: true,
-        }),
-      });
-      expect(result).toEqual({ id: 2 });
+      expect(result.id).toBeDefined();
+      expect(result.name).toBe('트랜잭션 아파트');
     });
   });
 });
