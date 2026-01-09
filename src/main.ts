@@ -20,9 +20,21 @@ const app = express();
 
 const PORT = process.env.PORT || 4000;
 
+// CORS 설정 - 여러 도메인 지원
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+  : ['http://localhost:3000'];
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // origin이 없는 경우(같은 도메인) 또는 허용된 origin인 경우
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   }),
 );
