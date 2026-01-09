@@ -1,8 +1,4 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { _custom } from 'zod/v4/core';
-
-type AsyncFn = (...args: unknown[]) => Promise<unknown>;
-const mockFn = () => jest.fn<AsyncFn>();
 
 const mockComplaintRepository = {
   createComplaint: jest.fn<(...args: unknown[]) => Promise<unknown>>(),
@@ -21,7 +17,8 @@ jest.unstable_mockModule('../../repositories/complaint.repository.js', () => ({
   default: mockComplaintRepository,
 }));
 
-const { default: complaintService } = await import('../complaint.service.js');
+const { default: complaintService } =
+  await import('../services/complaint.service.js');
 
 const admin = {
   id: 1,

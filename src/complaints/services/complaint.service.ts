@@ -101,11 +101,15 @@ class ComplaintService {
   }
   // 민원 삭제
   async deleteComplaint(userId: number, complaintId: number) {
+    const role = await complaintRepository.checkUserRole(userId);
+    if (!role) {
+      throw createHttpError(404, '존재하지 않은 유저입니다.');
+    }
     const complaint = await complaintRepository.getComplaintById(complaintId);
     if (!complaint) {
       throw createHttpError(404, '해당 민원이 존재하지 않습니다.');
     }
-    if (complaint.complainant.id !== userId) {
+    if (complaint.complainant.id !== userId && role.role === 'USER') {
       throw createHttpError(403, '작성자만 삭제 가능합니다.');
     }
     if (complaint.status !== 'PENDING') {
@@ -122,7 +126,7 @@ class ComplaintService {
     // userId가 관리자인지 확인
     const user = await complaintRepository.checkUserRole(userId);
     if (!user) {
-      throw createHttpError(404, '존재하지 않는 user입니다.');
+      throw createHttpError(404, '존재하지 않는 유저입니다.');
     }
     if (user.role !== 'ADMIN') {
       throw createHttpError(403, '관리자 계정이 아닙니다.');
