@@ -1,6 +1,6 @@
 import type { CreateResidentBody } from 'src/lib/type/express/resident.index.js';
 import { prisma } from './../../lib/prisma.js';
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '../../../generated/prisma/client.js';
 
 class ResidentsRepository {
   async getResidents(
