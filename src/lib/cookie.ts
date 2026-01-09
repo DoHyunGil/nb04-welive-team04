@@ -1,12 +1,14 @@
 import type { Response, CookieOptions } from 'express';
 import { token } from '../auth/config/token.constants.js';
 
-const isProduction = process.env.NODE_ENV === 'production';
+// TEMPORARY: Using HTTP instead of HTTPS, so secure must be false
+// TODO: Enable HTTPS and set secure: true, sameSite: 'none' for production
+const useHttps = process.env.USE_HTTPS === 'true';
 
 const baseCookieOptions: CookieOptions = {
   httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? 'none' : 'lax',
+  secure: useHttps,
+  sameSite: useHttps ? 'none' : 'lax',
   path: '/',
 };
 
