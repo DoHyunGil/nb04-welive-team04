@@ -9,7 +9,7 @@ const router = express.Router();
 router.patch(
   '/me/avatar',
   passports.jwtAuth,
-  upload.single('avatar'),
+  upload.single('avatarImage'),
   userController.updateAvatar,
 );
 

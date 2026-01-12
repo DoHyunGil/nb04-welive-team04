@@ -12,7 +12,7 @@ const mockComplaintRepository = {
   checkUserRole: jest.fn<(...args: unknown[]) => Promise<unknown>>(),
 };
 
-jest.unstable_mockModule('../../repositories/complaint.repository.js', () => ({
+jest.unstable_mockModule('../repositories/complaint.repository.js', () => ({
   __esModule: true,
   default: mockComplaintRepository,
 }));
@@ -277,19 +277,32 @@ describe('ComplaintService - 단위 테스트', () => {
       status: 'PENDING',
     };
     it('작성자는 본인 글을 삭제할 수 있다', async () => {
+      mockComplaintRepository.checkUserRole.mockResolvedValue({ role: 'USER' });
       mockComplaintRepository.getComplaintById.mockResolvedValue(complaint);
       mockComplaintRepository.deleteComplaint.mockResolvedValue(undefined);
 
       await complaintService.deleteComplaint(2, 1);
       expect(mockComplaintRepository.deleteComplaint).toHaveBeenCalledWith(1);
     });
+    it('관리자는 민원을 삭제할 수 있다', async () => {
+      mockComplaintRepository.checkUserRole.mockResolvedValue({
+        role: 'ADMIN',
+      });
+      mockComplaintRepository.getComplaintById.mockResolvedValue(complaint);
+      mockComplaintRepository.deleteComplaint.mockResolvedValue(undefined);
+
+      await complaintService.deleteComplaint(1, 1);
+      expect(mockComplaintRepository.deleteComplaint).toHaveBeenCalledWith(1);
+    });
     it('존재하지 않은 민원 삭제 시 404 에러를 반환한다', async () => {
+      mockComplaintRepository.checkUserRole.mockResolvedValue({ role: 'USER' });
       mockComplaintRepository.getComplaintById.mockResolvedValue(null);
       await expect(complaintService.deleteComplaint(2, 99)).rejects.toThrow(
         '해당 민원이 존재하지 않습니다.',
       );
     });
     it('작성자가 아닌 유저가 삭제 시 403 에러를 반환한다', async () => {
+      mockComplaintRepository.checkUserRole.mockResolvedValue({ role: 'USER' });
       mockComplaintRepository.getComplaintById.mockResolvedValue(complaint);
       mockComplaintRepository.deleteComplaint.mockResolvedValue(undefined);
 
@@ -304,6 +317,7 @@ describe('ComplaintService - 단위 테스트', () => {
         complainant: { id: 2 },
         status: 'RESOLVED',
       };
+      mockComplaintRepository.checkUserRole.mockResolvedValue({ role: 'USER' });
       mockComplaintRepository.getComplaintById.mockResolvedValue(
         resolvedComplaint,
       );
@@ -344,7 +358,7 @@ describe('ComplaintService - 단위 테스트', () => {
       mockComplaintRepository.checkUserRole.mockResolvedValue(null);
       await expect(
         complaintService.updateComplaintStatus(99, 1, 'RESOLVED'),
-      ).rejects.toThrow('존재하지 않는 user입니다.');
+      ).rejects.toThrow('존재하지 않는 유저입니다.');
     });
     it('관리자 계정이 아닌 경우 403 에러를 반환한다', async () => {
       mockComplaintRepository.checkUserRole.mockResolvedValue({ role: 'USER' });

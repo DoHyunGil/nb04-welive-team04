@@ -14,10 +14,9 @@ router.post(
 );
 
 router.post(
-  '/:pollId/vote',
+  '/:pollId/options/:optionId/vote',
   passports.jwtAuth,
   pollsSchema.pollIdSchema,
-  pollsSchema.voteSchema,
   (req, res, next) => pollsController.vote(req, res, next),
 );
 

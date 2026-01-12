@@ -10,7 +10,7 @@ const mockComplaintsService = {
   updateComplaintStatus: jest.fn<(...args: unknown[]) => Promise<unknown>>(),
 };
 
-jest.unstable_mockModule('../../services/complaint.service.js', () => ({
+jest.unstable_mockModule('../services/complaint.service.js', () => ({
   __esModule: true,
   default: mockComplaintsService,
 }));

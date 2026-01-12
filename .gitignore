@@ -14,5 +14,5 @@ welive-backend-key.pem
 
 # Team secrets (do not commit!)
 TEAM_SECRETS.md
-*.pem
+PGADMIN_CONNECTION_GUIDE.md
 *.pem:Zone.Identifier
