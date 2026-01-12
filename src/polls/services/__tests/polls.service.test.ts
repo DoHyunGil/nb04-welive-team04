@@ -27,6 +27,12 @@ const mockPollVote = {
   findFirst: mockFn(),
   delete: mockFn(),
 };
+const mockEvent = {
+  create: mockFn(),
+  findFirst: mockFn(),
+  update: mockFn(),
+  delete: mockFn(),
+};
 
 const mockTransaction = jest.fn((callback: unknown) => {
   const fn = callback as TransactionCallback;
@@ -41,6 +47,7 @@ const mockPrismaClient = {
   poll: mockPoll,
   pollOption: mockPollOption,
   pollVote: mockPollVote,
+  event: mockEvent,
   $transaction: mockTransaction,
 };
 
@@ -70,6 +77,18 @@ const createTestUser = (
   role: overrides.role || 'ADMIN',
   resident:
     overrides.resident === undefined ? defaultResident : overrides.resident,
+  adminOf: overrides.role === 'ADMIN' || overrides.role === 'SUPER_ADMIN'
+    ? {
+      id: 1,
+      userId: 1,
+      apartment: {
+        id: 1,
+        name: '테스트 아파트',
+        address: '테스트 주소',
+        adminOfId: 1,
+      }
+    }
+    : null,
 });
 
 const getFutureDates = () => {
@@ -160,6 +179,16 @@ describe('PollsService - 단위 테스트', () => {
       (prisma.poll.create as unknown as MockPrismaFn).mockResolvedValue(
         mockPoll,
       );
+      (prisma.event.create as unknown as MockPrismaFn).mockResolvedValue({
+        id: 'event1',
+        title: '테스트 투표',
+        category: 'RESIDENT_VOTE',
+        startDate: new Date(),
+        endDate: new Date(),
+        apartmentId: 1,
+        resourceId: 'poll123',
+        resourceType: 'POLL',
+      });
 
       const result = await pollsService.createPoll(1, defaultPollInput);
 
@@ -167,13 +196,28 @@ describe('PollsService - 단위 테스트', () => {
       expect(result.title).toBe('테스트 투표');
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
         where: { id: 1 },
-        include: { resident: true },
+        include: {
+          resident: true,
+          adminOf: { select: { apartment: true } },
+        },
       });
       expect(prisma.poll.create).toHaveBeenCalledTimes(1);
+      expect(prisma.event.create).toHaveBeenCalledTimes(1);
     });
 
-    it('입주민 정보가 없으면 에러를 반환한다', async () => {
-      setupTestContext({ resident: null });
+    it('관리자 권한은 있지만 아파트 연결 정보(resident, adminOf)가 없으면 에러를 반환한다', async () => {
+      const brokenAdminUser = {
+        id: 1,
+        email: 'test@test.com',
+        name: '테스트',
+        role: 'ADMIN',
+        resident: null,
+        adminOf: null,
+      };
+
+      (prisma.user.findUnique as unknown as MockPrismaFn).mockResolvedValue(
+        brokenAdminUser
+      );
 
       await expect(
         pollsService.createPoll(1, {
@@ -181,7 +225,7 @@ describe('PollsService - 단위 테스트', () => {
           options: [{ title: '찬성' }],
         }),
       ).rejects.toThrow(
-        '입주민 정보가 존재하지 않아 투표 서비스를 이용할 수 없습니다.',
+        '관리자 아파트 정보가 없습니다.',
       );
     });
 
@@ -275,6 +319,17 @@ describe('PollsService - 단위 테스트', () => {
         role: 'ADMIN',
         pollStatus: 'PENDING',
       });
+
+      (prisma.event.findFirst as unknown as MockPrismaFn).mockResolvedValue({
+        id: 'event1',
+        resourceType: 'POLL',
+        resourceId: 'poll123',
+      });
+
+      (prisma.event.delete as unknown as MockPrismaFn).mockResolvedValue({
+        id: 'event1',
+      });
+
       (prisma.poll.delete as unknown as MockPrismaFn).mockResolvedValue(
         mockPoll,
       );
@@ -282,6 +337,8 @@ describe('PollsService - 단위 테스트', () => {
       const result = await pollsService.deletePoll('poll123', 1);
 
       expect(result.message).toBe('투표가 삭제되었습니다.');
+      expect(prisma.event.findFirst).toHaveBeenCalledTimes(1);
+      expect(prisma.event.delete).toHaveBeenCalledTimes(1);
       expect(prisma.poll.delete).toHaveBeenCalledWith({
         where: { id: 'poll123' },
       });

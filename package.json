@@ -32,6 +32,8 @@
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "csv-parse": "^6.1.0",
+    "csv-stringify": "^6.6.0",
     "express": "^5.1.0",
     "http-errors": "^2.0.1",
     "jsonwebtoken": "^9.0.2",

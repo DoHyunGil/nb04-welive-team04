@@ -16,7 +16,7 @@ jest.unstable_mockModule('../../services/complaint.service.js', () => ({
 }));
 
 const { default: complaintController } =
-  await import('../complaint.controller.js');
+  await import('../controllers/complaint.controller.js');
 
 const createMockRequest = (
   overrides: Partial<Request> = {},
