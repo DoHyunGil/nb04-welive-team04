@@ -44,9 +44,7 @@ const updateBodySchema = z.object({
     })
     .optional(),
   isPinned: z.boolean().optional(),
-  event: startEndDateSchema
-    //partial().
-    .optional(),
+  event: startEndDateSchema.optional().nullable(),
 });
 const noticeParamSchema = z.object({
   noticeId: z.coerce.number().int().positive(),

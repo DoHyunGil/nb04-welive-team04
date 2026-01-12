@@ -123,26 +123,28 @@ class NoticeService {
         title,
       });
     } else {
-      // 새로운 이벤트 생성
-      if (!startDate || !endDate) {
-        throw createHttpError(
-          400,
-          '이벤트 시작일과 종료일을 모두 입력해주세요.',
+      if (updateDto.event !== null && updateDto.event !== undefined) {
+        // 새로운 이벤트 생성
+        if (!startDate || !endDate) {
+          throw createHttpError(
+            400,
+            '이벤트 시작일과 종료일을 모두 입력해주세요.',
+          );
+        }
+        const newEvent = await eventRepository.createEvent({
+          title: updatedNotice.title,
+          category: updatedNotice.category,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          apartmentId: updatedNotice.apartmentId,
+          resourceId: updatedNotice.id.toString(),
+          resourceType: 'NOTICE',
+        });
+        updatedNotice = await noticeRepository.updateNoticeEvent(
+          updatedNotice.id,
+          newEvent.id,
         );
       }
-      const newEvent = await eventRepository.createEvent({
-        title: updatedNotice.title,
-        category: updatedNotice.category,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        apartmentId: updatedNotice.apartmentId,
-        resourceId: updatedNotice.id.toString(),
-        resourceType: 'NOTICE',
-      });
-      updatedNotice = await noticeRepository.updateNoticeEvent(
-        updatedNotice.id,
-        newEvent.id,
-      );
     }
     return updatedNotice;
   }
