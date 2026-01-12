@@ -77,7 +77,7 @@ export const updateAdminSchema = z.object({
   email: z.string().email('올바른 이메일 형식이 아닙니다.').optional(),
   contact: z
     .string()
-    .regex(/^010-\d{4}-\d{4}$/, '연락처는 010-XXXX-XXXX 형식이어야 합니다.')
+    .regex(/^\d+$/, '숫자만 입력해주세요. 하이픈(-)은 제외해주세요.')
     .optional(),
   name: z
     .string()
