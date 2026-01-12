@@ -68,7 +68,7 @@ class PollsController {
     try {
       const userId = req.user?.id;
       const pollId = req.params.pollId!;
-      const optionId = req.body.optionId!;
+      const optionId = req.params.optionId!;
 
       await pollsService.vote(pollId, optionId, userId);
       res.status(204).send();
