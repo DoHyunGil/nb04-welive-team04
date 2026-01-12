@@ -530,9 +530,9 @@ describe('Polls API - E2E 통합 테스트', () => {
 
     it('진행 중인 투표에 참여할 수 있다', async () => {
       await request(app)
-        .post(`/api/v2/polls/${testPollId}/vote`)
+        .post(`/api/v2/polls/${testPollId}/options/${testOptionId}/vote`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ optionId: testOptionId })
+        .send()
         .expect(204);
 
       const vote = await prisma.pollVote.findFirst({
@@ -548,9 +548,9 @@ describe('Polls API - E2E 통합 테스트', () => {
 
     it('투표 후 취소할 수 있다', async () => {
       await request(app)
-        .post(`/api/v2/polls/${testPollId}/vote`)
+        .post(`/api/v2/polls/${testPollId}/options/${testOptionId}/vote`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ optionId: testOptionId })
+        .send()
         .expect(204);
 
       await request(app)
@@ -570,15 +570,15 @@ describe('Polls API - E2E 통합 테스트', () => {
 
     it('중복 투표는 불가능하다', async () => {
       await request(app)
-        .post(`/api/v2/polls/${testPollId}/vote`)
+        .post(`/api/v2/polls/${testPollId}/options/${testOptionId}/vote`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ optionId: testOptionId })
+        .send()
         .expect(204);
 
       await request(app)
-        .post(`/api/v2/polls/${testPollId}/vote`)
+        .post(`/api/v2/polls/${testPollId}/options/${testOptionId}/vote`)
         .set('Authorization', `Bearer ${authToken}`)
-        .send({ optionId: testOptionId })
+        .send() // ✅ Body 비움
         .expect(400);
     });
   });
