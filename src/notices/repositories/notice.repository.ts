@@ -65,7 +65,7 @@ class noticeRepository {
       },
       skip: offset,
       take: limit,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
       select: {
         id: true,
         createdAt: true,
