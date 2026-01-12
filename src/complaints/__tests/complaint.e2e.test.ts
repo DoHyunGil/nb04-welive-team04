@@ -245,7 +245,6 @@ describe('Complaint E2E Test', () => {
           content: '공개 민원 내용',
           isPublic: true,
           apartmentId: 1,
-          userId: resident1Id,
         });
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('id');

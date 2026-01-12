@@ -203,6 +203,24 @@ describe('ComplaintRepository - 단위 테스트', () => {
       expect(result).toBeNull();
     });
   });
+  describe('incrementViewCount', () => {
+    it('민원의 조회수가 1만큼 증가해야 한다', async () => {
+      const complaint = await createComplaint({
+        title: '조회수 테스트',
+        viewsCount: 10,
+      });
+      await complaintRepository.incrementViewCount(complaint.id);
+      const dbData = await prisma.complain.findUnique({
+        where: { id: complaint.id },
+      });
+      expect(dbData?.viewsCount).toBe(11);
+    });
+    it('존재하지 않는 민원 ID로 호출 시 에러를 발생한다', async () => {
+      await expect(
+        complaintRepository.incrementViewCount(999),
+      ).rejects.toThrow();
+    });
+  });
   describe('updateComplaint', () => {
     it('민원을 수정한다', async () => {
       const complaint = await createComplaint({ title: '수정용' });
@@ -218,7 +236,7 @@ describe('ComplaintRepository - 단위 테스트', () => {
       });
       expect(dbData?.content).toBe('내용 수정');
     });
-    it('존재하지 않는 민원 수정 시 에러를 던진다', async () => {
+    it('존재하지 않은 민원 수정 시 에러를 던진다', async () => {
       await expect(
         complaintRepository.updateComplaint(999, { title: '수정용' }),
       ).rejects.toThrow();
