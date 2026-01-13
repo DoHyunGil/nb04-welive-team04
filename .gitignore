@@ -8,6 +8,9 @@ dist
 .DS_Store
 .claude/settings.local.json
 
+# Serena (MCP Server)
+.serena/
+
 # AWS 및 보안 관련 파일
 *.pem
 welive-backend-key.pem

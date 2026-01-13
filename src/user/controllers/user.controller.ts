@@ -38,8 +38,11 @@ class UserController {
         await deleteFromS3(oldAvatarUrl);
       }
 
-      // 7. 성공 응답 (204 No Content)
-      res.status(204).send();
+      // 7. 성공 응답
+      res.status(200).json({
+        message: '프로필 사진이 성공적으로 수정되었습니다.',
+        avatar: avatarUrl,
+      });
     } catch (error) {
       // 에러 발생 시 에러 핸들러로 전달
       next(error);
@@ -67,8 +70,10 @@ class UserController {
       // 4. 데이터베이스에서 아바타 URL을 null로 설정
       await userService.updateAvatar(user.id, null);
 
-      // 5. 성공 응답 (204 No Content)
-      res.status(204).send();
+      // 5. 성공 응답
+      res.status(200).json({
+        message: '프로필 사진이 성공적으로 삭제되었습니다.',
+      });
     } catch (error) {
       // 에러 발생 시 에러 핸들러로 전달
       next(error);
